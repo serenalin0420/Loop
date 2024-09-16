@@ -8,6 +8,9 @@ import {
   where,
   collection,
   or,
+  addDoc,
+  setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 const dbApi = {
@@ -25,6 +28,32 @@ const dbApi = {
     } catch (error) {
       console.error("Error fetching post:", error);
       throw error;
+    }
+  },
+
+  async savePostToDatabase(postData) {
+    try {
+      const docRef = await addDoc(collection(db, "posts"), {});
+      const postId = docRef.id;
+
+      // 將生成的 docID 添加到 postData 中，並使用 serverTimestamp
+      const postDataWithId = {
+        ...postData,
+        post_id: postId,
+        created_time: serverTimestamp(),
+      };
+
+      // 過濾掉 undefined 的字段
+      const filteredPostData = Object.fromEntries(
+        Object.entries(postDataWithId).filter(
+          ([_, value]) => value !== undefined,
+        ),
+      );
+
+      await setDoc(docRef, filteredPostData);
+      console.log("Data successfully written with ID: ", postId);
+    } catch (error) {
+      console.error("Error writing document: ", error);
     }
   },
 

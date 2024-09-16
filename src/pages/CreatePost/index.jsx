@@ -1,9 +1,10 @@
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import dbApi from "../../utils/api";
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useContext } from "react";
+import { UserContext } from "@/context/userContext";
 
 const locations = [
   { value: "online", label: "線上" },
@@ -82,6 +83,7 @@ const initialState = {
   startOfWeek: new Date(),
   currentMonth: new Date(),
   selectedTimes: {},
+  userProfile: undefined,
 };
 
 const actionTypes = {
@@ -92,6 +94,7 @@ const actionTypes = {
   SET_START_OF_WEEK: "SET_START_OF_WEEK",
   SET_CURRENT_MONTH: "SET_CURRENT_MONTH",
   SET_SELECTED_TIMES: "SET_SELECTED_TIMES",
+  SET_USER_PROFILE: "SET_USER_PROFILE",
 };
 
 const reducer = (state, action) => {
@@ -110,12 +113,27 @@ const reducer = (state, action) => {
       return { ...state, currentMonth: action.payload };
     case actionTypes.SET_SELECTED_TIMES:
       return { ...state, selectedTimes: action.payload };
+    case actionTypes.SET_USER_PROFILE:
+      return { ...state, userProfile: action.payload };
     default:
       return state;
   }
 };
 
 function CreatePost() {
+  const user = useContext(UserContext);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user && user.uid) {
+        const profile = await dbApi.getProfile(user.uid);
+        dispatch({ type: "SET_USER_PROFILE", payload: profile });
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
   const {
     register,
     handleSubmit,
@@ -123,7 +141,6 @@ function CreatePost() {
     setValue,
     formState: { errors },
   } = useForm();
-  const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     dispatch({
@@ -262,14 +279,27 @@ function CreatePost() {
 
   const handleTimeSlotClick = (date, time) => {
     const dateString = formatDate(date, "yyyy-MM-dd");
+    const selectedTimesForDate = state.selectedTimes[dateString] || {};
+
+    // 檢查該時間段是否已經被選取
+    const isSelected = selectedTimesForDate[time];
+
+    // 如果已經被選取，則移除該時間段；否則，添加該時間段
+    const updatedTimesForDate = {
+      ...selectedTimesForDate,
+      [time]: isSelected ? undefined : true,
+    };
+
+    // 移除值為 undefined 的鍵
+    if (isSelected) {
+      delete updatedTimesForDate[time];
+    }
+
     dispatch({
       type: actionTypes.SET_SELECTED_TIMES,
       payload: {
         ...state.selectedTimes,
-        [dateString]: {
-          ...state.selectedTimes[dateString],
-          [time]: true,
-        },
+        [dateString]: updatedTimesForDate,
       },
     });
   };
@@ -289,18 +319,45 @@ function CreatePost() {
       const isSelected =
         state.selectedTimes[formatDate(day, "yyyy-MM-dd")]?.[time]; // 檢查是否被選取
       return (
-        <a
+        <div
           key={time}
-          className={`mt-1 flex w-full cursor-pointer flex-col px-4 py-1 text-center ${isSelected ? "bg-yellow-400" : ""} ${!isDisabled && !isSelected ? "hover:bg-blue-300" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
+          className={`mt-1 flex w-full cursor-pointer flex-col px-4 py-1 text-center ${isSelected ? "bg-yellow-300" : ""} ${!isDisabled && !isSelected ? "hover:bg-yellow-100" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
           onClick={() => !isDisabled && handleTimeSlotClick(day, time)}
         >
           {time}
-        </a>
+        </div>
       );
     });
   };
 
-  const onSubmit = (data) => console.log(data);
+  const mutation = useMutation({
+    mutationFn: (postData) => dbApi.savePostToDatabase(postData), // 確保這裡的函數定義正確
+    onSuccess: () => {
+      console.log("Post saved successfully!");
+    },
+    onError: (error) => {
+      console.error("Error saving post: ", error);
+    },
+  });
+
+  const onSubmit = (data) => {
+    const postData = {
+      title: data.title,
+      type: data.type,
+      author_uid: user.uid,
+      category_id: data.category?.value,
+      location: data.location?.map((loc) => loc.label), // 只存儲 label
+      time_preference: data.timePreferences?.map((pref) => pref.label),
+      coin_cost: data.coins?.value,
+      course_num: data.coursesNum?.map((num) => num.value),
+      datetime: state.selectedTimes,
+      video_url: data.introVideo,
+      attachment_url: data.referenceMaterial,
+    };
+
+    mutation.mutate(postData);
+  };
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading categories</div>;
 
@@ -318,48 +375,12 @@ function CreatePost() {
           <div className="h-auto py-3">
             <div className="mb-3 items-center">
               <label className="mr-12 text-xl">標題</label>
-              {errors.title && <span>必填</span>}
               <input
                 {...register("title", { required: true })}
                 className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
                 placeholder="請簡短描述你的貼文內容"
               />
-            </div>
-
-            <div className="mb-3 flex h-10 items-center">
-              <label className="mr-12 text-xl">地點</label>
-              <Controller
-                name="location"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    options={locations}
-                    isMulti
-                    className="basic-multi-select min-w-60"
-                    classNamePrefix="select"
-                    styles={customStyles}
-                  />
-                )}
-              />
-            </div>
-
-            <div className="mb-3 flex h-10 items-center">
-              <label className="mr-2 text-xl">時間偏好</label>
-              <Controller
-                name="timePreferences"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    options={timePreferences}
-                    isMulti
-                    className="basic-multi-select min-w-60"
-                    classNamePrefix="select"
-                    styles={customStyles}
-                  />
-                )}
-              />
+              {errors.title && <span>必填</span>}
             </div>
 
             <div className="mb-3">
@@ -422,6 +443,41 @@ function CreatePost() {
                   )}
                 />
               </div>
+            </div>
+            <div className="mb-3 flex h-10 items-center">
+              <label className="mr-2 text-xl">時間偏好</label>
+              <Controller
+                name="timePreferences"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={timePreferences}
+                    isMulti
+                    className="basic-multi-select min-w-60"
+                    classNamePrefix="select"
+                    styles={customStyles}
+                  />
+                )}
+              />
+            </div>
+
+            <div className="mb-3 flex h-10 items-center">
+              <label className="mr-12 text-xl">地點</label>
+              <Controller
+                name="location"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={locations}
+                    isMulti
+                    className="basic-multi-select min-w-60"
+                    classNamePrefix="select"
+                    styles={customStyles}
+                  />
+                )}
+              />
             </div>
 
             <div className="mb-3 flex items-center">
@@ -620,8 +676,14 @@ function CreatePost() {
                 placeholder="請提供雲端連結"
               />
             </div>
-
-            <button type="submit">提交</button>
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                className="rounded-md bg-yellow-800 px-6 py-2 text-base text-white"
+              >
+                發布貼文
+              </button>
+            </div>
           </div>
         </form>
       </div>
