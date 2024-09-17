@@ -4,7 +4,6 @@ const StarRating = ({ rating }) => {
   const fullStars = Math.floor(rating); // 計算整數部分
   const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75; // 判斷是否顯示半顆星
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); // 計算剩餘空星數
-  console.log(fullStars, hasHalfStar, emptyStars);
 
   return (
     <div className="flex">

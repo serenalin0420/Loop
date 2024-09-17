@@ -20,7 +20,7 @@ function Profile() {
   if (!user) return <div>加載中...</div>;
 
   return (
-    <div className="mt-[60px]">
+    <div className="mt-16">
       <img src={user.profile_picture}></img>
     </div>
   );

@@ -57,10 +57,7 @@ const TimeTable = ({
           ))}
           {renderCalendar()}
         </div>
-        <p className="mx-2 mt-4 text-zinc-400">
-          {message}
-          {/* 請選擇從今天起，未來三個月內的可用時間 */}
-        </p>
+        <p className="mx-2 mt-4 text-zinc-400">{message}</p>
       </div>
       <div className="flex flex-col">
         {/* 切換周的按鈕 */}
