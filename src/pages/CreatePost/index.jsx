@@ -12,6 +12,7 @@ import {
   coinsOptions,
   timePreferences,
 } from "./options";
+import TimeTable from "../../components/TimeTable";
 
 const customStyles = {
   control: (provided) => ({
@@ -90,7 +91,8 @@ function CreatePost() {
   };
 
   // 切換到下一月或前一月
-  const handleMonthChange = (direction) => {
+  const handleMonthChange = (e, direction) => {
+    e.preventDefault();
     dispatch({
       type: actionTypes.SET_CURRENT_MONTH,
       payload: new Date(
@@ -100,7 +102,8 @@ function CreatePost() {
   };
 
   // 切換到下一周或前一周
-  const handleWeekChange = (direction) => {
+  const handleWeekChange = (e, direction) => {
+    e.preventDefault();
     dispatch({
       type: actionTypes.SET_START_OF_WEEK,
       payload: new Date(
@@ -136,13 +139,6 @@ function CreatePost() {
         year: "numeric",
       });
     }
-    const options = {
-      weekday: "short",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    };
-    return date.toLocaleDateString("en-US", options);
   };
 
   const renderCalendar = () => {
@@ -252,6 +248,7 @@ function CreatePost() {
         title: "",
         type: "",
         category: null,
+        subcategories: [],
         skills: [],
         location: [],
         description: "",
@@ -262,7 +259,13 @@ function CreatePost() {
         referenceMaterial: "",
       }); // 重置表單
       dispatch({ type: "SET_SELECTED_TIMES", payload: {} }); // 重置 selectedTimes
+
+      // 重置日曆到今天的日期
+      const today = new Date();
+      dispatch({ type: actionTypes.SET_SELECTED_DATE, payload: today });
+      dispatch({ type: actionTypes.SET_START_OF_WEEK, payload: today });
     },
+
     onError: (error) => {
       console.error("Error saving post: ", error);
     },
@@ -291,7 +294,7 @@ function CreatePost() {
   if (error) return <div>Error loading categories</div>;
 
   return (
-    <div className="mx-24 mt-[60px] pt-8">
+    <div className="mx-24 mt-16 pt-8">
       <div className="h-auto outline">
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -466,128 +469,19 @@ function CreatePost() {
                 </div>
               </div>
             </div>
-
             <div className="mb-4 flex gap-1">
               <label className="mr-1 text-xl">學習時間</label>
-
-              {/* 日期選擇器 */}
-              <div className="mb-4 mr-12">
-                <div className="mx-2 flex items-center justify-between pb-4">
-                  <button onClick={() => handleMonthChange(-1)}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 19.5 8.25 12l7.5-7.5"
-                      />
-                    </svg>
-                  </button>
-                  <div>{formatDate(state.currentMonth, "MMM yyyy")}</div>
-                  <button onClick={() => handleMonthChange(1)}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <div className="grid grid-cols-7 gap-2">
-                  {["日", "一", "二", "三", "四", "五", "六"].map(
-                    (day, index) => (
-                      <div key={index} className="text-center font-bold">
-                        {day}
-                      </div>
-                    ),
-                  )}
-                  {renderCalendar()}
-                </div>
-                <p className="mx-2 mt-4 text-zinc-400">
-                  請選擇從今天起，未來三個月內的可用時間
-                </p>
-              </div>
-              <div className="flex flex-col">
-                {/* 切換周的按鈕 */}
-                <div className="mx-3 flex items-center justify-between pb-4">
-                  <button onClick={() => handleWeekChange(-1)}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 19.5 8.25 12l7.5-7.5"
-                      />
-                    </svg>
-                  </button>
-                  <div>
-                    {formatDate(state.startOfWeek, "MM-dd")} -{" "}
-                    {formatDate(
-                      new Date(
-                        state.startOfWeek.getTime() + 6 * 24 * 60 * 60 * 1000,
-                      ),
-                      "MM-dd",
-                    )}
-                  </div>
-                  <button onClick={() => handleWeekChange(1)}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* 顯示七天 */}
-                <div className="grid grid-cols-7 gap-3">
-                  {daysOfWeek.map((day) => (
-                    <div
-                      key={day}
-                      className="text-center font-semibold text-yellow-950"
-                    >
-                      <div>{formatDate(day, "EEE")}</div> {/* 星期 */}
-                      <div>{formatDate(day, "dd")}</div> {/* 日期 */}
-                    </div>
-                  ))}
-                </div>
-                {/* 時間段 */}
-                <div className="mt-1 grid grid-cols-7 gap-3">
-                  {daysOfWeek.map((day) => (
-                    <div key={day}>{renderTimeSlots(day)}</div>
-                  ))}
-                </div>
-              </div>
+              <TimeTable
+                state={state}
+                handleMonthChange={handleMonthChange}
+                handleWeekChange={handleWeekChange}
+                formatDate={formatDate}
+                renderCalendar={renderCalendar}
+                daysOfWeek={daysOfWeek}
+                renderTimeSlots={renderTimeSlots}
+                message="請選擇從今天起，未來三個月內的可用時間"
+              />
             </div>
-
             <div className="mb-3 flex h-10 items-center">
               <label className="mr-12 text-xl">介紹影片</label>
               <input
