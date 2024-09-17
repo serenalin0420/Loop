@@ -25,11 +25,11 @@ export const locations = [
 ];
 
 export const coursesNum = [
-  { value: "trial", label: "試教" },
-  { value: 1, label: "1堂" },
-  { value: 3, label: "3堂" },
-  { value: 5, label: "5堂" },
-  { value: 10, label: "10堂" },
+  { value: "試教", label: "試教" },
+  { value: "1", label: "1堂" },
+  { value: "3", label: "3堂" },
+  { value: "5", label: "5堂" },
+  { value: "10", label: "10堂" },
 ];
 
 export const coinsOptions = [

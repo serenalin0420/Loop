@@ -4,6 +4,7 @@ import dbApi from "../../utils/api";
 import Introduction from "./Introduction";
 import TimeTable from "../../components/TimeTable";
 import { initialState, actionTypes, reducer } from "../../context/postReducer";
+import CourseSelection from "./CourseSelection";
 
 function Post() {
   const { postId } = useParams();
@@ -209,7 +210,7 @@ function Post() {
   return (
     <div className="mx-8 mt-16">
       <Introduction post={post} category={category} author={author} />
-      <div className="mt-8 flex w-5/6 flex-col">
+      <div className="mt-8 flex w-5/6 flex-col rounded-b-lg shadow-md">
         <div className="flex h-12 w-full items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
           學習時間表
         </div>
@@ -227,6 +228,8 @@ function Post() {
           />
         </div>
       </div>
+
+      <CourseSelection post={post} />
     </div>
   );
 }

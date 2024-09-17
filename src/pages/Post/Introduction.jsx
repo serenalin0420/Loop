@@ -30,7 +30,7 @@ const Introduction = ({ post, category, author }) => {
 
       <div className="mb-4 ml-8 flex items-center">
         <h3 className="mr-11">專長 </h3>
-        {post.skills.map((skill, index) => (
+        {(post.skills ?? []).map((skill, index) => (
           <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
             {skill}
           </p>
@@ -38,7 +38,7 @@ const Introduction = ({ post, category, author }) => {
       </div>
       <div className="mb-4 ml-8 flex items-center">
         <h3 className="mr-11">時間 </h3>
-        {post.time_preference.map((time, index) => (
+        {(post.time_preference ?? []).map((time, index) => (
           <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
             {time}
           </p>
@@ -46,7 +46,7 @@ const Introduction = ({ post, category, author }) => {
       </div>
       <div className="mb-4 ml-8 flex items-center">
         <h3 className="mr-11">地點 </h3>
-        {post.location.map((location, index) => (
+        {(post.location ?? []).map((location, index) => (
           <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
             {location}
           </p>
