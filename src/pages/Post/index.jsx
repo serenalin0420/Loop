@@ -1,47 +1,44 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import dbApi from "../../utils/api";
+import Introduction from "./Introduction";
 
 function Post() {
-  const [post, setPost] = useState({});
+  const { postId } = useParams();
+  const [post, setPost] = useState();
+  const [category, setCategory] = useState("");
+  const [author, setAuthor] = useState();
 
   useEffect(() => {
     const fetchPost = async () => {
-      // "rPw8fIV4NqJk9b4RNNcl"要改成postId 這裡應該是從URL直接抓 依變項也要改[postId]
-      const postData = await dbApi.getPosts("rPw8fIV4NqJk9b4RNNcl");
-      setPost(postData);
+      try {
+        const postData = await dbApi.getPosts(postId);
+        setPost(postData);
+
+        if (postData.category_id) {
+          const categoryData = await dbApi.getPostCategory(
+            postData.category_id,
+          );
+          setCategory(categoryData.name);
+        }
+
+        if (postData.author_uid) {
+          const authorData = await dbApi.getProfile(postData.author_uid);
+          setAuthor(authorData);
+        }
+      } catch (error) {
+        console.error("Error fetching post:", error);
+      }
     };
 
     fetchPost();
-  }, []);
-  console.log(post);
+  }, [postId]);
 
-  if (!post) return <div>加載中...</div>;
+  if (!post || !author) return <div>加載中...</div>;
 
   return (
-    <div className="mt-[60px]">
-      <h1>{post.title}</h1>
-      <p>Category: {post.category_id}</p>
-      <p>Location: {post.location}</p>
-      <p>Time Preferences: {post.time_preference}</p>
-      <p>Coin Cost: {post.coin_cost}</p>
-      <h3>Available Date and Time Slots:</h3>
-      <ul>
-        {/* 確認 post.datetime 存在 */}
-        {post.datetime ? (
-          Object.entries(post.datetime).map(([date, times]) => (
-            <li key={date}>
-              <strong>{date}</strong>:
-              {Object.entries(times).map(([time, available]) => (
-                <span key={time}>
-                  {time}: {available ? "Available" : "Not Available"} &nbsp;
-                </span>
-              ))}
-            </li>
-          ))
-        ) : (
-          <li>No available time slots</li> // Handle case where datetime is undefined or null
-        )}
-      </ul>
+    <div className="mx-8 mt-16">
+      <Introduction post={post} category={category} author={author} />
     </div>
   );
 }
