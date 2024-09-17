@@ -5,55 +5,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import dbApi from "../../utils/api";
 import { useReducer, useEffect, useContext } from "react";
 import { UserContext } from "@/context/userContext";
-
-const locations = [
-  { value: "online", label: "線上" },
-  { value: "taipei", label: "台北市" },
-  { value: "new_taipei_city", label: "新北市" },
-  { value: "keelung", label: "基隆市" },
-  { value: "yilan", label: "宜蘭縣" },
-  { value: "taoyuan", label: "桃園市" },
-  { value: "hsinchu_city", label: "新竹市" },
-  { value: "hsinchu_ounty", label: "新竹縣" },
-  { value: "miaoli", label: "苗栗縣" },
-  { value: "taichung", label: "台中市" },
-  { value: "changhua", label: "彰化縣" },
-  { value: "nantou", label: "南投縣" },
-  { value: "yunlin", label: "雲林縣" },
-  { value: "chiayi_county", label: "嘉義縣" },
-  { value: "chiayi_city", label: "嘉義市" },
-  { value: "tainan", label: "台南市" },
-  { value: "kaohsiung", label: "高雄市" },
-  { value: "pingtung", label: "屏東縣" },
-  { value: "penghu", label: "澎湖縣" },
-  { value: "hualien", label: "花蓮縣" },
-  { value: "taitung", label: "台東縣" },
-  { value: "kinmen", label: "金門縣" },
-  { value: "lienchiang", label: "連江縣" },
-];
-
-const timePreferences = [
-  { value: "weekday_day", label: "平日/白天" },
-  { value: "weekday_night", label: "平日/晚上" },
-  { value: "weekend_day", label: "周末/白天" },
-  { value: "weekend_night", label: "周末/晚上" },
-];
-
-const coursesNum = [
-  { value: "trial", label: "試教" },
-  { value: 1, label: "1堂" },
-  { value: 3, label: "3堂" },
-  { value: 5, label: "5堂" },
-  { value: 10, label: "10堂" },
-];
-
-const coinsOptions = [
-  { value: 1, label: "1枚" },
-  { value: 2, label: "2枚" },
-  { value: 3, label: "3枚" },
-  { value: 4, label: "4枚" },
-  { value: 5, label: "5枚" },
-];
+import { initialState, actionTypes, reducer } from "../../context/postReducer";
+import {
+  locations,
+  coursesNum,
+  coinsOptions,
+  timePreferences,
+} from "./options";
 
 const customStyles = {
   control: (provided) => ({
@@ -75,51 +33,6 @@ const customStyles = {
   }),
 };
 
-const initialState = {
-  subcategories: [],
-  skills: [],
-  selectedCategory: null,
-  selectedDate: new Date(),
-  startOfWeek: new Date(),
-  currentMonth: new Date(),
-  selectedTimes: {},
-  userProfile: undefined,
-};
-
-const actionTypes = {
-  SET_SUBCATEGORIES: "SET_SUBCATEGORIES",
-  SET_SKILLS: "SET_SKILLS",
-  SET_SELECTED_CATEGORY: "SET_SELECTED_CATEGORY",
-  SET_SELECTED_DATE: "SET_SELECTED_DATE",
-  SET_START_OF_WEEK: "SET_START_OF_WEEK",
-  SET_CURRENT_MONTH: "SET_CURRENT_MONTH",
-  SET_SELECTED_TIMES: "SET_SELECTED_TIMES",
-  SET_USER_PROFILE: "SET_USER_PROFILE",
-};
-
-const reducer = (state, action) => {
-  switch (action.type) {
-    case actionTypes.SET_SUBCATEGORIES:
-      return { ...state, subcategories: action.payload };
-    case actionTypes.SET_SKILLS:
-      return { ...state, skills: action.payload };
-    case actionTypes.SET_SELECTED_CATEGORY:
-      return { ...state, selectedCategory: action.payload };
-    case actionTypes.SET_SELECTED_DATE:
-      return { ...state, selectedDate: action.payload };
-    case actionTypes.SET_START_OF_WEEK:
-      return { ...state, startOfWeek: action.payload };
-    case actionTypes.SET_CURRENT_MONTH:
-      return { ...state, currentMonth: action.payload };
-    case actionTypes.SET_SELECTED_TIMES:
-      return { ...state, selectedTimes: action.payload };
-    case actionTypes.SET_USER_PROFILE:
-      return { ...state, userProfile: action.payload };
-    default:
-      return state;
-  }
-};
-
 function CreatePost() {
   const user = useContext(UserContext);
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -139,6 +52,7 @@ function CreatePost() {
     handleSubmit,
     control,
     setValue,
+    reset,
     formState: { errors },
   } = useForm();
 
@@ -334,6 +248,20 @@ function CreatePost() {
     mutationFn: (postData) => dbApi.savePostToDatabase(postData), // 確保這裡的函數定義正確
     onSuccess: () => {
       console.log("Post saved successfully!");
+      reset({
+        title: "",
+        type: "",
+        category: null,
+        skills: [],
+        location: [],
+        description: "",
+        timePreferences: [],
+        coins: null,
+        coursesNum: [],
+        introVideo: "",
+        referenceMaterial: "",
+      }); // 重置表單
+      dispatch({ type: "SET_SELECTED_TIMES", payload: {} }); // 重置 selectedTimes
     },
     onError: (error) => {
       console.error("Error saving post: ", error);
@@ -346,7 +274,9 @@ function CreatePost() {
       type: data.type,
       author_uid: user.uid,
       category_id: data.category?.value,
+      skills: data.skills?.map((skill) => skill.value),
       location: data.location?.map((loc) => loc.label), // 只存儲 label
+      description: data.description,
       time_preference: data.timePreferences?.map((pref) => pref.label),
       coin_cost: data.coins?.value,
       course_num: data.coursesNum?.map((num) => num.value),
@@ -354,7 +284,6 @@ function CreatePost() {
       video_url: data.introVideo,
       attachment_url: data.referenceMaterial,
     };
-
     mutation.mutate(postData);
   };
 
@@ -461,7 +390,6 @@ function CreatePost() {
                 )}
               />
             </div>
-
             <div className="mb-3 flex h-10 items-center">
               <label className="mr-12 text-xl">地點</label>
               <Controller
@@ -474,6 +402,7 @@ function CreatePost() {
                     isMulti
                     className="basic-multi-select min-w-60"
                     classNamePrefix="select"
+                    components={makeAnimated()}
                     styles={customStyles}
                   />
                 )}
@@ -515,7 +444,7 @@ function CreatePost() {
                     control={control}
                     rules={{
                       validate: (value) =>
-                        value?.length >= 3 && value.length <= 4,
+                        value?.length >= 3 && value?.length <= 4,
                     }}
                     render={({ field }) => (
                       <Select
