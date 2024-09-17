@@ -31,6 +31,22 @@ const dbApi = {
     }
   },
 
+  async getPostCategory(categoryId) {
+    try {
+      const categoryRef = doc(db, "categories", categoryId);
+      const categorySnapshot = await getDoc(categoryRef);
+
+      if (categorySnapshot.exists()) {
+        return categorySnapshot.data();
+      } else {
+        console.log("No such category!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching category:", error);
+      throw error;
+    }
+  },
   async savePostToDatabase(postData) {
     try {
       const docRef = await addDoc(collection(db, "posts"), {});
