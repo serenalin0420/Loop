@@ -21,8 +21,8 @@ createRoot(document.getElementById("root")).render(
             <Route path="/" element={<App />}>
               <Route index element={<Home />} />
               <Route path="login" element={<Login />} />
-              {/* 只有登入的才能申請課程  path="posts/:id"  */}
-              <Route path="posts" element={<Post />} />
+              {/* 只有登入的才能申請課程 */}
+              <Route path="post/:postId" element={<Post />} />
               {/* 發布貼文isLogin */}
               <Route path="create-post" element={<CreatePost />} />
               {/* profile需要做role自己or其他人判斷 */}
