@@ -167,7 +167,34 @@ function Post() {
     return date;
   });
 
-  const renderTimeSlots = (day) => {
+  const handleTimeSlotClick = (date, time) => {
+    const dateString = formatDate(date, "yyyy-MM-dd");
+    const selectedTimesForDate = state.selectedTimes[dateString] || {};
+
+    // 檢查該時間段是否已經被選取
+    const isSelected = selectedTimesForDate[time];
+
+    // 如果已經被選取，則移除該時間段；否則，添加該時間段
+    const updatedTimesForDate = {
+      ...selectedTimesForDate,
+      [time]: isSelected ? undefined : true,
+    };
+
+    // 移除值為 undefined 的鍵
+    if (isSelected) {
+      delete updatedTimesForDate[time];
+    }
+
+    dispatch({
+      type: actionTypes.SET_SELECTED_TIMES,
+      payload: {
+        ...state.selectedTimes,
+        [dateString]: updatedTimesForDate,
+      },
+    });
+  };
+
+  const renderTimeSlots = (day, isSelectable) => {
     const dateKey = formatDate(day, "yyyy-MM-dd");
     const timeSlots = post.datetime[dateKey] || {};
 
@@ -176,20 +203,13 @@ function Post() {
         {Object.keys(timeSlots).length > 0 ? (
           Object.keys(timeSlots).map((time) => {
             const isAvailable = timeSlots[time];
+            const isSelected = state.selectedTimes[dateKey]?.[time]; // 檢查是否被選取
             return (
               <div
                 key={time}
-                className={`mt-1 flex w-full cursor-pointer flex-col px-3 py-1 text-center ${
-                  isAvailable
-                    ? "font-semibold text-yellow-800"
-                    : "text-zinc-400"
-                }`}
+                className={`mt-1 flex w-full cursor-pointer flex-col px-3 py-1 text-center ${isAvailable ? "font-semibold text-yellow-800" : "text-zinc-400"} ${isSelected ? "bg-yellow-300" : ""}`}
                 onClick={() =>
-                  isAvailable &&
-                  dispatch({
-                    type: actionTypes.SET_SELECTED_TIMES,
-                    payload: { date: dateKey, time },
-                  })
+                  isAvailable && isSelectable && handleTimeSlotClick(day, time)
                 }
               >
                 {time}
@@ -223,13 +243,22 @@ function Post() {
             formatDate={formatDate}
             renderCalendar={renderCalendar}
             daysOfWeek={daysOfWeek}
-            renderTimeSlots={renderTimeSlots}
-            message="請選擇您方便的時間"
+            renderTimeSlots={(day) => renderTimeSlots(day, false)} // 不可選擇
+            message="請選擇您方便的時間，最多可見未來三個月的時間"
           />
         </div>
       </div>
 
-      <CourseSelection post={post} />
+      <CourseSelection
+        post={post}
+        author={author}
+        handleMonthChange={handleMonthChange}
+        handleWeekChange={handleWeekChange}
+        formatDate={formatDate}
+        renderCalendar={renderCalendar}
+        daysOfWeek={daysOfWeek}
+        renderTimeSlots={(day) => renderTimeSlots(day, true)} // 可選擇
+      />
     </div>
   );
 }
