@@ -2,7 +2,8 @@ import PropTypes from "prop-types";
 import coin from "./coin.svg";
 import { useReducer, useState } from "react";
 import TimeTable from "../../components/TimeTable";
-import { initialState, reducer } from "../../context/postReducer";
+import { initialState, reducer, actionTypes } from "../../context/postReducer";
+import dbApi from "@/utils/api";
 
 const CourseSelection = ({
   post,
@@ -12,7 +13,6 @@ const CourseSelection = ({
   formatDate,
   renderCalendar,
   daysOfWeek,
-  renderTimeSlots,
 }) => {
   const [showModal, setShowModal] = useState(false);
   // 新增一個單獨的狀態來管理 modal 的 timetable
@@ -21,9 +21,11 @@ const CourseSelection = ({
   const [selectedCoinCost, setSelectedCoinCost] = useState();
 
   const order = ["試教", "1", "3", "5", "10"];
-  const sortedCourseNum = post.course_num.sort((a, b) => {
-    return order.indexOf(a) - order.indexOf(b);
-  });
+  const sortedCourseNum = post.course_num
+    ? post.course_num.sort((a, b) => {
+        return order.indexOf(a) - order.indexOf(b);
+      })
+    : [];
 
   const getDisplayText = (num) => {
     switch (num) {
@@ -41,7 +43,96 @@ const CourseSelection = ({
         return `${num} 堂 / 未知時間`;
     }
   };
-  console.log(selectedCourse);
+  const handleTimeSlotClick = (date, time) => {
+    const dateString = formatDate(date, "yyyy-MM-dd");
+    const selectedTimesForDate = modalState.selectedTimes[dateString] || {};
+
+    // 檢查該時間段是否已經被選取
+    const isSelected = selectedTimesForDate[time];
+
+    const updatedTimesForDate = {
+      ...selectedTimesForDate,
+      [time]: !isSelected,
+    };
+
+    modalDispatch({
+      type: actionTypes.SET_SELECTED_TIMES,
+      payload: {
+        ...modalState.selectedTimes,
+        [dateString]: updatedTimesForDate,
+      },
+    });
+  };
+
+  const renderTimeSlots = (day) => {
+    const dateKey = formatDate(day, "yyyy-MM-dd");
+    const timeSlots = post.datetime[dateKey] || {};
+
+    return (
+      <div className="flex flex-col items-center">
+        {Object.keys(timeSlots).length > 0 ? (
+          Object.keys(timeSlots).map((time) => {
+            const isAvailable = timeSlots[time];
+            const isSelected = modalState.selectedTimes[dateKey]?.[time]; // 檢查是否被選取
+            return (
+              <div
+                key={time}
+                className={`mt-1 flex w-full cursor-pointer flex-col px-3 py-1 text-center ${isAvailable ? "font-semibold text-yellow-800" : "text-zinc-400"} ${isSelected ? "bg-yellow-300" : ""}`}
+                onClick={() => isAvailable && handleTimeSlotClick(day, time)}
+              >
+                {time}
+              </div>
+            );
+          })
+        ) : (
+          <div className="mt-1 flex w-full cursor-pointer flex-col px-3 py-1 text-center text-zinc-400">
+            無
+          </div>
+        )}
+      </div>
+    );
+  };
+  const handleConfirm = async () => {
+    try {
+      const updatedTimes = Object.keys(modalState.selectedTimes).reduce(
+        (acc, date) => {
+          const timesForDate = modalState.selectedTimes[date];
+          const updatedTimesForDate = Object.keys(timesForDate).reduce(
+            (timeAcc, time) => {
+              if (timesForDate[time]) {
+                timeAcc[time] = false; // 只有選中的時間才更新為 false
+              }
+              return timeAcc;
+            },
+            {},
+          );
+          if (Object.keys(updatedTimesForDate).length > 0) {
+            acc[date] = updatedTimesForDate;
+          }
+          return acc;
+        },
+        {},
+      );
+
+      await dbApi.updatePost(post.post_id, {
+        datetime: {
+          ...post.datetime,
+          ...updatedTimes,
+        },
+      });
+
+      // 清空選取的時間
+      modalDispatch({
+        type: actionTypes.SET_SELECTED_TIMES,
+        payload: {},
+      });
+
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error updating post:", error);
+    }
+  };
+
   return (
     <div className="mt-8 w-5/6">
       <h1 className="mb-4 text-center text-2xl">上課需求</h1>
@@ -56,7 +147,7 @@ const CourseSelection = ({
               onClick={() => {
                 setShowModal(true);
                 setSelectedCourse(num);
-                setSelectedCoinCost(coinCost);
+                setSelectedCoinCost(coinCost); // 設置選取的 coinCost
               }}
             >
               <img src={coin} alt="coin" className="size-16 object-cover" />
@@ -121,24 +212,33 @@ const CourseSelection = ({
               </button>
             </div>
 
-            <div className="mt-2 flex flex-col rounded-b-lg shadow-md">
-              <div className="flex h-12 w-full items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
-                學習時間表
+            <div className="mt-2 flex gap-8">
+              <div className="flex flex-col rounded-b-lg shadow-md">
+                <div className="flex h-12 w-full items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+                  學習時間表
+                </div>
+                <div className="m-6 flex justify-center">
+                  <TimeTable
+                    post={post}
+                    state={modalState}
+                    dispatch={modalDispatch}
+                    handleMonthChange={handleMonthChange}
+                    handleWeekChange={handleWeekChange}
+                    formatDate={formatDate}
+                    renderCalendar={renderCalendar}
+                    daysOfWeek={daysOfWeek}
+                    renderTimeSlots={renderTimeSlots}
+                    message="請選擇您方便的時間"
+                  />
+                </div>
               </div>
-              <div className="m-6 flex justify-center">
-                <TimeTable
-                  post={post}
-                  state={modalState}
-                  dispatch={modalDispatch}
-                  handleMonthChange={handleMonthChange}
-                  handleWeekChange={handleWeekChange}
-                  formatDate={formatDate}
-                  renderCalendar={renderCalendar}
-                  daysOfWeek={daysOfWeek}
-                  renderTimeSlots={renderTimeSlots}
-                  message="請選擇您方便的時間"
-                />
-              </div>
+
+              <button
+                className="mt-4 self-end rounded bg-blue-500 px-4 py-2 text-white"
+                onClick={handleConfirm}
+              >
+                確認
+              </button>
             </div>
           </div>
         </div>
@@ -146,11 +246,14 @@ const CourseSelection = ({
     </div>
   );
 };
+
 CourseSelection.propTypes = {
   post: PropTypes.shape({
+    post_id: PropTypes.string.isRequired,
     coin_cost: PropTypes.number.isRequired,
     course_num: PropTypes.arrayOf(PropTypes.string),
     title: PropTypes.string.isRequired,
+    datetime: PropTypes.object.isRequired,
   }).isRequired,
   author: PropTypes.shape({
     name: PropTypes.string,
@@ -161,7 +264,6 @@ CourseSelection.propTypes = {
   formatDate: PropTypes.func.isRequired,
   renderCalendar: PropTypes.func.isRequired,
   daysOfWeek: PropTypes.array.isRequired,
-  renderTimeSlots: PropTypes.func.isRequired,
 };
 
 export default CourseSelection;

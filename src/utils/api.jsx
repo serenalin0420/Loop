@@ -132,6 +132,15 @@ const dbApi = {
       throw error;
     }
   },
+  async updatePost(postId, updatedData) {
+    try {
+      const postRef = doc(db, "posts", postId);
+      await setDoc(postRef, updatedData, { merge: true });
+      console.log("Document successfully updated!");
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  },
 };
 
 export default dbApi;

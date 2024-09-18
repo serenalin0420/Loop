@@ -13,7 +13,7 @@ const TimeTable = ({
   return (
     <>
       {/* 日期選擇器 */}
-      <div className="mb-4 mr-12">
+      <div className="mb-4 mr-8">
         <div className="mx-2 flex items-center justify-between pb-4">
           <button onClick={(e) => handleMonthChange(e, -1)}>
             <svg
@@ -57,7 +57,7 @@ const TimeTable = ({
           ))}
           {renderCalendar()}
         </div>
-        <p className="mx-2 mt-4 text-zinc-400">{message}</p>
+        <p className="mx-2 mt-4 text-sm text-zinc-400">{message}</p>
       </div>
       <div className="flex flex-col">
         {/* 切換周的按鈕 */}
