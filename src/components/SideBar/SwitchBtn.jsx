@@ -11,7 +11,18 @@ function SwitchBtn() {
 
   return (
     <div className="flex h-1/6 flex-col items-center rounded-lg px-8 py-5 shadow-md">
-      <h2 className="text-center text-lg font-bold">技能學習區</h2>
+      <h2 className="text-center text-lg font-bold">
+        {isProviderView ? (
+          <>
+            空有技能 <br /> 卻無法施展嗎?
+          </>
+        ) : (
+          <>
+            想學什麼技能? <br />
+            快來看看!
+          </>
+        )}
+      </h2>
       <img src={tamtam} className="w-44" />
       <div className="flex w-40 justify-center rounded-full bg-[#BFAA87] p-2">
         <button
