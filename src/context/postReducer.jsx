@@ -1,5 +1,5 @@
 export const initialState = {
-  subcategories: [],
+  subcategories: null,
   skills: [],
   selectedCategory: null,
   selectedDate: new Date(),

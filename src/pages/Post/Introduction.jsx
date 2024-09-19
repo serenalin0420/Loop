@@ -24,17 +24,22 @@ const Introduction = ({ post, category, author }) => {
 
       <div className="mb-4 ml-8 flex items-center">
         <h3 className="mr-11">類別 </h3>
-        <p className="rounded-md bg-slate-200 px-3 py-1">{category}</p>
+        <p className="mr-3 rounded-md bg-slate-200 px-3 py-1">{category}</p>
+        <p className="rounded-md bg-slate-200 px-3 py-1">
+          {post.subcategories}
+        </p>
       </div>
 
-      <div className="mb-4 ml-8 flex items-center">
-        <h3 className="mr-11">專長 </h3>
-        {(post.skills ?? []).map((skill, index) => (
-          <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
-            {skill}
-          </p>
-        ))}
-      </div>
+      {post.type !== "發起學習" && (
+        <div className="mb-4 ml-8 flex items-center">
+          <h3 className="mr-11">專長 </h3>
+          {(post.skills ?? []).map((skill, index) => (
+            <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
+              {skill}
+            </p>
+          ))}
+        </div>
+      )}
       <div className="mb-4 ml-8 flex items-center">
         <h3 className="mr-11">時間 </h3>
         {(post.time_preference ?? []).map((time, index) => (
@@ -66,6 +71,8 @@ Introduction.propTypes = {
     time_preference: PropTypes.arrayOf(PropTypes.string),
     location: PropTypes.arrayOf(PropTypes.string),
     description: PropTypes.string,
+    type: PropTypes.oneOf(["發起學習", "發布教學"]).isRequired,
+    subcategories: PropTypes.string,
   }).isRequired,
   category: PropTypes.string.isRequired,
   author: PropTypes.shape({
