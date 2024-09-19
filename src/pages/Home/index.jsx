@@ -95,12 +95,12 @@ function Home() {
                   className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
                 >
                   發布教學
-                </Link>{" "}
+                </Link>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {sortedPosts
-                .filter((post) => post.type === "發起學習")
+                .filter((post) => post.type === "發布教學")
                 .map((post) => (
                   <Link
                     to={`/post/${post.id}`}

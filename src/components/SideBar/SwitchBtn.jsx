@@ -1,12 +1,14 @@
 import tamtam from "./tamtam.svg";
 import { useContext } from "react";
 import { ViewContext } from "../../context/viewContext";
+import PropTypes from "prop-types";
 
-function SwitchBtn() {
+function SwitchBtn({ onSwitch = () => {} }) {
   const { isProviderView, setIsProviderView } = useContext(ViewContext);
 
   const handleSwitch = (view) => {
-    setIsProviderView(view); // 修改全局狀態
+    setIsProviderView(view);
+    onSwitch();
   };
 
   return (
@@ -45,5 +47,9 @@ function SwitchBtn() {
     </div>
   );
 }
+
+SwitchBtn.propTypes = {
+  onSwitch: PropTypes.func,
+};
 
 export default SwitchBtn;

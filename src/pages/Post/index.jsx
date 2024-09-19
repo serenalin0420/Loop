@@ -6,6 +6,7 @@ import TimeTable from "../../components/TimeTable";
 import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import CourseSelection from "./CourseSelection";
 import SwitchBtn from "@/components/SideBar/SwitchBtn";
+import { useNavigate } from "react-router-dom";
 
 function Post() {
   const { postId } = useParams();
@@ -13,6 +14,12 @@ function Post() {
   const [category, setCategory] = useState("");
   const [author, setAuthor] = useState();
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  const navigate = useNavigate();
+
+  const handleSwitch = () => {
+    navigate("/");
+  };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -200,7 +207,7 @@ function Post() {
 
   return (
     <div className="mx-8 mt-20 flex justify-center gap-6">
-      <SwitchBtn />
+      <SwitchBtn onSwitch={handleSwitch} />
       <div className="w-3/4">
         <Introduction post={post} category={category} author={author} />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
