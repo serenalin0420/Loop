@@ -153,6 +153,24 @@ const dbApi = {
       console.error("Error updating document: ", error);
     }
   },
+
+  async createBooking(bookingData) {
+    try {
+      const docRef = await addDoc(collection(db, "bookings"), {});
+      const bookingId = docRef.id;
+
+      const bookingDataWithId = {
+        ...bookingData,
+        booking_id: bookingId,
+        created_time: serverTimestamp(),
+      };
+
+      await setDoc(docRef, bookingDataWithId);
+      console.log("Data successfully written with ID: ", bookingId);
+    } catch (error) {
+      console.error("Error writing document: ", error);
+    }
+  },
 };
 
 export default dbApi;

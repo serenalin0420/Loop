@@ -1,9 +1,11 @@
 import PropTypes from "prop-types";
 import coin from "../../components/coin.svg";
-import { useReducer, useState } from "react";
+import { useReducer, useState, useContext } from "react";
 import TimeTable from "../../components/TimeTable";
 import { initialState, reducer, actionTypes } from "../../context/postReducer";
 import dbApi from "@/utils/api";
+import { ViewContext } from "../../context/viewContext";
+import { UserContext } from "../../context/userContext";
 
 const CourseSelection = ({
   post,
@@ -20,6 +22,11 @@ const CourseSelection = ({
   const [selectedCoinCost, setSelectedCoinCost] = useState();
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const { isProviderView } = useContext(ViewContext);
+  const user = useContext(UserContext);
+
+  console.log("isProviderView", isProviderView);
 
   const order = ["體驗", "1", "3", "5", "10"];
   const sortedCourseNum = post.course_num
@@ -122,6 +129,16 @@ const CourseSelection = ({
       );
       return;
     }
+
+    const bookingData = {
+      post_id: post.post_id,
+      demander_uid: isProviderView ? post.author_uid : user.uid,
+      provider_uid: isProviderView ? user.uid : post.author_uid,
+      selected_times: selectedTimes.map(formatSelectedTime),
+      status: "pending",
+      coins_total: selectedCoinCost,
+    };
+
     try {
       const updatedTimes = Object.keys(modalState.selectedTimes).reduce(
         (acc, date) => {
@@ -150,6 +167,8 @@ const CourseSelection = ({
           ...updatedTimes,
         },
       });
+
+      await dbApi.createBooking(bookingData);
 
       modalDispatch({
         type: actionTypes.SET_SELECTED_TIMES,
