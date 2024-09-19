@@ -13,6 +13,7 @@ import {
   timePreferences,
 } from "./options";
 import TimeTable from "../../components/TimeTable";
+import { useLocation } from "react-router-dom";
 
 const customStyles = {
   control: (provided) => ({
@@ -37,6 +38,14 @@ const customStyles = {
 function CreatePost() {
   const user = useContext(UserContext);
   const [state, dispatch] = useReducer(reducer, initialState);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const view = queryParams.get("view");
+  const introductionPlaceholder =
+    view === "student"
+      ? "為什麼想學這個技能? \n多描述你的動機和規劃，讓別人主動來找你交流吧!"
+      : "介紹一下你擁有的能力吧! \n多描述你的經驗和技能，讓別人主動來找你交流吧!";
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user && user.uid) {
@@ -86,7 +95,7 @@ function CreatePost() {
       type: actionTypes.SET_SKILLS,
       payload: selectedOption ? selectedOption.skills : [],
     });
-    setValue("subcategories", []);
+    setValue("subcategories", null);
     setValue("skills", []);
   };
 
@@ -274,9 +283,10 @@ function CreatePost() {
   const onSubmit = (data) => {
     const postData = {
       title: data.title,
-      type: data.type,
+      type: view === "student" ? "發起學習" : "發布教學",
       author_uid: user.uid,
       category_id: data.category?.value,
+      subcategories: data.subcategories?.value || null,
       skills: data.skills?.map((skill) => skill.value),
       location: data.location?.map((loc) => loc.label), // 只存儲 label
       description: data.description,
@@ -344,37 +354,42 @@ function CreatePost() {
                       <Select
                         className="w-36 min-w-32"
                         {...field}
-                        options={state.subcategories.map((sub) => ({
+                        options={(state.subcategories || []).map((sub) => ({
                           value: sub,
                           label: sub,
                         }))}
+                        onChange={(selectedOption) => {
+                          field.onChange(selectedOption);
+                          setValue("subcategories", selectedOption);
+                        }}
                       />
                     )}
                   />
                 </div>
               </div>
-
-              <div className="mb-3 flex h-10 items-center">
-                <label className="mr-12 text-xl">專長</label>
-                <Controller
-                  name="skills"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      options={state.skills?.map((skill) => ({
-                        value: skill,
-                        label: skill,
-                      }))}
-                      isMulti
-                      components={makeAnimated()}
-                      className="basic-multi-select min-w-60"
-                      classNamePrefix="select"
-                      styles={customStyles}
-                    />
-                  )}
-                />
-              </div>
+              {view !== "student" && (
+                <div className="mb-3 flex h-10 items-center">
+                  <label className="mr-12 text-xl">專長</label>
+                  <Controller
+                    name="skills"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        options={state.skills?.map((skill) => ({
+                          value: skill,
+                          label: skill,
+                        }))}
+                        isMulti
+                        components={makeAnimated()}
+                        className="basic-multi-select min-w-60"
+                        classNamePrefix="select"
+                        styles={customStyles}
+                      />
+                    )}
+                  />
+                </div>
+              )}
             </div>
             <div className="mb-3 flex h-10 items-center">
               <label className="mr-2 text-xl">時間偏好</label>
@@ -416,8 +431,8 @@ function CreatePost() {
               <label className="mr-12 text-xl">介紹</label>
               <textarea
                 {...register("description", { required: true })}
-                className="min-h-24 w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
-                placeholder="介紹一下這則文章的內容吧~"
+                className="min-h-24 w-2/5 min-w-96 bg-slate-100 px-3 py-2"
+                placeholder={introductionPlaceholder}
               />
               {errors.description && <span>必填</span>}
             </div>
@@ -482,23 +497,26 @@ function CreatePost() {
                 message="請選擇從今天起，未來三個月內的可用時間"
               />
             </div>
-            <div className="mb-3 flex h-10 items-center">
-              <label className="mr-12 text-xl">介紹影片</label>
-              <input
-                {...register("introVideo")}
-                className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
-                placeholder="請提供影片連結"
-              />
-            </div>
-
-            <div className="mb-3 flex h-10 items-center">
-              <label className="mr-12 text-xl">參考教材</label>
-              <input
-                {...register("referenceMaterial")}
-                className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
-                placeholder="請提供雲端連結"
-              />
-            </div>
+            {view !== "student" && (
+              <div className="mb-3 flex h-10 items-center">
+                <label className="mr-12 text-xl">介紹影片</label>
+                <input
+                  {...register("introVideo")}
+                  className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
+                  placeholder="請提供影片連結"
+                />
+              </div>
+            )}
+            {view !== "student" && (
+              <div className="mb-3 flex h-10 items-center">
+                <label className="mr-12 text-xl">參考教材</label>
+                <input
+                  {...register("referenceMaterial")}
+                  className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
+                  placeholder="請提供雲端連結"
+                />
+              </div>
+            )}
             <div className="flex justify-center">
               <button
                 type="submit"
