@@ -3,7 +3,7 @@ import StarRating from "../../components/StarRating";
 
 const Introduction = ({ post, category, author }) => {
   return (
-    <div className="w-5/6 rounded-lg p-4 shadow-md">
+    <div className="rounded-lg p-4 shadow-md">
       <div className="flex items-center gap-2">
         <div className="m-2.5 h-20 w-20 overflow-hidden rounded-full">
           <img

@@ -5,6 +5,7 @@ import Introduction from "./Introduction";
 import TimeTable from "../../components/TimeTable";
 import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import CourseSelection from "./CourseSelection";
+import SwitchBtn from "@/components/SideBar/SwitchBtn";
 
 function Post() {
   const { postId } = useParams();
@@ -16,7 +17,7 @@ function Post() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const postData = await dbApi.getPosts(postId);
+        const postData = await dbApi.getSinglePost(postId);
         setPost(postData);
 
         if (postData.category_id) {
@@ -142,7 +143,7 @@ function Post() {
       calendarDays.push(
         <div
           key={day}
-          className={`cursor-pointer px-3 py-2 text-center ${date.toDateString() === state.selectedDate.toDateString() ? "rounded-full border border-yellow-950" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
+          className={`cursor-pointer px-2 py-2 text-center ${date.toDateString() === state.selectedDate.toDateString() ? "rounded-full border border-yellow-950" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
           onClick={() => {
             if (!isDisabled) {
               dispatch({ type: actionTypes.SET_SELECTED_DATE, payload: date });
@@ -198,37 +199,40 @@ function Post() {
   if (!post || !author) return <div>加載中...</div>;
 
   return (
-    <div className="mx-8 mt-16">
-      <Introduction post={post} category={category} author={author} />
-      <div className="mt-8 flex w-5/6 flex-col rounded-b-lg shadow-md">
-        <div className="flex h-12 w-full items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
-          學習時間表
+    <div className="mx-8 mt-20 flex justify-center gap-6">
+      <SwitchBtn />
+      <div className="w-3/4">
+        <Introduction post={post} category={category} author={author} />
+        <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
+          <div className="flex h-12 items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+            學習時間表
+          </div>
+          <div className="mx-4 my-6 flex justify-center gap-4">
+            <TimeTable
+              post={post}
+              state={state}
+              handleMonthChange={handleMonthChange}
+              handleWeekChange={handleWeekChange}
+              formatDate={formatDate}
+              renderCalendar={renderCalendar}
+              daysOfWeek={daysOfWeek}
+              renderTimeSlots={(day) => renderTimeSlots(day, false)} // 不可選擇
+              message="請選擇您方便的時間，最多可見未來三個月的時間"
+            />
+          </div>
         </div>
-        <div className="my-6 flex justify-center gap-4">
-          <TimeTable
-            post={post}
-            state={state}
-            handleMonthChange={handleMonthChange}
-            handleWeekChange={handleWeekChange}
-            formatDate={formatDate}
-            renderCalendar={renderCalendar}
-            daysOfWeek={daysOfWeek}
-            renderTimeSlots={(day) => renderTimeSlots(day, false)} // 不可選擇
-            message="請選擇您方便的時間，最多可見未來三個月的時間"
-          />
-        </div>
-      </div>
 
-      <CourseSelection
-        post={post}
-        author={author}
-        handleMonthChange={handleMonthChange}
-        handleWeekChange={handleWeekChange}
-        formatDate={formatDate}
-        renderCalendar={renderCalendar}
-        daysOfWeek={daysOfWeek}
-        renderTimeSlots={(day) => renderTimeSlots(day, true)}
-      />
+        <CourseSelection
+          post={post}
+          author={author}
+          handleMonthChange={handleMonthChange}
+          handleWeekChange={handleWeekChange}
+          formatDate={formatDate}
+          renderCalendar={renderCalendar}
+          daysOfWeek={daysOfWeek}
+          renderTimeSlots={(day) => renderTimeSlots(day, true)}
+        />
+      </div>
     </div>
   );
 }

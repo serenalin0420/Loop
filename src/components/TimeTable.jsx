@@ -13,7 +13,7 @@ const TimeTable = ({
   return (
     <>
       {/* 日期選擇器 */}
-      <div className="mb-4 mr-8">
+      <div className="mb-4 mr-4">
         <div className="mx-2 flex items-center justify-between pb-4">
           <button onClick={(e) => handleMonthChange(e, -1)}>
             <svg

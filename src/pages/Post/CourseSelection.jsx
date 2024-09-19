@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import coin from "./coin.svg";
+import coin from "../../components/coin.svg";
 import { useReducer, useState } from "react";
 import TimeTable from "../../components/TimeTable";
 import { initialState, reducer, actionTypes } from "../../context/postReducer";
@@ -134,7 +134,7 @@ const CourseSelection = ({
   };
 
   return (
-    <div className="mt-8 w-5/6">
+    <div className="mt-8">
       <h1 className="mb-4 text-center text-2xl">上課需求</h1>
       <div className="flex justify-between gap-6">
         {sortedCourseNum.map((num, index) => {
