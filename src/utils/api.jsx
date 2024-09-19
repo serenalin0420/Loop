@@ -14,7 +14,19 @@ import {
 } from "firebase/firestore";
 
 const dbApi = {
-  async getPosts(postId) {
+  async getAllPosts() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "posts"));
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      throw error;
+    }
+  },
+  async getSinglePost(postId) {
     try {
       const postRef = doc(db, "posts", postId);
       const postSnapshot = await getDoc(postRef);

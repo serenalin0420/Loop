@@ -24,7 +24,6 @@ const Introduction = ({ post, category, author }) => {
 
       <div className="mb-4 ml-8 flex items-center">
         <h3 className="mr-11">類別 </h3>
-        {/* mr-7 or mr-11 */}
         <p className="rounded-md bg-slate-200 px-3 py-1">{category}</p>
       </div>
 
@@ -53,7 +52,7 @@ const Introduction = ({ post, category, author }) => {
         ))}
       </div>
       <div className="mb-4 ml-8 flex items-center">
-        <h3 className="mr-11">介紹 </h3>
+        <h3 className="mr-11 text-nowrap">介紹 </h3>
         <p>{post.description}</p>
       </div>
     </div>
