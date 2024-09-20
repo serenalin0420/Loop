@@ -37,7 +37,7 @@ export default function Login() {
         coins: 10,
         profile_picture:
           "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj5OuPYNMNMB968AvAIEUDprCeMPpidHb3RfNY45kxV_dipXngeswnCCZhwaR4S9Wz8Uaa_QwA_Zy4tnw7nan1CVFfM6OS0SZ51D4Rj79RD__oIFMxjRDAYsdgschVM5zJgdjG9SkpKdEIm/s644/animal_hamster.png",
-        bio: "",
+        bio: "歡迎加入Loop平台! 趕快介紹一下自己吧~",
         skills: [
           // {
           //   "category_id": "",

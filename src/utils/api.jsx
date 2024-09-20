@@ -11,6 +11,7 @@ import {
   addDoc,
   setDoc,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
 
 const dbApi = {
@@ -99,6 +100,16 @@ const dbApi = {
     } catch (error) {
       console.error("Error fetching user:", error);
       throw error;
+    }
+  },
+
+  async updateProfile(userId, updatedData) {
+    try {
+      const userDoc = doc(db, "users", userId);
+      await updateDoc(userDoc, updatedData);
+      console.log("Document successfully updated!");
+    } catch (error) {
+      console.error("Error updating document: ", error);
     }
   },
 
