@@ -182,6 +182,45 @@ const dbApi = {
       console.error("Error writing document: ", error);
     }
   },
+  async getBookingsForUser(userId) {
+    try {
+      // 查詢 bookings 集合中符合條件的文件
+      const bookingsQuery = query(
+        collection(db, "bookings"),
+        or(
+          where("demander_uid", "==", userId),
+          where("provider_uid", "==", userId),
+        ),
+      );
+      const bookingsSnapshot = await getDocs(bookingsQuery);
+      const bookings = [];
+
+      // 遍歷 bookings 集合中的文件
+      for (const bookingDoc of bookingsSnapshot.docs) {
+        const bookingData = bookingDoc.data();
+        const postRef = doc(db, "posts", bookingData.post_id);
+        const postSnapshot = await getDoc(postRef);
+
+        // 檢查 post 的 author_uid 是否等於 userId
+        if (
+          postSnapshot.exists() &&
+          postSnapshot.data().author_uid === userId
+        ) {
+          bookings.push({ id: bookingDoc.id, ...bookingData });
+        }
+      }
+
+      if (bookings.length > 0) {
+        return bookings;
+      } else {
+        console.log("No matching bookings found!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      throw error;
+    }
+  },
 };
 
 export default dbApi;
