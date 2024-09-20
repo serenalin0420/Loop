@@ -221,6 +221,23 @@ const dbApi = {
       throw error;
     }
   },
+
+  async getPostTitle(postId) {
+    try {
+      const postRef = doc(db, "posts", postId);
+      const postSnapshot = await getDoc(postRef);
+
+      if (postSnapshot.exists()) {
+        return postSnapshot.data().title || [];
+      } else {
+        console.log("No such post!");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching post subcategories:", error);
+      throw error;
+    }
+  },
 };
 
 export default dbApi;
