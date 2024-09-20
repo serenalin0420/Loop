@@ -5,13 +5,11 @@ const Introduction = ({ post, category, author }) => {
   return (
     <div className="rounded-lg p-4 shadow-md">
       <div className="flex items-center gap-2">
-        <div className="m-2.5 h-20 w-20 overflow-hidden rounded-full">
-          <img
-            src={author.profile_picture}
-            className="h-full w-full object-cover object-center"
-            alt="author"
-          />
-        </div>
+        <img
+          src={author.profile_picture}
+          className="m-2.5 h-20 w-20 rounded-full object-cover object-center shadow-md"
+          alt="author"
+        />
         <div className="flex flex-col gap-2">
           <h3 className="inline-flex items-center gap-6 text-base">
             {author.name}

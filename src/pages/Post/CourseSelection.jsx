@@ -226,13 +226,11 @@ const CourseSelection = ({
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="relative top-16 flex max-h-[calc(100vh-32px)] flex-col overflow-y-auto rounded-md bg-white px-8 py-4 shadow-md">
             <div className="flex items-center">
-              <div className="m-2.5 h-20 w-20 overflow-hidden rounded-full">
-                <img
-                  src={author.profile_picture}
-                  className="h-full w-full object-cover object-center"
-                  alt="author"
-                />
-              </div>
+              <img
+                src={author.profile_picture}
+                className="m-2.5 h-20 w-20 rounded-full object-cover object-center shadow-md"
+                alt="author"
+              />
               <div className="flex flex-col gap-2">
                 <h2 className="text-xl font-semibold">{post.title}</h2>
                 <h3 className="inline-flex items-center gap-6 text-base">
