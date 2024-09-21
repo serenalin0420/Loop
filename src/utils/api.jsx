@@ -12,6 +12,7 @@ import {
   setDoc,
   serverTimestamp,
   updateDoc,
+  runTransaction,
 } from "firebase/firestore";
 
 const dbApi = {
@@ -222,6 +223,44 @@ const dbApi = {
     }
   },
 
+  async getUserBookings(userId) {
+    try {
+      const bookingsQuery = query(
+        collection(db, "bookings"),
+        or(
+          where("demander_uid", "==", userId),
+          where("provider_uid", "==", userId),
+        ),
+      );
+      const bookingsSnapshot = await getDocs(bookingsQuery);
+      const bookings = [];
+
+      for (const bookingDoc of bookingsSnapshot.docs) {
+        const bookingData = bookingDoc.data();
+        const postRef = doc(db, "posts", bookingData.post_id);
+        const postSnapshot = await getDoc(postRef);
+
+        // 檢查 post 的 author_uid 是否等於 userId
+        if (
+          postSnapshot.exists() &&
+          postSnapshot.data().author_uid !== userId
+        ) {
+          bookings.push({ id: bookingDoc.id, ...bookingData });
+        }
+      }
+
+      if (bookings.length > 0) {
+        return bookings;
+      } else {
+        console.log("No matching bookings found!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      throw error;
+    }
+  },
+
   async getPostTitle(postId) {
     try {
       const postRef = doc(db, "posts", postId);
@@ -245,6 +284,62 @@ const dbApi = {
       console.log("Booking status successfully updated!");
     } catch (error) {
       console.error("Error updating booking status: ", error);
+      throw error;
+    }
+  },
+  // 刪除所有 status 為 cancel 的預約
+  async deleteCancelledBookings() {
+    try {
+      const bookingsRef = db.collection("bookings");
+      const snapshot = await bookingsRef.where("status", "==", "cancel").get();
+
+      if (snapshot.empty) {
+        console.log("No matching documents.");
+        return;
+      }
+      const batch = db.batch();
+      snapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+      console.log("Cancelled bookings deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting cancelled bookings: ", error);
+    }
+  },
+
+  // 更新雙方的代幣數量
+  async updateUsersCoins(selectedBooking) {
+    try {
+      const coinsTotal = selectedBooking.coins_total;
+
+      // 更新 demander 的 coins
+      const demanderRef = doc(db, "users", selectedBooking.demander_uid);
+      await runTransaction(db, async (transaction) => {
+        const demanderDoc = await transaction.get(demanderRef);
+        if (!demanderDoc.exists()) {
+          throw new Error("Demander does not exist!");
+        }
+
+        const newDemanderCoins = demanderDoc.data().coins - coinsTotal;
+        transaction.update(demanderRef, { coins: newDemanderCoins });
+      });
+      // 更新 provider 的 coins
+      const providerRef = doc(db, "users", selectedBooking.provider_uid);
+      await runTransaction(db, async (transaction) => {
+        const providerDoc = await transaction.get(providerRef);
+        if (!providerDoc.exists()) {
+          throw new Error("Provider does not exist!");
+        }
+
+        const newProviderCoins = providerDoc.data().coins + coinsTotal;
+        transaction.update(providerRef, { coins: newProviderCoins });
+      });
+
+      console.log("Booking status and user coins successfully updated!");
+    } catch (error) {
+      console.error("Error updating booking status and user coins: ", error);
       throw error;
     }
   },

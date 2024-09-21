@@ -76,6 +76,7 @@ const ApplicationFromOthers = ({ userId }) => {
   const handleAcceptClick = async () => {
     if (selectedBooking) {
       await dbApi.updateBookingStatus(selectedBooking.id, "confirm");
+      await dbApi.updateUsersCoins(selectedBooking);
       setSelectedBooking({ ...selectedBooking, status: "confirm" });
       setShowModal(false);
       setTimeout(() => {
@@ -107,12 +108,20 @@ const ApplicationFromOthers = ({ userId }) => {
                     className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center p-2 shadow-md"
                     alt="author"
                   />
-                  <p>{booking.applicant_name}</p>
+                  <p className="mt-2">{booking.applicant_name}</p>
                   <button
-                    className="mb-4 mt-2 max-w-max rounded-full bg-yellow-700 px-5 py-2 text-white"
-                    onClick={() =>
-                      handleReviewClick(bookings[index], booking.applicant)
-                    }
+                    className="mb-4 mt-2 max-w-max rounded-full bg-yellow-700 px-4 py-2 text-sm text-white"
+                    onClick={() => {
+                      if (
+                        selectedBooking &&
+                        selectedBooking.id === booking.id &&
+                        selectedBooking.status === "confirm"
+                      ) {
+                        console.log("傳送訊息");
+                      } else {
+                        handleReviewClick(bookings[index], booking.applicant);
+                      }
+                    }}
                   >
                     {selectedBooking &&
                     selectedBooking.id === booking.id &&
