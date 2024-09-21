@@ -238,6 +238,16 @@ const dbApi = {
       throw error;
     }
   },
+  async updateBookingStatus(bookingId, status) {
+    try {
+      const bookingRef = doc(db, "bookings", bookingId);
+      await updateDoc(bookingRef, { status });
+      console.log("Booking status successfully updated!");
+    } catch (error) {
+      console.error("Error updating booking status: ", error);
+      throw error;
+    }
+  },
 };
 
 export default dbApi;
