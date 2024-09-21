@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { UserContext } from "../../context/userContext";
 import EditableSection from "./EditableSection";
 import ApplicationFromOthers from "./ApplicationFromOthers";
+import UserApplication from "./UserApplication";
 
 function Profile() {
   const user = useContext(UserContext);
@@ -28,6 +29,7 @@ function Profile() {
       <div className="mx-28 mt-16">
         <EditableSection />
         <ApplicationFromOthers userId={user.uid} />
+        <UserApplication userId={user.uid} />
       </div>
     </div>
   );
