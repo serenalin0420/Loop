@@ -7,6 +7,7 @@ import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import CourseSelection from "./CourseSelection";
 import SwitchBtn from "@/components/SideBar/SwitchBtn";
 import { useNavigate } from "react-router-dom";
+import infinite from "../../components/infinite.svg";
 
 function Post() {
   const { postId } = useParams();
@@ -212,6 +213,11 @@ function Post() {
         <Introduction post={post} category={category} author={author} />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
           <div className="flex h-12 items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+            <img
+              src={infinite}
+              alt="infinite-logo"
+              className="mr-2 mt-2 w-14 object-cover"
+            />
             學習時間表
           </div>
           <div className="mx-4 my-6 flex justify-center gap-4">

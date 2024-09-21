@@ -6,6 +6,7 @@ import { initialState, reducer, actionTypes } from "../../context/postReducer";
 import dbApi from "@/utils/api";
 import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
+import infinite from "../../components/infinite.svg";
 
 const CourseSelection = ({
   post,
@@ -193,7 +194,7 @@ const CourseSelection = ({
       day: "numeric",
     });
     const startTime = `${hour}:00`;
-    const endTime = `${parseInt(hour, 10) + 1}:50`;
+    const endTime = `${parseInt(hour, 10)}:50`;
     return `${formattedDate} (${dayOfWeek})   ${startTime} - ${endTime}`;
   };
 
@@ -224,34 +225,30 @@ const CourseSelection = ({
       </div>
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative top-16 flex max-h-[calc(100vh-32px)] flex-col overflow-y-auto rounded-md bg-white px-8 py-4 shadow-md">
+          <div className="relative top-16 flex max-h-[calc(100vh-32px)] flex-col overflow-y-auto rounded-xl bg-white px-8 py-4 shadow-md">
             <div className="flex items-center">
               <img
                 src={author.profile_picture}
-                className="m-2.5 h-20 w-20 rounded-full object-cover object-center shadow-md"
+                className="my-2 mr-3 h-20 w-20 rounded-full object-cover object-center shadow-md"
                 alt="author"
               />
-              <div className="flex flex-col gap-2">
-                <h2 className="text-xl font-semibold">{post.title}</h2>
-                <h3 className="inline-flex items-center gap-6 text-base">
-                  {author.name}
-                </h3>
+              <div className="flex flex-col">
+                <h2 className="mb-1 text-xl font-semibold">{post.title}</h2>
+                <h3>{author.name}</h3>
               </div>
               {selectedCourse && (
-                <div className="mb-[2px] ml-72 mr-8 mt-auto">
+                <div className="ml-52 mr-8 mt-auto text-lg">
                   次數：{selectedCourse}
                 </div>
               )}
-              <div className="mt-auto flex items-center">
+              <div className="mt-auto flex items-center text-lg">
                 獲得：
                 <img
                   src={coin}
                   alt="coin"
                   className="mr-2 size-8 object-cover"
                 />
-                <p className="text-lg font-bold text-yellow-900">
-                  x {selectedCoinCost}
-                </p>
+                <p className="text-lg">x {selectedCoinCost}</p>
               </div>
               <button
                 className="ml-auto self-start p-2"
@@ -277,6 +274,11 @@ const CourseSelection = ({
             <div className="mt-2 flex gap-4">
               <div className="flex flex-col rounded-b-lg shadow-md">
                 <div className="flex h-12 w-full items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+                  <img
+                    src={infinite}
+                    alt="infinite-logo"
+                    className="mr-2 mt-2 w-14 object-cover"
+                  />
                   學習時間表
                 </div>
                 <div className="m-6 flex justify-center">
