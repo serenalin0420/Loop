@@ -111,7 +111,7 @@ function Home() {
                     <div className="flex">
                       <img
                         src={post.author?.profile_picture}
-                        className="mr-2 size-16 rounded-full object-cover object-center shadow-md"
+                        className="mr-2 size-16 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
                         alt="author"
                       />
                       <div className="mt-1">
@@ -203,13 +203,11 @@ function Home() {
                     className="flex flex-col justify-between rounded-lg border border-gray-300 p-4"
                   >
                     <div className="flex">
-                      <div className="mr-2 size-16 overflow-hidden rounded-full">
-                        <img
-                          src={post.author?.profile_picture}
-                          className="h-full w-full object-cover object-center"
-                          alt="author"
-                        />
-                      </div>
+                      <img
+                        src={post.author?.profile_picture}
+                        className="mr-2 size-16 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
+                        alt="author"
+                      />
                       <div className="mt-1">
                         <h4 className="mb-1 text-lg">{post.author?.name}</h4>
                         <StarRating

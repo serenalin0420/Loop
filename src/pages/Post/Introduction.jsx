@@ -7,7 +7,7 @@ const Introduction = ({ post, category, author }) => {
       <div className="flex items-center gap-2">
         <img
           src={author.profile_picture}
-          className="m-2.5 h-20 w-20 rounded-full object-cover object-center shadow-md"
+          className="size-20 rounded-full border-white bg-red-100 object-cover object-center p-1 shadow-md"
           alt="author"
         />
         <div className="flex flex-col gap-2">

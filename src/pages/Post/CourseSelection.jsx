@@ -230,7 +230,7 @@ const CourseSelection = ({
             <div className="flex items-center">
               <img
                 src={author.profile_picture}
-                className="my-2 mr-3 h-20 w-20 rounded-full object-cover object-center shadow-md"
+                className="my-2 mr-3 h-20 w-20 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
                 alt="author"
               />
               <div className="flex flex-col">
