@@ -7,6 +7,7 @@ import dbApi from "@/utils/api";
 import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
 import infinite from "../../components/infinite.svg";
+import { X } from "@phosphor-icons/react";
 
 const CourseSelection = ({
   post,
@@ -254,20 +255,7 @@ const CourseSelection = ({
                 className="ml-auto self-start p-2"
                 onClick={() => setShowModal(false)}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18 18 6M6 6l12 12"
-                  />
-                </svg>
+                <X className="size-6" />
               </button>
             </div>
 

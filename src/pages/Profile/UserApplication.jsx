@@ -3,6 +3,7 @@ import dbApi from "../../utils/api";
 import PropTypes from "prop-types";
 import coin from "../../components/coin.svg";
 import infinite from "../../components/infinite.svg";
+import { X } from "@phosphor-icons/react";
 
 const UserApplication = ({ userId }) => {
   const [bookings, setBookings] = useState([]);
@@ -130,20 +131,7 @@ const UserApplication = ({ userId }) => {
               </p>
               <div className="flex flex-col items-end">
                 <button className="p-2" onClick={handleCloseModal}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18 18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X className="size-6" />
                 </button>
                 <div className="mr-2 flex items-center">
                   <p className="pl-2">

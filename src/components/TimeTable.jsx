@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 const TimeTable = ({
   state,
@@ -16,37 +17,11 @@ const TimeTable = ({
       <div className="mb-4 mr-4">
         <div className="mx-2 flex items-center justify-between pb-4">
           <button onClick={(e) => handleMonthChange(e, -1)}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5 8.25 12l7.5-7.5"
-              />
-            </svg>
+            <CaretLeft className="size-6" />
           </button>
           <div>{formatDate(state.currentMonth, "MMM yyyy")}</div>
           <button onClick={(e) => handleMonthChange(e, 1)}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m8.25 4.5 7.5 7.5-7.5 7.5"
-              />
-            </svg>
+            <CaretRight className="size-6" />
           </button>
         </div>
         <div className="grid grid-cols-7 gap-1">
@@ -63,20 +38,7 @@ const TimeTable = ({
         {/* 切換周的按鈕 */}
         <div className="mx-3 flex items-center justify-between pb-4">
           <button onClick={(e) => handleWeekChange(e, -1)}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5 8.25 12l7.5-7.5"
-              />
-            </svg>
+            <CaretLeft className="size-6" />
           </button>
           <div>
             {formatDate(state.startOfWeek, "MM-dd")} -{" "}
@@ -86,20 +48,7 @@ const TimeTable = ({
             )}
           </div>
           <button onClick={(e) => handleWeekChange(e, 1)}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m8.25 4.5 7.5 7.5-7.5 7.5"
-              />
-            </svg>
+            <CaretRight className="size-6" />
           </button>
         </div>
 
