@@ -78,6 +78,16 @@ const ApplicationFromOthers = ({ userId }) => {
       await dbApi.updateBookingStatus(selectedBooking.id, "confirm");
       await dbApi.updateUsersCoins(selectedBooking);
       setSelectedBooking({ ...selectedBooking, status: "confirm" });
+
+      // 更新 bookings 狀態
+      setBookings((prevBookings) =>
+        prevBookings.map((booking) =>
+          booking.id === selectedBooking.id
+            ? { ...booking, status: "confirm" }
+            : booking,
+        ),
+      );
+
       setShowModal(false);
       setTimeout(() => {
         setShowSuccessModal(true);
@@ -89,8 +99,8 @@ const ApplicationFromOthers = ({ userId }) => {
   };
 
   return (
-    <div className="flex gap-4">
-      <div className="flex w-1/2 flex-col rounded-lg shadow-md">
+    <>
+      <div className="flex flex-col rounded-lg shadow-md">
         <h3 className="max-w-max rounded-r-lg bg-[#BFAA87] px-4 py-2 text-center tracking-wider text-white">
           他人預約 / 申請
         </h3>
@@ -112,22 +122,21 @@ const ApplicationFromOthers = ({ userId }) => {
                   <button
                     className="mb-4 mt-2 max-w-max rounded-full bg-yellow-700 px-4 py-2 text-sm text-white"
                     onClick={() => {
-                      if (
-                        selectedBooking &&
-                        selectedBooking.id === booking.id &&
-                        selectedBooking.status === "confirm"
-                      ) {
+                      const currentBooking = bookings.find(
+                        (b) => b.id === booking.id && b.status === "confirm",
+                      );
+                      if (currentBooking) {
                         console.log("傳送訊息");
                       } else {
                         handleReviewClick(bookings[index], booking.applicant);
                       }
                     }}
                   >
-                    {selectedBooking &&
-                    selectedBooking.id === booking.id &&
-                    selectedBooking.status === "confirm"
+                    {bookings.some(
+                      (b) => b.id === booking.id && b.status === "confirm",
+                    )
                       ? "傳送訊息"
-                      : "審核"}
+                      : "查看"}
                   </button>
                 </div>
               ))
@@ -251,7 +260,7 @@ const ApplicationFromOthers = ({ userId }) => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

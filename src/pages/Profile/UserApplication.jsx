@@ -73,8 +73,8 @@ const UserApplication = ({ userId }) => {
   };
 
   return (
-    <div className="flex gap-4">
-      <div className="flex w-1/2 flex-col rounded-lg shadow-md">
+    <>
+      <div className="flex flex-col rounded-lg shadow-md">
         <h3 className="max-w-max rounded-r-lg bg-[#BFAA87] px-4 py-2 text-center tracking-wider text-white">
           自己預約 / 申請
         </h3>
@@ -216,7 +216,7 @@ const UserApplication = ({ userId }) => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
