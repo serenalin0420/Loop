@@ -1,5 +1,5 @@
 // 定義抓資料的function
-import { db } from "../utils/firebaseConfig";
+import { db, storage } from "../utils/firebaseConfig";
 import {
   doc,
   getDoc,
@@ -14,6 +14,7 @@ import {
   updateDoc,
   runTransaction,
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const dbApi = {
   async getAllPosts() {
@@ -340,6 +341,32 @@ const dbApi = {
       console.log("Booking status and user coins successfully updated!");
     } catch (error) {
       console.error("Error updating booking status and user coins: ", error);
+      throw error;
+    }
+  },
+
+  async uploadProfilePicture(userId, file) {
+    try {
+      const storageRef = ref(
+        storage,
+        `profile_pictures/${userId}/${file.name}`,
+      );
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading profile picture: ", error);
+      throw error;
+    }
+  },
+  async updateUserProfilePicture(userId, downloadURL) {
+    try {
+      const userDoc = doc(db, "users", userId);
+      await updateDoc(userDoc, {
+        profile_picture: downloadURL,
+      });
+    } catch (error) {
+      console.error("Error updating user profile picture: ", error);
       throw error;
     }
   },

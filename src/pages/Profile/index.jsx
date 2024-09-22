@@ -5,13 +5,15 @@ import UserApplication from "./UserApplication";
 import coin from "../../components/coin.svg";
 import dbApi from "../../utils/api";
 import { useQuery } from "@tanstack/react-query";
+import { UploadSimple, NotePencil } from "@phosphor-icons/react";
 
 function Profile() {
   const user = useContext(UserContext);
-
+  const [userName, setUserName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState([{ category_name: "", skills: "" }]);
+  const [profilePicture, setProfilePicture] = useState("");
   const textareaRef = useRef();
 
   const {
@@ -27,8 +29,10 @@ function Profile() {
     const fetchProfile = async () => {
       if (user && user.uid) {
         const userProfile = await dbApi.getProfile(user.uid);
+        setUserName(userProfile.name || "");
         setBio(userProfile.bio || "");
         setSkills(userProfile.skills || []);
+        setProfilePicture(userProfile.profile_picture || "");
       }
     };
     fetchProfile();
@@ -45,11 +49,30 @@ function Profile() {
   const handleEditClick = async () => {
     if (isEditing) {
       await dbApi.updateProfile(user.uid, {
+        name: userName,
         bio,
         skills,
       });
     }
     setIsEditing(!isEditing);
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const downloadURL = await dbApi.uploadProfilePicture(user.uid, file);
+        setProfilePicture(downloadURL);
+
+        await dbApi.updateUserProfilePicture(user.uid, downloadURL);
+      } catch (error) {
+        console.error("Error uploading profile picture: ", error);
+      }
+    }
+  };
+
+  const handleNameChange = (e) => {
+    setUserName(e.target.value);
   };
 
   const handleBioChange = (e) => {
@@ -83,39 +106,53 @@ function Profile() {
             className="h-44 w-full object-cover object-center"
             src={user.bg_image}
           ></img>
-
-          <div className="absolute -bottom-16">
+          <div className="absolute -bottom-20 flex flex-col items-center">
             <img
-              src={user.profile_picture}
-              className="size-28 rounded-full border-2 border-white bg-red-100 object-cover object-center p-2 shadow-md"
+              src={profilePicture}
+              className="size-24 rounded-full border-2 border-white bg-red-100 object-cover object-center p-2 shadow-md"
               alt="author"
             />
-            <p className="text-center font-semibold">{user.name}</p>
+            {isEditing && (
+              <div className="absolute -right-8 bottom-12 flex items-center justify-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="fileInput"
+                />
+                <button
+                  type="button"
+                  className="flex items-center justify-center rounded-full text-sm"
+                  onClick={() => document.getElementById("fileInput").click()}
+                >
+                  <UploadSimple className="mx-1 size-6" />
+                  上傳頭像
+                </button>
+              </div>
+            )}
+            {isEditing ? (
+              <input
+                type="text"
+                value={userName}
+                onChange={handleNameChange}
+                className="mt-2 w-4/5 rounded-md bg-slate-200 px-3 py-2"
+              />
+            ) : (
+              <p className="mt-2 text-center font-semibold">{userName}</p>
+            )}
           </div>
         </div>
       )}
       <div className="mx-28 mt-16 grid auto-rows-auto grid-cols-2 gap-6">
         <div className="col-span-2">
-          <div className="flex flex-col">
+          <div className="mt-4 flex flex-col">
             <button
               onClick={handleEditClick}
               className="flex max-w-max gap-2 self-end"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                />
-              </svg>
-              {isEditing ? "儲存個人資料" : "編輯個人資料"}
+              <NotePencil className="size-6" />
+              {isEditing ? "儲存" : "編輯個人資料"}
             </button>
 
             <div className="flex gap-8">
