@@ -5,10 +5,13 @@ import { locations, timePreferences } from "../CreatePost/options";
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
 
-function Filter({ selectedCategory }) {
+function Filter({ selectedCategory, onFilterChange }) {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const { control } = useForm();
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+  const [selectedTimePreferences, setSelectedTimePreferences] = useState([]);
+  const [selectedLocations, setSelectedLocations] = useState([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -35,6 +38,34 @@ function Filter({ selectedCategory }) {
     }
   }, [selectedCategory, categories]);
 
+  useEffect(() => {
+    onFilterChange({
+      subcategories: selectedSubcategories,
+      timePreferences: selectedTimePreferences,
+      locations: selectedLocations,
+    });
+  }, [
+    selectedSubcategories,
+    selectedTimePreferences,
+    selectedLocations,
+    onFilterChange,
+  ]);
+
+  const handleSubcategoryChange = (subcategory) => {
+    setSelectedSubcategories((prev) =>
+      prev.includes(subcategory)
+        ? prev.filter((item) => item !== subcategory)
+        : [...prev, subcategory],
+    );
+  };
+
+  const handleTimePreferenceChange = (timePreference) => {
+    setSelectedTimePreferences((prev) =>
+      prev.includes(timePreference)
+        ? prev.filter((item) => item !== timePreference)
+        : [...prev, timePreference],
+    );
+  };
   const customStyles = {
     control: (provided) => ({
       ...provided,
@@ -65,7 +96,12 @@ function Filter({ selectedCategory }) {
             subcategories.map((subcategory, index) => (
               <div
                 key={index}
-                className="mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1"
+                className={`mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1 ${
+                  selectedSubcategories.includes(subcategory)
+                    ? "bg-blue-200"
+                    : ""
+                }`}
+                onClick={() => handleSubcategoryChange(subcategory)}
               >
                 {subcategory}
               </div>
@@ -78,7 +114,12 @@ function Filter({ selectedCategory }) {
           timePreferences.map((time) => (
             <div
               key={time.value}
-              className="mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1"
+              className={`mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1 ${
+                selectedTimePreferences.includes(time.label)
+                  ? "bg-blue-200"
+                  : ""
+              }`}
+              onClick={() => handleTimePreferenceChange(time.label)}
             >
               {time.label}
             </div>
@@ -96,6 +137,12 @@ function Filter({ selectedCategory }) {
               isMulti
               className="min-w-36 rounded-md"
               styles={customStyles}
+              onChange={(selectedOptions) => {
+                field.onChange(selectedOptions);
+                setSelectedLocations(
+                  selectedOptions.map((option) => option.label),
+                );
+              }}
             />
           )}
         />
@@ -106,6 +153,6 @@ function Filter({ selectedCategory }) {
 
 Filter.propTypes = {
   selectedCategory: PropTypes.string,
-  //   onFilterChange: PropTypes.func.isRequired,
+  onFilterChange: PropTypes.func.isRequired,
 };
 export default Filter;

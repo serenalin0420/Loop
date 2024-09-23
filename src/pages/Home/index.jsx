@@ -17,10 +17,11 @@ function Home() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("全部");
 
-  // New states for filtering
-  // const [selectedSubcategories, setSelectedSubcategories] = useState([]);
-  // const [selectedTimePreferences, setSelectedTimePreferences] = useState([]);
-  // const [selectedLocations, setSelectedLocations] = useState([]);
+  const [filterConditions, setFilterConditions] = useState({
+    subcategories: [],
+    timePreferences: [],
+    locations: [],
+  });
 
   console.log("findTeachersView:", findTeachersView);
 
@@ -56,6 +57,40 @@ function Home() {
     fetchCategories();
   }, []);
 
+  useEffect(() => {
+    const filteredPosts = posts.filter((post) => {
+      const matchesCategory =
+        selectedCategory === "全部" || post.category_id === selectedCategory;
+
+      const matchesSubcategories =
+        filterConditions.subcategories.length === 0 ||
+        filterConditions.subcategories.some((sub) =>
+          (post.subcategories ?? []).includes(sub),
+        );
+
+      const matchesTimePreferences =
+        filterConditions.timePreferences.length === 0 ||
+        filterConditions.timePreferences.some((time) =>
+          (post.time_preference ?? []).includes(time),
+        );
+
+      const matchesLocations =
+        filterConditions.locations.length === 0 ||
+        filterConditions.locations.some((loc) =>
+          (post.location ?? []).includes(loc),
+        );
+
+      return (
+        matchesCategory &&
+        matchesSubcategories &&
+        matchesTimePreferences &&
+        matchesLocations
+      );
+    });
+
+    setSortedPosts(filteredPosts);
+  }, [filterConditions, posts, selectedCategory]);
+
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
     const date = new Date(
@@ -89,11 +124,13 @@ function Home() {
   const filterByCategory = (category) => {
     setSortedPosts(posts);
     if (category === "全部") {
-      setSortedPosts(posts);
+      setFilterConditions({
+        subcategories: [],
+        timePreferences: [],
+        locations: [],
+      });
       setSelectedCategory("全部");
     } else {
-      const filtered = posts.filter((post) => post.category_id === category);
-      setSortedPosts(filtered);
       setSelectedCategory(category);
     }
   };
@@ -115,7 +152,10 @@ function Home() {
         />
       </div>
       <div className="w-full">
-        <Filter selectedCategory={selectedCategory} />
+        <Filter
+          selectedCategory={selectedCategory}
+          onFilterChange={setFilterConditions}
+        />
         {findTeachersView ? (
           <div className="m-4">
             <div className="mb-4 flex justify-between px-4">
