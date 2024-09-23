@@ -25,7 +25,6 @@ function Filter({ selectedCategory }) {
   useEffect(() => {
     if (selectedCategory) {
       const category = categories.find((cat) => cat.id === selectedCategory);
-      //   console.log(category.subcategories);
       if (category) {
         setSubcategories(category.subcategories || []);
       } else {
@@ -59,40 +58,37 @@ function Filter({ selectedCategory }) {
 
   return (
     <div className="mx-4 rounded-lg shadow-md">
-      <div className="flex items-center px-6 pt-5">
-        {subcategories.length > 0 && (
-          <h3 className="mr-8 font-semibold">類別</h3>
-        )}
-        {subcategories.length > 0 &&
-          subcategories.map((subcategory) => (
-            <div
-              key={subcategory.id}
-              className="mr-3 rounded-md bg-slate-100 px-3 py-1"
-            >
-              {subcategory}
-            </div>
-          ))}
-      </div>
+      {subcategories.length > 0 && (
+        <div className="flex items-center px-6 pt-5">
+          <h3 className="mr-6 font-semibold">類別</h3>
+          {subcategories.length > 0 &&
+            subcategories.map((subcategory, index) => (
+              <div
+                key={index}
+                className="mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1"
+              >
+                {subcategory}
+              </div>
+            ))}
+        </div>
+      )}
       <div className="flex items-center px-6 pt-6">
-        <h3 className="mr-8 font-semibold">時間</h3>
+        <h3 className="mr-6 font-semibold">時間</h3>
         {timePreferences &&
           timePreferences.map((time) => (
-            <div key={time} className="mr-3 rounded-md bg-slate-100 px-3 py-1">
+            <div
+              key={time.value}
+              className="mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1"
+            >
               {time.label}
             </div>
           ))}
       </div>
       <div className="flex items-center px-6 py-6">
-        <h3 className="mr-5 font-semibold">
-          地點
-          <br />
-          <p className="text-sm text-zinc-400">可多選</p>
-        </h3>
-
+        <h3 className="mr-6 font-semibold">地點</h3>
         <Controller
           name="location"
           control={control}
-          defaultValue={locations[0]}
           render={({ field }) => (
             <Select
               {...field}
@@ -110,5 +106,6 @@ function Filter({ selectedCategory }) {
 
 Filter.propTypes = {
   selectedCategory: PropTypes.string,
+  //   onFilterChange: PropTypes.func.isRequired,
 };
 export default Filter;

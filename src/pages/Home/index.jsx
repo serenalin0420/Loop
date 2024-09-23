@@ -16,11 +16,11 @@ function Home() {
   const [btnColor, setBtnColor] = useState("created_time");
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("全部");
-  const [filterConditions, setFilterConditions] = useState({
-    subcategories: [],
-    timePreferences: [],
-    locations: [],
-  });
+
+  // New states for filtering
+  // const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+  // const [selectedTimePreferences, setSelectedTimePreferences] = useState([]);
+  // const [selectedLocations, setSelectedLocations] = useState([]);
 
   console.log("findTeachersView:", findTeachersView);
 
@@ -55,26 +55,6 @@ function Home() {
     fetchPosts();
     fetchCategories();
   }, []);
-
-  useEffect(() => {
-    const filteredPosts = posts.filter((post) => {
-      const matchesSubcategories =
-        filterConditions.subcategories.length === 0 ||
-        filterConditions.subcategories.some((sub) =>
-          post.subcategories.includes(sub),
-        );
-      const matchesTimePreferences =
-        filterConditions.timePreferences.length === 0 ||
-        filterConditions.timePreferences.some((time) =>
-          post.timePreferences.includes(time),
-        );
-      const matchesLocations =
-        filterConditions.locations.length === 0 ||
-        filterConditions.locations.some((loc) => post.location.includes(loc));
-      return matchesSubcategories && matchesTimePreferences && matchesLocations;
-    });
-    setSortedPosts(filteredPosts);
-  }, [filterConditions, posts]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
@@ -135,10 +115,7 @@ function Home() {
         />
       </div>
       <div className="w-full">
-        <Filter
-          selectedCategory={selectedCategory}
-          onFilterChange={setFilterConditions}
-        />
+        <Filter selectedCategory={selectedCategory} />
         {findTeachersView ? (
           <div className="m-4">
             <div className="mb-4 flex justify-between px-4">
@@ -160,7 +137,7 @@ function Home() {
               <div className="flex items-center">
                 <p className="mr-2 text-sm">找不到你想學的技能嗎?</p>
                 <Link
-                  to="/create-post?view=teacher"
+                  to="/create-post?view=student"
                   className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
                 >
                   發起學習
@@ -180,11 +157,11 @@ function Home() {
                     <div className="flex">
                       <img
                         src={post.author?.profile_picture}
-                        className="mr-2 size-16 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
+                        className="mr-2 size-14 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
                         alt="author"
                       />
                       <div className="mt-1">
-                        <h4 className="mb-1 text-lg">{post.author?.name}</h4>
+                        <h4 className="mb-1">{post.author?.name}</h4>
                         <StarRating
                           rating={post.author?.review_rating ?? 0}
                           size="16px"
@@ -256,7 +233,7 @@ function Home() {
               <div className="flex items-center">
                 <p className="mr-2 text-sm">找不到想學你技能的人嗎?</p>
                 <Link
-                  to="/create-post?view=student"
+                  to="/create-post?view=teacher"
                   className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
                 >
                   發布教學
@@ -276,11 +253,11 @@ function Home() {
                     <div className="flex">
                       <img
                         src={post.author?.profile_picture}
-                        className="mr-2 size-16 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
+                        className="mr-2 size-14 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
                         alt="author"
                       />
                       <div className="mt-1">
-                        <h4 className="mb-1 text-lg">{post.author?.name}</h4>
+                        <h4 className="mb-1">{post.author?.name}</h4>
                         <StarRating
                           rating={post.author?.review_rating ?? 0}
                           size="16px"

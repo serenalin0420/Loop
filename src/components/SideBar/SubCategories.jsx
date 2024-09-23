@@ -45,7 +45,7 @@ function SubCategories({ categories, onCategoryClick }) {
     <div className="mt-8 flex flex-col items-center gap-2 rounded-lg py-4 shadow-md">
       <h2 className="text-center text-lg font-bold">學習分類</h2>
       <div
-        className={`flex w-full items-center gap-4 px-10 py-1 ${selectedCategory === "全部" ? "bg-slate-200" : ""}`}
+        className={`flex w-full cursor-pointer items-center gap-4 px-10 py-1 ${selectedCategory === "全部" ? "bg-slate-200" : ""}`}
         onClick={() => handleCategoryClick("全部")}
       >
         <div className="rounded-full bg-slate-100 p-2">
@@ -60,7 +60,7 @@ function SubCategories({ categories, onCategoryClick }) {
         return (
           <div
             key={category.id}
-            className={`flex w-full items-center gap-4 px-10 py-1 ${selectedCategory === category.id ? "bg-slate-200" : ""}`}
+            className={`flex w-full cursor-pointer items-center gap-4 px-10 py-1 ${selectedCategory === category.id ? "bg-slate-200" : ""}`}
             onClick={() => handleCategoryClick(category.id)}
           >
             <div className="rounded-full bg-slate-100 p-2">
