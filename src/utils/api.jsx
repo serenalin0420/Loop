@@ -370,6 +370,16 @@ const dbApi = {
       throw error;
     }
   },
+  async updateUserSavedPosts(userId, savedPosts) {
+    try {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, { saved_posts: savedPosts });
+      console.log("User saved posts successfully updated!");
+    } catch (error) {
+      console.error("Error updating user saved posts: ", error);
+      throw error;
+    }
+  },
 };
 
 export default dbApi;

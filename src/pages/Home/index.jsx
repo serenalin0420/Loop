@@ -1,6 +1,7 @@
 import SwitchBtn from "../../components/SideBar/SwitchBtn";
 import { useContext, useEffect, useState } from "react";
 import { ViewContext } from "../../context/viewContext";
+import { UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
 import StarRating from "../../components/StarRating";
 import coin from "../../components/coin.svg";
@@ -10,13 +11,14 @@ import SubCategories from "../../components/SideBar/SubCategories";
 import Filter from "./Filter";
 
 function Home() {
+  const user = useContext(UserContext);
   const { findTeachersView } = useContext(ViewContext);
   const [posts, setPosts] = useState([]);
   const [sortedPosts, setSortedPosts] = useState([]);
   const [btnColor, setBtnColor] = useState("created_time");
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("全部");
-
+  const [savedPosts, setSavedPosts] = useState([]);
   const [filterConditions, setFilterConditions] = useState({
     subcategories: [],
     timePreferences: [],
@@ -53,9 +55,23 @@ function Home() {
       }
     };
 
+    const fetchSavedPosts = async () => {
+      try {
+        if (user) {
+          const userProfile = await dbApi.getProfile(user.uid);
+          setSavedPosts(userProfile.saved_posts);
+        } else {
+          console.log("No saved posts found for this user.");
+        }
+      } catch (error) {
+        console.error("Error fetching saved posts:", error);
+      }
+    };
+
     fetchPosts();
     fetchCategories();
-  }, []);
+    fetchSavedPosts();
+  }, [user]);
 
   useEffect(() => {
     const filteredPosts = posts.filter((post) => {
@@ -90,6 +106,19 @@ function Home() {
 
     setSortedPosts(filteredPosts);
   }, [filterConditions, posts, selectedCategory]);
+
+  const handleHeartClick = async (postId) => {
+    try {
+      const updatedSavedPosts = savedPosts.includes(postId)
+        ? savedPosts.filter((id) => id !== postId)
+        : [...savedPosts, postId];
+
+      setSavedPosts(updatedSavedPosts);
+      await dbApi.updateUserSavedPosts(user.uid, updatedSavedPosts);
+    } catch (error) {
+      console.error("Error updating saved posts:", error);
+    }
+  };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
@@ -213,7 +242,13 @@ function Home() {
                           <Heart
                             className="size-6"
                             color="#FF8964"
-                            weight="bold"
+                            weight={
+                              savedPosts.includes(post.id) ? "fill" : "bold"
+                            }
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleHeartClick(post.id);
+                            }}
                           />
                         </div>
                       </div>
@@ -309,7 +344,13 @@ function Home() {
                           <Heart
                             className="size-6"
                             color="#FF8964"
-                            weight="bold"
+                            weight={
+                              savedPosts.includes(post.id) ? "fill" : "bold"
+                            }
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleHeartClick(post.id);
+                            }}
                           />
                         </div>
                       </div>
