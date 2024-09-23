@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 
 function SubCategories({ categories, onCategoryClick }) {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("全部");
   const categoriesWithIcons = [
     { name: "語言", icon: <Translate className="size-6" /> },
     { name: "程式語言", icon: <FileJs className="size-6" /> },
@@ -45,8 +45,8 @@ function SubCategories({ categories, onCategoryClick }) {
     <div className="mt-8 flex flex-col items-center gap-2 rounded-lg py-4 shadow-md">
       <h2 className="text-center text-lg font-bold">學習分類</h2>
       <div
-        className={`flex w-full items-center gap-4 px-10 py-1 ${selectedCategory === null ? "bg-slate-200" : ""}`}
-        onClick={() => handleCategoryClick(null)}
+        className={`flex w-full items-center gap-4 px-10 py-1 ${selectedCategory === "全部" ? "bg-slate-200" : ""}`}
+        onClick={() => handleCategoryClick("全部")}
       >
         <div className="rounded-full bg-slate-100 p-2">
           <Infinity className="size-6" />

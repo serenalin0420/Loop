@@ -7,6 +7,7 @@ import coin from "../../components/coin.svg";
 import { Link } from "react-router-dom";
 import { Heart } from "@phosphor-icons/react";
 import SubCategories from "../../components/SideBar/SubCategories";
+import Filter from "./Filter";
 
 function Home() {
   const { isProviderView } = useContext(ViewContext);
@@ -14,6 +15,7 @@ function Home() {
   const [sortedPosts, setSortedPosts] = useState([]);
   const [btnColor, setBtnColor] = useState("created_time");
   const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("全部");
 
   console.log("isProviderView:", isProviderView);
 
@@ -81,11 +83,13 @@ function Home() {
 
   const filterByCategory = (category) => {
     setSortedPosts(posts);
-    if (category === null) {
+    if (category === "全部") {
       setSortedPosts(posts);
+      setSelectedCategory("全部");
     } else {
       const filtered = posts.filter((post) => post.category_id === category);
       setSortedPosts(filtered);
+      setSelectedCategory(category);
     }
   };
   const findStudentsPosts = sortedPosts.filter(
@@ -104,20 +108,21 @@ function Home() {
           onCategoryClick={filterByCategory}
         />
       </div>
-      <div className="mt-4">
+      <div className="w-full">
+        <Filter selectedCategory={selectedCategory} />
         {isProviderView ? (
-          <div className="p-4">
-            <div className="mb-4 flex justify-between">
-              <div className="flex items-center border-b-2 text-lg font-semibold">
+          <div className="m-4">
+            <div className="mb-4 flex justify-between px-4">
+              <div className="flex items-center text-lg font-semibold">
                 排序依據
                 <button
-                  className={`ml-4 rounded-t-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-4 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-orange-100 text-yellow-950" : ""}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`ml-1 rounded-t-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-orange-100 text-yellow-950" : ""}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
@@ -203,17 +208,17 @@ function Home() {
           </div>
         ) : (
           <div className="p-4">
-            <div className="mb-4 flex justify-between">
+            <div className="mb-4 flex justify-between px-4">
               <div className="flex items-center border-b-2 text-lg font-semibold">
                 排序依據
                 <button
-                  className={`ml-4 rounded-t-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-4 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-orange-100 text-yellow-950" : ""}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`ml-1 rounded-t-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-orange-100 text-yellow-950" : ""}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
