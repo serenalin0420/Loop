@@ -147,8 +147,8 @@ const dbApi = {
     try {
       const querySnapshot = await getDocs(collection(db, "categories"));
       return querySnapshot.docs.map((doc) => ({
-        value: doc.id,
-        label: doc.data().name,
+        id: doc.id,
+        name: doc.data().name,
         subcategories: doc.data().subcategories || [],
         skills: doc.data().skills || [],
       }));

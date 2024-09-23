@@ -6,12 +6,15 @@ import StarRating from "../../components/StarRating";
 import coin from "../../components/coin.svg";
 import { Link } from "react-router-dom";
 import { Heart } from "@phosphor-icons/react";
+import SubCategories from "../../components/SideBar/SubCategories";
 
 function Home() {
   const { isProviderView } = useContext(ViewContext);
   const [posts, setPosts] = useState([]);
   const [sortedPosts, setSortedPosts] = useState([]);
   const [btnColor, setBtnColor] = useState("created_time");
+  const [categories, setCategories] = useState([]);
+
   console.log("isProviderView:", isProviderView);
 
   useEffect(() => {
@@ -33,8 +36,17 @@ function Home() {
         console.error("Error fetching posts:", error);
       }
     };
+    const fetchCategories = async () => {
+      try {
+        const fetchedCategories = await dbApi.getCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
 
     fetchPosts();
+    fetchCategories();
   }, []);
 
   const formatDate = (timestamp) => {
@@ -54,7 +66,7 @@ function Home() {
   };
 
   const sortByCreatedTime = () => {
-    const sorted = [...posts].sort(
+    const sorted = [...sortedPosts].sort(
       (a, b) => b.created_time.seconds - a.created_time.seconds,
     );
     setSortedPosts(sorted);
@@ -62,14 +74,36 @@ function Home() {
   };
 
   const sortByCoinCost = () => {
-    const sorted = [...posts].sort((a, b) => b.coin_cost - a.coin_cost);
+    const sorted = [...sortedPosts].sort((a, b) => b.coin_cost - a.coin_cost);
     setSortedPosts(sorted);
     setBtnColor("coin_cost");
   };
 
+  const filterByCategory = (category) => {
+    setSortedPosts(posts);
+    if (category === null) {
+      setSortedPosts(posts);
+    } else {
+      const filtered = posts.filter((post) => post.category_id === category);
+      setSortedPosts(filtered);
+    }
+  };
+  const findStudentsPosts = sortedPosts.filter(
+    (post) => post.type === "發布教學",
+  );
+  const findTeachersPosts = sortedPosts.filter(
+    (post) => post.type === "發起學習",
+  );
+
   return (
     <div className="mx-8 mt-20 flex">
-      <SwitchBtn />
+      <div className="flex flex-col">
+        <SwitchBtn />
+        <SubCategories
+          categories={categories}
+          onCategoryClick={filterByCategory}
+        />
+      </div>
       <div className="mt-4">
         {isProviderView ? (
           <div className="p-4">
@@ -90,7 +124,7 @@ function Home() {
                 </button>
               </div>
               <div className="flex items-center">
-                <p className="mr-2 text-sm">找不到你想學的技能嗎?</p>
+                <p className="mr-2 text-sm">找不到想學你技能的人嗎?</p>
                 <Link
                   to="/create-post?view=teacher"
                   className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
@@ -100,9 +134,10 @@ function Home() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {sortedPosts
-                .filter((post) => post.type === "發布教學")
-                .map((post) => (
+              {findStudentsPosts.length === 0 ? (
+                <div className="text-center text-gray-500">找不到貼文</div>
+              ) : (
+                findStudentsPosts.map((post) => (
                   <Link
                     to={`/post/${post.id}`}
                     key={post.id}
@@ -162,7 +197,8 @@ function Home() {
                       </button>
                     </div>
                   </Link>
-                ))}
+                ))
+              )}
             </div>
           </div>
         ) : (
@@ -194,9 +230,10 @@ function Home() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {sortedPosts
-                .filter((post) => post.type === "發起學習")
-                .map((post) => (
+              {findTeachersPosts.length === 0 ? (
+                <div className="text-center text-gray-500">找不到貼文</div>
+              ) : (
+                findTeachersPosts.map((post) => (
                   <Link
                     to={`/post/${post.id}`}
                     key={post.id}
@@ -256,7 +293,8 @@ function Home() {
                       </button>
                     </div>
                   </Link>
-                ))}
+                ))
+              )}
             </div>
           </div>
         )}

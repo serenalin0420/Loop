@@ -12,7 +12,7 @@ function SwitchBtn({ onSwitch = () => {} }) {
   };
 
   return (
-    <div className="flex h-1/6 flex-col items-center rounded-lg px-8 py-5 shadow-md">
+    <div className="flex flex-col items-center rounded-lg px-8 py-5 shadow-md">
       <h2 className="text-center text-lg font-bold">
         {isProviderView ? (
           <>
@@ -25,7 +25,7 @@ function SwitchBtn({ onSwitch = () => {} }) {
           </>
         )}
       </h2>
-      <img src={tamtam} className="w-44" />
+      <img src={tamtam} className="w-36" />
       <div className="flex w-40 justify-center rounded-full bg-[#BFAA87] p-2">
         <button
           className={`rounded-full p-1 px-3 text-white ${
