@@ -25,10 +25,10 @@ const CourseSelection = ({
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { isProviderView } = useContext(ViewContext);
+  const { findTeachersView } = useContext(ViewContext);
   const user = useContext(UserContext);
 
-  console.log("isProviderView", isProviderView);
+  console.log("findTeachersView", findTeachersView);
 
   const order = ["體驗", "1", "3", "5", "10"];
   const sortedCourseNum = post.course_num
@@ -134,8 +134,8 @@ const CourseSelection = ({
 
     const bookingData = {
       post_id: post.post_id,
-      demander_uid: isProviderView ? post.author_uid : user.uid,
-      provider_uid: isProviderView ? user.uid : post.author_uid,
+      demander_uid: findTeachersView ? post.author_uid : user.uid,
+      provider_uid: findTeachersView ? user.uid : post.author_uid,
       selected_times: selectedTimes.map(formatSelectedTime),
       status: "pending",
       coins_total: selectedCoinCost,

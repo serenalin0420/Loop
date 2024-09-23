@@ -10,14 +10,19 @@ import SubCategories from "../../components/SideBar/SubCategories";
 import Filter from "./Filter";
 
 function Home() {
-  const { isProviderView } = useContext(ViewContext);
+  const { findTeachersView } = useContext(ViewContext);
   const [posts, setPosts] = useState([]);
   const [sortedPosts, setSortedPosts] = useState([]);
   const [btnColor, setBtnColor] = useState("created_time");
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("全部");
+  const [filterConditions, setFilterConditions] = useState({
+    subcategories: [],
+    timePreferences: [],
+    locations: [],
+  });
 
-  console.log("isProviderView:", isProviderView);
+  console.log("findTeachersView:", findTeachersView);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -50,6 +55,26 @@ function Home() {
     fetchPosts();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    const filteredPosts = posts.filter((post) => {
+      const matchesSubcategories =
+        filterConditions.subcategories.length === 0 ||
+        filterConditions.subcategories.some((sub) =>
+          post.subcategories.includes(sub),
+        );
+      const matchesTimePreferences =
+        filterConditions.timePreferences.length === 0 ||
+        filterConditions.timePreferences.some((time) =>
+          post.timePreferences.includes(time),
+        );
+      const matchesLocations =
+        filterConditions.locations.length === 0 ||
+        filterConditions.locations.some((loc) => post.location.includes(loc));
+      return matchesSubcategories && matchesTimePreferences && matchesLocations;
+    });
+    setSortedPosts(filteredPosts);
+  }, [filterConditions, posts]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
@@ -92,6 +117,7 @@ function Home() {
       setSelectedCategory(category);
     }
   };
+
   const findStudentsPosts = sortedPosts.filter(
     (post) => post.type === "發布教學",
   );
@@ -109,8 +135,11 @@ function Home() {
         />
       </div>
       <div className="w-full">
-        <Filter selectedCategory={selectedCategory} />
-        {isProviderView ? (
+        <Filter
+          selectedCategory={selectedCategory}
+          onFilterChange={setFilterConditions}
+        />
+        {findTeachersView ? (
           <div className="m-4">
             <div className="mb-4 flex justify-between px-4">
               <div className="flex items-center text-lg font-semibold">
@@ -129,16 +158,16 @@ function Home() {
                 </button>
               </div>
               <div className="flex items-center">
-                <p className="mr-2 text-sm">找不到想學你技能的人嗎?</p>
+                <p className="mr-2 text-sm">找不到你想學的技能嗎?</p>
                 <Link
                   to="/create-post?view=teacher"
                   className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
                 >
-                  發布教學
+                  發起學習
                 </Link>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-4">
               {findStudentsPosts.length === 0 ? (
                 <div className="text-center text-gray-500">找不到貼文</div>
               ) : (
@@ -209,7 +238,7 @@ function Home() {
         ) : (
           <div className="p-4">
             <div className="mb-4 flex justify-between px-4">
-              <div className="flex items-center border-b-2 text-lg font-semibold">
+              <div className="flex items-center text-lg font-semibold">
                 排序依據
                 <button
                   className={`ml-4 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-orange-100 text-yellow-950" : ""}`}
@@ -225,16 +254,16 @@ function Home() {
                 </button>
               </div>
               <div className="flex items-center">
-                <p className="mr-2 text-sm">找不到你想學的技能嗎?</p>
+                <p className="mr-2 text-sm">找不到想學你技能的人嗎?</p>
                 <Link
                   to="/create-post?view=student"
                   className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
                 >
-                  發起學習
+                  發布教學
                 </Link>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-4">
               {findTeachersPosts.length === 0 ? (
                 <div className="text-center text-gray-500">找不到貼文</div>
               ) : (

@@ -2,20 +2,25 @@ import { createContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
 export const ViewContext = createContext({
-  isProviderView: false,
-  setIsProviderView: () => {},
+  findTeachersView: false,
+  setFindTeachersView: () => {},
 });
 
 export const ViewProvider = ({ children }) => {
-  const [isProviderView, setIsProviderView] = useState(false);
+  const [findTeachersView, setFindTeachersView] = useState(false);
 
   useEffect(() => {
-    // 這裡可以添加任何需要在 isProviderView 變化時執行的邏輯
-    console.log("isProviderView changed:", isProviderView);
-  }, [isProviderView]);
+    // 這裡可以添加任何需要在 findTeachersView 變化時執行的邏輯
+    console.log("findTeachersView changed:", findTeachersView);
+  }, [findTeachersView]);
 
   return (
-    <ViewContext.Provider value={{ isProviderView, setIsProviderView }}>
+    <ViewContext.Provider
+      value={{
+        findTeachersView: findTeachersView,
+        setFindTeachersView: setFindTeachersView,
+      }}
+    >
       {children}
     </ViewContext.Provider>
   );

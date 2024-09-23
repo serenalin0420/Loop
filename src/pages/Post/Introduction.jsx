@@ -20,7 +20,7 @@ const Introduction = ({ post, category, author }) => {
         </div>
       </div>
 
-      <div className="mb-4 ml-8 flex items-center">
+      <div className="mb-4 ml-6 mt-2 flex items-center">
         <h3 className="mr-11">類別 </h3>
         <p className="mr-3 rounded-md bg-slate-200 px-3 py-1">{category}</p>
         <p className="rounded-md bg-slate-200 px-3 py-1">
@@ -29,7 +29,7 @@ const Introduction = ({ post, category, author }) => {
       </div>
 
       {post.type !== "發起學習" && (
-        <div className="mb-4 ml-8 flex items-center">
+        <div className="mb-4 ml-6 mt-2 flex items-center">
           <h3 className="mr-11">專長 </h3>
           {(post.skills ?? []).map((skill, index) => (
             <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
@@ -38,15 +38,15 @@ const Introduction = ({ post, category, author }) => {
           ))}
         </div>
       )}
-      <div className="mb-4 ml-8 flex items-center">
-        <h3 className="mr-11">時間 </h3>
+      <div className="mb-4 ml-6 mt-2 flex items-center">
+        <h3 className="mr-3">時間偏好 </h3>
         {(post.time_preference ?? []).map((time, index) => (
           <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
             {time}
           </p>
         ))}
       </div>
-      <div className="mb-4 ml-8 flex items-center">
+      <div className="mb-4 ml-6 mt-2 flex items-center">
         <h3 className="mr-11">地點 </h3>
         {(post.location ?? []).map((location, index) => (
           <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
@@ -54,7 +54,7 @@ const Introduction = ({ post, category, author }) => {
           </p>
         ))}
       </div>
-      <div className="mb-4 ml-8 flex items-center">
+      <div className="mb-4 ml-6 mt-2 flex items-center">
         <h3 className="mr-11 text-nowrap">介紹 </h3>
         <p>{post.description}</p>
       </div>
