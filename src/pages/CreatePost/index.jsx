@@ -83,17 +83,20 @@ function CreatePost() {
   });
 
   const handleCategoryChange = (selectedOption) => {
+    const selectedCategory = categories.find(
+      (cat) => cat.id === selectedOption.value,
+    );
     dispatch({
       type: actionTypes.SET_SELECTED_CATEGORY,
       payload: selectedOption,
     });
     dispatch({
       type: actionTypes.SET_SUBCATEGORIES,
-      payload: selectedOption ? selectedOption.subcategories : [],
+      payload: selectedCategory ? selectedCategory.subcategories : [],
     });
     dispatch({
       type: actionTypes.SET_SKILLS,
-      payload: selectedOption ? selectedOption.skills : [],
+      payload: selectedCategory ? selectedCategory.skills : [],
     });
     setValue("subcategories", null);
     setValue("skills", []);
@@ -331,10 +334,16 @@ function CreatePost() {
                 <Controller
                   name="category"
                   control={control}
+                  defaultValue={categories?.[0] || null}
                   render={({ field }) => (
                     <Select
                       {...field}
-                      options={categories}
+                      options={(categories || []).map((cat) => ({
+                        value: cat.id,
+                        label: cat.name,
+                      }))}
+                      value={field.value || categories?.[0] || null}
+                      // value={field.value || categories[0]}
                       onChange={(selectedOption) => {
                         field.onChange(selectedOption);
                         handleCategoryChange(selectedOption);
@@ -344,16 +353,17 @@ function CreatePost() {
                     />
                   )}
                 />
-
                 <div className="flex h-10">
                   <label className="mr-4 text-xl"></label>
                   <Controller
                     name="subcategories"
                     control={control}
+                    defaultValue={[]}
                     render={({ field }) => (
                       <Select
                         className="w-36 min-w-32"
                         {...field}
+                        value={field.value || []}
                         options={(state.subcategories || []).map((sub) => ({
                           value: sub,
                           label: sub,
