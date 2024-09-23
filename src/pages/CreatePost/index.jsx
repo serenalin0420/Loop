@@ -289,9 +289,9 @@ function CreatePost() {
       type: view === "student" ? "發起學習" : "發布教學",
       author_uid: user.uid,
       category_id: data.category?.value,
-      subcategories: data.subcategories?.value || null,
+      subcategories: data.subcategories?.map((sub) => sub.value),
       skills: data.skills?.map((skill) => skill.value),
-      location: data.location?.map((loc) => loc.label), // 只存儲 label
+      location: data.location?.map((loc) => loc.label),
       description: data.description,
       time_preference: data.timePreferences?.map((pref) => pref.label),
       coin_cost: data.coins?.value,
@@ -343,7 +343,6 @@ function CreatePost() {
                         label: cat.name,
                       }))}
                       value={field.value || categories?.[0] || null}
-                      // value={field.value || categories[0]}
                       onChange={(selectedOption) => {
                         field.onChange(selectedOption);
                         handleCategoryChange(selectedOption);
@@ -361,17 +360,18 @@ function CreatePost() {
                     defaultValue={[]}
                     render={({ field }) => (
                       <Select
-                        className="w-36 min-w-32"
                         {...field}
                         value={field.value || []}
                         options={(state.subcategories || []).map((sub) => ({
                           value: sub,
                           label: sub,
                         }))}
+                        isMulti
                         onChange={(selectedOption) => {
                           field.onChange(selectedOption);
                           setValue("subcategories", selectedOption);
                         }}
+                        styles={customStyles}
                       />
                     )}
                   />

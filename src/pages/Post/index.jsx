@@ -12,7 +12,6 @@ import infinite from "../../components/infinite.svg";
 function Post() {
   const { postId } = useParams();
   const [post, setPost] = useState();
-  const [category, setCategory] = useState("");
   const [author, setAuthor] = useState();
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -27,13 +26,6 @@ function Post() {
       try {
         const postData = await dbApi.getSinglePost(postId);
         setPost(postData);
-
-        if (postData.category_id) {
-          const categoryData = await dbApi.getPostCategory(
-            postData.category_id,
-          );
-          setCategory(categoryData.name);
-        }
 
         if (postData.author_uid) {
           const authorData = await dbApi.getProfile(postData.author_uid);
@@ -210,7 +202,7 @@ function Post() {
     <div className="mx-8 mt-20 flex justify-center gap-6">
       <SwitchBtn onSwitch={handleSwitch} />
       <div className="w-3/4">
-        <Introduction post={post} category={category} author={author} />
+        <Introduction post={post} author={author} />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
           <div className="flex h-12 items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
             <img

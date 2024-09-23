@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import StarRating from "../../components/StarRating";
 
-const Introduction = ({ post, category, author }) => {
+const Introduction = ({ post, author }) => {
   return (
     <div className="rounded-lg p-4 shadow-md">
       <div className="flex items-center gap-2">
@@ -22,10 +22,11 @@ const Introduction = ({ post, category, author }) => {
 
       <div className="mb-4 ml-6 mt-2 flex items-center">
         <h3 className="mr-11">類別 </h3>
-        <p className="mr-3 rounded-md bg-slate-200 px-3 py-1">{category}</p>
-        <p className="rounded-md bg-slate-200 px-3 py-1">
-          {post.subcategories}
-        </p>
+        {(post.subcategories ?? []).map((sub, index) => (
+          <p key={index} className="mr-3 rounded-md bg-slate-200 px-3 py-1">
+            {sub}
+          </p>
+        ))}
       </div>
 
       {post.type !== "發起學習" && (
@@ -70,9 +71,8 @@ Introduction.propTypes = {
     location: PropTypes.arrayOf(PropTypes.string),
     description: PropTypes.string,
     type: PropTypes.oneOf(["發起學習", "發布教學"]).isRequired,
-    subcategories: PropTypes.string,
+    subcategories: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
-  category: PropTypes.string.isRequired,
   author: PropTypes.shape({
     name: PropTypes.string,
     profile_picture: PropTypes.string,

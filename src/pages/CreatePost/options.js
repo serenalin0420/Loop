@@ -25,7 +25,7 @@ export const locations = [
 ];
 
 export const coursesNum = [
-  { value: "試教", label: "試教" },
+  { value: "體驗", label: "體驗" },
   { value: "1", label: "1堂" },
   { value: "3", label: "3堂" },
   { value: "5", label: "5堂" },
