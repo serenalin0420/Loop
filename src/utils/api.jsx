@@ -380,6 +380,69 @@ const dbApi = {
       throw error;
     }
   },
+
+  async notifyUsersOnBookingConfirm(selectedBooking) {
+    try {
+      const { applicant_uid, demander_uid, provider_uid, selected_times } =
+        selectedBooking;
+
+      // 找到不是 applicant_uid 的使用者 ID
+      const fromUserId =
+        applicant_uid === demander_uid ? provider_uid : demander_uid;
+
+      // 新增 applicant_uid 的通知
+      const applicantNotificationRef = collection(
+        db,
+        "users",
+        applicant_uid,
+        "notifications",
+      );
+      await addDoc(applicantNotificationRef, {
+        type: "booking_confirm",
+        message: "媒合成功~對方已確認了你的申請",
+        from: fromUserId,
+        created_time: serverTimestamp(),
+        read: false,
+      });
+
+      // 新增 demander_uid 和 provider_uid 的通知
+      const notificationPromises = selected_times.map((time) => {
+        const notificationData = {
+          type: "course_endtime",
+          time: time,
+          message: "課程結束，請填寫學習歷程表",
+          from: "system",
+          created_time: serverTimestamp(),
+          read: false,
+        };
+
+        const demanderNotificationRef = collection(
+          db,
+          "users",
+          demander_uid,
+          "notifications",
+        );
+        const providerNotificationRef = collection(
+          db,
+          "users",
+          provider_uid,
+          "notifications",
+        );
+
+        return Promise.all([
+          addDoc(demanderNotificationRef, notificationData),
+          addDoc(providerNotificationRef, notificationData),
+        ]);
+      });
+
+      await Promise.all(notificationPromises);
+
+      console.log("Notifications successfully added!");
+    } catch (error) {
+      console.error("Error adding notifications: ", error);
+      throw error;
+    }
+  },
 };
 
 export default dbApi;

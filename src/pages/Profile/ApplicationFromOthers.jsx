@@ -30,6 +30,7 @@ const ApplicationFromOthers = ({ userId }) => {
 
         const updatedBookingsData = bookingsData.map((booking, index) => ({
           ...booking,
+          applicant_uid: applicantIds[index],
           applicant_name: applicantsData[index].name,
           applicant_profile_picture: applicantsData[index].profile_picture,
         }));
@@ -79,6 +80,9 @@ const ApplicationFromOthers = ({ userId }) => {
       await dbApi.updateBookingStatus(selectedBooking.id, "confirm");
       await dbApi.updateUsersCoins(selectedBooking);
       setSelectedBooking({ ...selectedBooking, status: "confirm" });
+
+      // console.log(selectedBooking);
+      await dbApi.notifyUsersOnBookingConfirm(selectedBooking);
 
       // 更新 bookings 狀態
       setBookings((prevBookings) =>
