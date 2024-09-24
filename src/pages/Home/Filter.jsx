@@ -96,12 +96,15 @@ function Filter({ selectedCategory, onFilterChange }) {
             subcategories.map((subcategory, index) => (
               <div
                 key={index}
-                className={`mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1 ${
+                className={`mr-3 cursor-pointer rounded-md px-3 py-1 ${
                   selectedSubcategories.includes(subcategory)
                     ? "bg-blue-200"
-                    : ""
+                    : "bg-slate-100"
                 }`}
-                onClick={() => handleSubcategoryChange(subcategory)}
+                onClick={() => {
+                  console.log("Clicked subcategory:", subcategory);
+                  handleSubcategoryChange(subcategory);
+                }}
               >
                 {subcategory}
               </div>
@@ -114,10 +117,10 @@ function Filter({ selectedCategory, onFilterChange }) {
           timePreferences.map((time) => (
             <div
               key={time.value}
-              className={`mr-3 cursor-pointer rounded-md bg-slate-100 px-3 py-1 ${
+              className={`mr-3 cursor-pointer rounded-md px-3 py-1 ${
                 selectedTimePreferences.includes(time.label)
                   ? "bg-blue-200"
-                  : ""
+                  : "bg-slate-100"
               }`}
               onClick={() => handleTimePreferenceChange(time.label)}
             >

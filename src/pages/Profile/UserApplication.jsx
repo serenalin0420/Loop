@@ -96,13 +96,20 @@ const UserApplication = ({ userId }) => {
                   <p className="mt-2">{booking.applicant_name}</p>
                   <button
                     className="mb-4 mt-2 max-w-max rounded-full bg-yellow-700 px-4 py-2 text-sm text-white"
-                    onClick={() =>
-                      handleReviewClick(bookings[index], booking.applicant)
-                    }
+                    onClick={() => {
+                      const currentBooking = bookings.find(
+                        (b) => b.id === booking.id && b.status === "confirm",
+                      );
+                      if (currentBooking) {
+                        console.log("傳送訊息");
+                      } else {
+                        handleReviewClick(bookings[index], booking.applicant);
+                      }
+                    }}
                   >
-                    {selectedBooking &&
-                    selectedBooking.id === booking.id &&
-                    selectedBooking.status === "confirm"
+                    {bookings.some(
+                      (b) => b.id === booking.id && b.status === "confirm",
+                    )
                       ? "傳送訊息"
                       : "查看"}
                   </button>

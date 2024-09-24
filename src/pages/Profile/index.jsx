@@ -193,8 +193,8 @@ function Profile() {
                           key={index}
                         >
                           {categories.map((category) => (
-                            <option key={category.id} value={category.label}>
-                              {category.label}
+                            <option key={category.id} value={category.name}>
+                              {category.name}
                             </option>
                           ))}
                         </select>
