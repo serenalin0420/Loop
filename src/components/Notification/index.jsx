@@ -4,16 +4,21 @@ import PropTypes from "prop-types";
 
 const Notification = ({ userId }) => {
   const [notifications, setNotifications] = useState([]);
-  console.log(notifications);
 
   useEffect(() => {
     const unsubscribe = dbApi.listenToNotifications(
       userId,
       (newNotifications) => {
-        setNotifications((prevNotifications) => [
-          ...newNotifications,
-          ...prevNotifications,
-        ]);
+        setNotifications((prevNotifications) => {
+          const prevNotificationIds = new Set(
+            prevNotifications.map((n) => n.id),
+          );
+          const filteredNewNotifications = newNotifications.filter(
+            (n) => !prevNotificationIds.has(n.id),
+          );
+
+          return [...filteredNewNotifications, ...prevNotifications];
+        });
       },
     );
 
