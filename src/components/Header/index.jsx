@@ -3,10 +3,10 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState, useContext } from "react";
 import logo from "./logo.svg";
 import { CalendarDots, Bell } from "@phosphor-icons/react";
-// import Notification from "../../components/Notification";
 import { UserContext } from "../../context/userContext";
+import PropTypes from "prop-types";
 
-function Header() {
+function Header({ onNotificationClick }) {
   const navigate = useNavigate();
   const auth = getAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -44,7 +44,6 @@ function Header() {
       <h1 className="text-xl">技能交換</h1>
       {isLoggedIn && (
         <>
-          {/* <Notification userId={user?.uid} /> */}
           <button className="m-1 ml-auto flex p-2">
             <CalendarDots
               className="size-7"
@@ -54,7 +53,7 @@ function Header() {
               onMouseLeave={() => setCalendarWeight("regular")}
             />
           </button>
-          <button className="m-1 flex p-2">
+          <button className="m-1 flex p-2" onClick={onNotificationClick}>
             <Bell
               className="size-7"
               color="#6a5e4a"
@@ -81,5 +80,9 @@ function Header() {
     </div>
   );
 }
+
+Header.propTypes = {
+  onNotificationClick: PropTypes.func.isRequired,
+};
 
 export default Header;

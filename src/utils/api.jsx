@@ -13,6 +13,7 @@ import {
   serverTimestamp,
   updateDoc,
   runTransaction,
+  onSnapshot,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -390,6 +391,11 @@ const dbApi = {
       const fromUserId =
         applicant_uid === demander_uid ? provider_uid : demander_uid;
 
+      const fromUserDoc = await getDoc(doc(db, "users", fromUserId));
+      const fromUserName = fromUserDoc.exists()
+        ? fromUserDoc.data().name
+        : "Unknown";
+
       // 新增 applicant_uid 的通知
       const applicantNotificationRef = collection(
         db,
@@ -399,8 +405,9 @@ const dbApi = {
       );
       await addDoc(applicantNotificationRef, {
         type: "booking_confirm",
-        message: "媒合成功~對方已確認了你的申請",
+        message: "恭喜媒合成功~！ 已確認了你的申請",
         from: fromUserId,
+        fromName: fromUserName,
         created_time: serverTimestamp(),
         read: false,
       });
@@ -410,7 +417,7 @@ const dbApi = {
         const notificationData = {
           type: "course_endtime",
           time: time,
-          message: "課程結束，請填寫學習歷程表",
+          message: "恭喜你完成一堂充實的課程！ 別忘了填寫學習計畫表喔",
           from: "system",
           created_time: serverTimestamp(),
           read: false,
@@ -442,6 +449,62 @@ const dbApi = {
       console.error("Error adding notifications: ", error);
       throw error;
     }
+  },
+
+  // booking_confirm監聽使用者的通知
+  listenToNotifications: (userId, callback) => {
+    const notificationsRef = collection(db, "users", userId, "notifications");
+    const q = query(notificationsRef, where("type", "==", "booking_confirm"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const newNotifications = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(newNotifications);
+    });
+
+    return unsubscribe;
+  },
+
+  checkCourseEndtimeNotifications: async (userId) => {
+    const notificationsRef = collection(db, "users", userId, "notifications");
+    const q = query(notificationsRef, where("type", "==", "course_endtime"));
+
+    const snapshot = await getDocs(q);
+    const now = new Date();
+    const newNotifications = [];
+
+    snapshot.forEach((doc) => {
+      const notification = doc.data();
+      const timeString = notification.time; // "9/28 (六) 16:00 - 16:50"
+      const endTimeString = timeString.split(" - ")[1]; // "16:50"
+
+      // 獲取當前日期
+      const [datePart] = timeString.split(" ");
+      const [month, day] = datePart.split("/").map(Number);
+
+      // 構建結束時間的 Date 對象
+      const [endHour, endMinute] = endTimeString.split(":").map(Number);
+      const endTime = new Date(
+        now.getFullYear(),
+        month - 1,
+        day,
+        endHour,
+        endMinute,
+      );
+
+      const timeDiff = (now - endTime) / 60000; // 差異時間以分鐘計算
+
+      if (timeDiff >= 0 && timeDiff <= 5) {
+        newNotifications.push({
+          id: doc.id,
+          ...notification,
+        });
+      }
+    });
+
+    return newNotifications;
   },
 };
 
