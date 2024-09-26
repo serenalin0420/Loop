@@ -1,24 +1,23 @@
 import { useEffect, useState, useReducer } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import dbApi from "../../utils/api";
 import Introduction from "./Introduction";
 import TimeTable from "../../components/TimeTable";
 import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import CourseSelection from "./CourseSelection";
-import SwitchBtn from "@/components/SideBar/SwitchBtn";
-import { useNavigate } from "react-router-dom";
 import infinite from "../../components/infinite.svg";
+import { CaretLeft } from "@phosphor-icons/react";
 
 function Post() {
   const { postId } = useParams();
   const [post, setPost] = useState();
   const [author, setAuthor] = useState();
   const [state, dispatch] = useReducer(reducer, initialState);
-
+  const [postCategory, setPostCategory] = useState();
   const navigate = useNavigate();
 
-  const handleSwitch = () => {
-    navigate("/");
+  const handleGoBack = () => {
+    navigate(-1);
   };
 
   useEffect(() => {
@@ -26,6 +25,13 @@ function Post() {
       try {
         const postData = await dbApi.getSinglePost(postId);
         setPost(postData);
+
+        if (postData.category_id) {
+          const categoryName = await dbApi.getPostCategory(
+            postData.category_id,
+          );
+          setPostCategory(categoryName);
+        }
 
         if (postData.author_uid) {
           const authorData = await dbApi.getProfile(postData.author_uid);
@@ -195,14 +201,30 @@ function Post() {
       </div>
     );
   };
-
+  console.log(post);
   if (!post || !author) return <div>加載中...</div>;
 
   return (
     <div className="mx-8 mt-20 flex justify-center gap-6">
-      <SwitchBtn onSwitch={handleSwitch} />
       <div className="w-3/4">
+        <div className="flex items-center gap-6">
+          <div onClick={handleGoBack} className="flex items-center">
+            <CaretLeft className="size-8" />
+            返回
+          </div>
+          <h2 className="text-xl font-semibold">{postCategory?.name}</h2>
+        </div>
         <Introduction post={post} author={author} />
+        <CourseSelection
+          post={post}
+          author={author}
+          handleMonthChange={handleMonthChange}
+          handleWeekChange={handleWeekChange}
+          formatDate={formatDate}
+          renderCalendar={renderCalendar}
+          daysOfWeek={daysOfWeek}
+          renderTimeSlots={(day) => renderTimeSlots(day, true)}
+        />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
           <div className="flex h-12 items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
             <img
@@ -226,17 +248,6 @@ function Post() {
             />
           </div>
         </div>
-
-        <CourseSelection
-          post={post}
-          author={author}
-          handleMonthChange={handleMonthChange}
-          handleWeekChange={handleWeekChange}
-          formatDate={formatDate}
-          renderCalendar={renderCalendar}
-          daysOfWeek={daysOfWeek}
-          renderTimeSlots={(day) => renderTimeSlots(day, true)}
-        />
       </div>
     </div>
   );

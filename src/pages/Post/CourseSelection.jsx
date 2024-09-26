@@ -200,16 +200,23 @@ const CourseSelection = ({
   };
 
   return (
-    <div className="mt-8">
-      <h1 className="mb-4 text-center text-2xl">上課需求</h1>
-      <div className="flex justify-between gap-6">
+    <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
+      <div className="flex h-12 items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+        <img
+          src={infinite}
+          alt="infinite-logo"
+          className="mr-2 mt-2 w-14 object-cover"
+        />
+        上課需求
+      </div>
+      <div className="flex justify-between gap-6 p-4">
         {sortedCourseNum.map((num, index) => {
           const coinCost =
             num === "體驗" ? 1 : post.coin_cost * parseInt(num, 10);
           return (
             <div
               key={index}
-              className="card flex w-1/4 flex-wrap items-center justify-center gap-3 rounded-md p-4 shadow-md"
+              className="card flex w-1/4 flex-wrap items-center justify-center gap-3 rounded-md border-2 p-4"
               onClick={() => {
                 setShowModal(true);
                 setSelectedCourse(num);
