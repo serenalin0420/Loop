@@ -134,8 +134,8 @@ const CourseSelection = ({
 
     const bookingData = {
       post_id: post.post_id,
-      demander_uid: findTeachersView ? post.author_uid : user.uid,
-      provider_uid: findTeachersView ? user.uid : post.author_uid,
+      demander_uid: findTeachersView ? user.uid : post.author_uid,
+      provider_uid: findTeachersView ? post.author_uid : user.uid,
       selected_times: selectedTimes.map(formatSelectedTime),
       status: "pending",
       coins_total: selectedCoinCost,
