@@ -14,6 +14,8 @@ import {
   updateDoc,
   runTransaction,
   onSnapshot,
+  writeBatch,
+  and,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -117,6 +119,10 @@ const dbApi = {
   },
 
   async getLearningPortfolio(userId) {
+    console.log(userId);
+    if (!userId) {
+      throw new Error("Invalid userId: userId is undefined or null");
+    }
     try {
       const portfolioQuery = query(
         collection(db, "learning_portfolio"),
@@ -406,6 +412,7 @@ const dbApi = {
       await addDoc(applicantNotificationRef, {
         type: "booking_confirm",
         message: "恭喜媒合成功~！ 已確認了你的申請",
+        booking_id: selectedBooking.booking_id,
         from: fromUserId,
         fromName: fromUserName,
         created_time: serverTimestamp(),
@@ -454,7 +461,13 @@ const dbApi = {
   // booking_confirm監聽使用者的通知
   listenToNotifications: (userId, callback) => {
     const notificationsRef = collection(db, "users", userId, "notifications");
-    const q = query(notificationsRef, where("type", "==", "booking_confirm"));
+    const q = query(
+      notificationsRef,
+      or(
+        where("type", "==", "booking_confirm"),
+        and(where("type", "==", "course_endtime"), where("read", "==", true)),
+      ),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newNotifications = snapshot.docs.map((doc) => ({
@@ -469,11 +482,17 @@ const dbApi = {
 
   checkCourseEndtimeNotifications: async (userId) => {
     const notificationsRef = collection(db, "users", userId, "notifications");
-    const q = query(notificationsRef, where("type", "==", "course_endtime"));
+    const q = query(
+      notificationsRef,
+      where("type", "==", "course_endtime"),
+      where("read", "==", false),
+    );
 
     const snapshot = await getDocs(q);
     const now = new Date();
     const newNotifications = [];
+
+    const batch = writeBatch(db); // 使用批處理來更新多個文檔
 
     snapshot.forEach((doc) => {
       const notification = doc.data();
@@ -495,14 +514,20 @@ const dbApi = {
       );
 
       const timeDiff = (now - endTime) / 60000; // 差異時間以分鐘計算
-
-      if (timeDiff >= 0 && timeDiff <= 5) {
+      console.log(timeDiff);
+      if (timeDiff >= 0 && timeDiff <= 2) {
         newNotifications.push({
           id: doc.id,
           ...notification,
         });
+
+        // 將通知的 read 欄位設置為 true
+        const notificationRef = doc.ref;
+        batch.update(notificationRef, { read: true });
       }
     });
+
+    await batch.commit();
 
     return newNotifications;
   },

@@ -6,6 +6,7 @@ import { CalendarDots, Bell } from "@phosphor-icons/react";
 import { UserContext } from "../../context/userContext";
 import PropTypes from "prop-types";
 import { useLocation } from "react-router-dom";
+import dbApi from "../../utils/api";
 
 function Header({ onNotificationClick }) {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ function Header({ onNotificationClick }) {
   const [calendarWeight, setCalendarWeight] = useState("regular");
   const [bellWeight, setBellWeight] = useState("regular");
   const location = useLocation();
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   useEffect(() => {
     // 當路由改變時恢復預設狀態
@@ -32,6 +34,20 @@ function Header({ onNotificationClick }) {
 
     return () => unsubscribe();
   }, [auth]);
+
+  useEffect(() => {
+    if (user && user.uid) {
+      const unsubscribe = dbApi.listenToNotifications(
+        user.uid,
+        (newNotifications) => {
+          const hasUnread = newNotifications.some((n) => !n.read);
+          setHasUnreadNotifications(hasUnread);
+        },
+      );
+
+      return () => unsubscribe();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     signOut(auth)
@@ -65,8 +81,14 @@ function Header({ onNotificationClick }) {
               onMouseLeave={() => setCalendarWeight("regular")}
             />
           </button>
-          <button className="m-1 flex p-2" onClick={handleNotificationClick}>
+          <button
+            className="relative m-1 flex p-2"
+            onClick={handleNotificationClick}
+          >
             <Bell className="size-7" color="#6a5e4a" weight={bellWeight} />
+            {hasUnreadNotifications && (
+              <span className="absolute right-2 top-[6px] h-3 w-3 rounded-full bg-red-500"></span>
+            )}
           </button>
           <Link to="/profile" className="mx-2">
             <img
