@@ -1,10 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import dbApi from "../../utils/api";
 import PropTypes from "prop-types";
+import Modal from "./Modal";
 
 const Notification = ({ userId }) => {
   const [notifications, setNotifications] = useState([]);
   const intervalRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     const unsubscribe = dbApi.listenToNotifications(
@@ -58,36 +68,47 @@ const Notification = ({ userId }) => {
           .sort((a, b) => b.created_time.seconds - a.created_time.seconds)
           .slice(0, 5)
           .map((notification, index) => (
-            <div key={index} className="my-2 rounded-lg bg-slate-300 px-3 py-2">
+            <div key={index} className="my-2 rounded-lg bg-slate-200 px-3 py-2">
               <p className="text-sm">{notification.message.split(" ")[0]}</p>
               <p className="text-sm">
                 {notification.fromName} {notification.message.split(" ")[1]}
               </p>
-              <small className="text-xs">
-                {notification.type === "booking_confirm" && (
-                  <span>
-                    {`${new Date(
-                      notification.created_time.seconds * 1000,
-                    ).toLocaleDateString("zh-TW", {
-                      month: "numeric",
-                      day: "numeric",
-                    })}  ${new Date(
-                      notification.created_time.seconds * 1000,
-                    ).toLocaleTimeString("zh-TW", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })}`}
-                  </span>
-                )}
-                {notification.type === "course_endtime" && (
-                  <span>
+              {notification.type === "booking_confirm" && (
+                <span className="text-xs">
+                  {`${new Date(
+                    notification.created_time.seconds * 1000,
+                  ).toLocaleDateString("zh-TW", {
+                    month: "numeric",
+                    day: "numeric",
+                  })}  ${new Date(
+                    notification.created_time.seconds * 1000,
+                  ).toLocaleTimeString("zh-TW", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}`}
+                </span>
+              )}
+              {notification.type === "course_endtime" && (
+                <div className="mt-2">
+                  <span className="text-xs">
                     {notification.time.split(" ")[0]}
                     {notification.time.split(")")[1]}
                   </span>
-                )}
-                {/* 你可以根據需要添加更多的通知類型 */}
-              </small>
+                  <button
+                    className="ml-6 rounded-md bg-amber-600 px-3 py-2 text-xs text-white"
+                    onClick={handleOpenModal}
+                  >
+                    填寫學習歷程
+                  </button>
+                  {isModalOpen && (
+                    <Modal
+                      notification={notification}
+                      onClose={handleCloseModal}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           ))
       )}

@@ -388,7 +388,7 @@ const dbApi = {
     }
   },
 
-  async notifyUsersOnBookingConfirm(selectedBooking) {
+  async notifyUsersOnBookingConfirm(selectedBooking, postTitle) {
     try {
       const { applicant_uid, demander_uid, provider_uid, selected_times } =
         selectedBooking;
@@ -420,7 +420,7 @@ const dbApi = {
       });
 
       // 新增 demander_uid 和 provider_uid 的通知
-      const notificationPromises = selected_times.map((time) => {
+      const notificationPromises = selected_times.map((time, index) => {
         const notificationData = {
           type: "course_endtime",
           time: time,
@@ -428,6 +428,8 @@ const dbApi = {
           from: "system",
           created_time: serverTimestamp(),
           read: false,
+          post_title: postTitle,
+          sequence_number: index + 1,
         };
 
         const demanderNotificationRef = collection(
@@ -514,7 +516,7 @@ const dbApi = {
       );
 
       const timeDiff = (now - endTime) / 60000; // 差異時間以分鐘計算
-      console.log(timeDiff);
+
       if (timeDiff >= 0 && timeDiff <= 2) {
         newNotifications.push({
           id: doc.id,
