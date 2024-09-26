@@ -17,6 +17,10 @@ const ApplicationFromOthers = ({ userId }) => {
     const fetchBookingsAndApplicants = async () => {
       try {
         const bookingsData = await dbApi.getBookingsForUser(userId);
+        if (!bookingsData) {
+          console.error("No bookings data found");
+          return;
+        }
         const applicantIds = bookingsData.map((booking) =>
           booking.provider_uid === userId
             ? booking.demander_uid
@@ -81,7 +85,6 @@ const ApplicationFromOthers = ({ userId }) => {
       await dbApi.updateUsersCoins(selectedBooking);
       setSelectedBooking({ ...selectedBooking, status: "confirm" });
 
-      // console.log(selectedBooking);
       await dbApi.notifyUsersOnBookingConfirm(selectedBooking);
 
       // 更新 bookings 狀態
@@ -146,7 +149,9 @@ const ApplicationFromOthers = ({ userId }) => {
                 </div>
               ))
           ) : (
-            <p>Loading applicants...</p>
+            <p className="my-4 text-slate-400">
+              目前沒有人預約，趕快去看看有興趣的貼文!
+            </p>
           )}
         </div>
       </div>

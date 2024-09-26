@@ -90,7 +90,7 @@ const UserApplication = ({ userId }) => {
                 <div key={index} className="flex flex-col items-center">
                   <img
                     src={booking.applicant_profile_picture}
-                    className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md"
+                    className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center p-2 shadow-md"
                     alt="author"
                   />
                   <p className="mt-2">{booking.applicant_name}</p>
