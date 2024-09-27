@@ -1,8 +1,11 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import { X } from "@phosphor-icons/react";
+import { UserContext } from "../../context/userContext";
+import dbApi from "../../utils/api";
 
 function Modal({ notification, onClose }) {
+  const user = useContext(UserContext);
   const [feedback, setFeedback] = useState("");
   const [suggestions, setSuggestions] = useState("");
   const [rating, setRating] = useState(0);
@@ -27,13 +30,29 @@ function Modal({ notification, onClose }) {
     }
   }, [suggestions]);
 
-  console.log(notification);
+  const handleSubmit = async () => {
+    try {
+      const data = {
+        feedback,
+        suggestions,
+        rating,
+        notification,
+      };
+
+      await dbApi.saveLearningPortfolioToDatabase(data, user?.uid);
+      onClose();
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-zinc-800 bg-opacity-20">
       <div className="w-1/2 rounded-lg bg-white p-6">
         <div className="flex justify-between">
-          <h2 className="text-lg font-bold">{notification.post_title}</h2>
+          <h2 className="text-lg font-bold">
+            {`${notification.post_title}  第 ${notification.sequence_number} 堂`}
+          </h2>
           <X className="size-6" onClick={onClose} />
         </div>
         <div className="my-4">
@@ -62,7 +81,7 @@ function Modal({ notification, onClose }) {
             {[...Array(5)].map((_, index) => (
               <svg
                 key={index}
-                className={`size-8 cursor-pointer ${index < rating ? "text-yellow-500" : "text-gray-300"}`}
+                className={`size-8 cursor-pointer ${index < rating ? "text-yellow-400" : "text-slate-200"}`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 onClick={() => handleRating(index)}
@@ -74,12 +93,9 @@ function Modal({ notification, onClose }) {
         </div>
         <div className="flex justify-end">
           <button
-            className="mr-4 mt-4 rounded-md bg-slate-300 px-6 py-2"
-            onClick={onClose}
+            className="mt-4 rounded-md bg-orange-400 px-6 py-2 text-white"
+            onClick={handleSubmit}
           >
-            取消
-          </button>
-          <button className="mt-4 rounded-md bg-orange-400 px-6 py-2 text-white">
             送出
           </button>
         </div>

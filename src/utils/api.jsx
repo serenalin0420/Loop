@@ -425,11 +425,14 @@ const dbApi = {
           type: "course_endtime",
           time: time,
           message: "恭喜你完成一堂充實的課程！ 別忘了填寫學習計畫表喔",
-          from: "system",
           created_time: serverTimestamp(),
           read: false,
           post_title: postTitle,
           sequence_number: index + 1,
+          booking_id: selectedBooking.booking_id,
+          provider_uid: selectedBooking.provider_uid,
+          demander_uid: selectedBooking.demander_uid,
+          post_id: selectedBooking.post_id,
         };
 
         const demanderNotificationRef = collection(
@@ -532,6 +535,122 @@ const dbApi = {
     await batch.commit();
 
     return newNotifications;
+  },
+
+  async saveLearningPortfolioToDatabase(portfolioData, userId) {
+    if (!portfolioData.notification || !portfolioData.notification.booking_id) {
+      throw new Error(
+        "Invalid portfolioData: missing notification or booking_id",
+      );
+    }
+    const learningPortfolioRef = doc(
+      db,
+      "learning_portfolio",
+      portfolioData.notification.booking_id,
+    );
+
+    try {
+      const docSnapshot = await getDoc(learningPortfolioRef);
+
+      if (docSnapshot.exists()) {
+        const existingData = docSnapshot.data();
+        const feedbackArray = existingData.feedback || [];
+        const courseIndex = feedbackArray.findIndex(
+          (item) => item.course === portfolioData.notification.sequence_number,
+        );
+
+        if (courseIndex !== -1) {
+          // 更新現有的 feedback 條目
+          if (userId === portfolioData.notification.demander_uid) {
+            feedbackArray[courseIndex].demander_feedback =
+              portfolioData.feedback;
+            feedbackArray[courseIndex].demander_suggestions =
+              portfolioData.suggestions;
+            feedbackArray[courseIndex].demander_rating = portfolioData.rating;
+          } else if (userId === portfolioData.notification.provider_uid) {
+            feedbackArray[courseIndex].provider_feedback =
+              portfolioData.feedback;
+            feedbackArray[courseIndex].provider_suggestions =
+              portfolioData.suggestions;
+            feedbackArray[courseIndex].provider_rating = portfolioData.rating;
+          }
+        } else {
+          // 添加新的 feedback 條目
+          const newFeedback = {
+            course: portfolioData.notification.sequence_number,
+            ...(userId === portfolioData.notification.demander_uid
+              ? {
+                  demander_feedback: portfolioData.feedback,
+                  demander_suggestions: portfolioData.suggestions,
+                  demander_rating: portfolioData.rating,
+                }
+              : {
+                  provider_feedback: portfolioData.feedback,
+                  provider_suggestions: portfolioData.suggestions,
+                  provider_rating: portfolioData.rating,
+                }),
+          };
+          feedbackArray.push(newFeedback);
+        }
+        await updateDoc(learningPortfolioRef, { feedback: feedbackArray });
+      } else {
+        // 如果文件不存在，創建一個新的文件
+        await setDoc(learningPortfolioRef, {
+          post_id: portfolioData.notification.post_id,
+          booking_id: portfolioData.notification.booking_id,
+          demander_uid: portfolioData.notification.demander_uid,
+          provider_uid: portfolioData.notification.provider_uid,
+          time: portfolioData.notification.time,
+          feedback: [
+            {
+              course: portfolioData.notification.sequence_number,
+              ...(userId === portfolioData.notification.demander_uid
+                ? {
+                    demander_feedback: portfolioData.feedback,
+                    demander_suggestions: portfolioData.suggestions,
+                    demander_rating: portfolioData.rating,
+                  }
+                : {
+                    provider_feedback: portfolioData.feedback,
+                    provider_suggestions: portfolioData.suggestions,
+                    provider_rating: portfolioData.rating,
+                  }),
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error("Error updating/creating feedback:", error);
+    }
+  },
+
+  async hasUserFilledLearningPortfolio(userId, bookingId, courseNumber) {
+    try {
+      const learningPortfolioRef = doc(db, "learning_portfolio", bookingId);
+      const docSnapshot = await getDoc(learningPortfolioRef);
+
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        const feedbackArray = data.feedback || [];
+
+        if (data.demander_uid === userId) {
+          return feedbackArray.some((item) => {
+            return item.course === courseNumber && item.demander_feedback;
+          });
+        } else if (data.provider_uid === userId) {
+          return feedbackArray.some((item) => {
+            return item.course === courseNumber && item.provider_feedback;
+          });
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking learning portfolio:", error);
+      throw error;
+    }
   },
 };
 
