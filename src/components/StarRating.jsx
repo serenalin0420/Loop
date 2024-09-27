@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 
 const StarRating = ({ rating, size }) => {
-  const fullStars = Math.floor(rating); // 計算整數部分
-  const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75; // 判斷是否顯示半顆星
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); // 計算剩餘空星數
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
   const starStyle = {
     width: size,
@@ -16,7 +16,7 @@ const StarRating = ({ rating, size }) => {
       {[...Array(fullStars)].map((_, index) => (
         <svg
           key={`full-${index}`}
-          className="size-5 text-yellow-500"
+          className="size-5 text-yellow-400"
           fill="currentColor"
           viewBox="0 0 20 20"
           style={starStyle}
@@ -37,7 +37,7 @@ const StarRating = ({ rating, size }) => {
               y2="0%"
             >
               <stop offset="50%" stopColor="#FBBF24" /> {/* 黃色的前半部分 */}
-              <stop offset="50%" stopColor="#E5E7EB" /> {/* 灰色的後半部分 */}
+              <stop offset="50%" stopColor="#e2e8f0" /> {/* 灰色的後半部分 */}
             </linearGradient>
           </defs>
           <path
@@ -51,7 +51,7 @@ const StarRating = ({ rating, size }) => {
       {[...Array(emptyStars)].map((_, index) => (
         <svg
           key={`empty-${index}`}
-          className="size-5 text-gray-200"
+          className="size-5 text-slate-200"
           fill="currentColor"
           viewBox="0 0 20 20"
           style={starStyle}
@@ -67,9 +67,5 @@ StarRating.propTypes = {
   rating: PropTypes.number.isRequired,
   size: PropTypes.string,
 };
-
-// StarRating.defaultProps = {
-//   size: "20px", // 默認尺寸
-// };
 
 export default StarRating;

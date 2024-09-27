@@ -25,7 +25,7 @@ function Home() {
     locations: [],
   });
 
-  console.log("findTeachersView:", findTeachersView);
+  // console.log("findTeachersView:", findTeachersView);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -188,32 +188,34 @@ function Home() {
         {findTeachersView ? (
           <div className="m-4">
             <div className="mb-4 flex justify-between px-4">
-              <div className="flex items-center text-lg font-semibold">
+              <div className="flex items-center text-lg font-semibold text-textcolor">
                 排序依據
                 <button
-                  className={`ml-4 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-4 rounded-md px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
                 </button>
               </div>
               <div className="flex items-center">
-                <p className="mr-2 text-sm">找不到你想學的技能嗎?</p>
+                <p className="mr-2 text-sm text-textcolor">
+                  找不到你想學的技能嗎?
+                </p>
                 <Link
                   to="/create-post?view=student"
-                  className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
+                  className="px-ˋ rounded-full bg-[#BFAA87] py-2 font-semibold text-white"
                 >
                   發起學習
                 </Link>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-5">
               {findStudentsPosts.length === 0 ? (
                 <div className="text-center text-gray-500">找不到貼文</div>
               ) : (
@@ -221,7 +223,7 @@ function Home() {
                   <Link
                     to={`/post/${post.id}`}
                     key={post.id}
-                    className="flex flex-col justify-between rounded-lg border border-gray-300 p-4"
+                    className="flex flex-col justify-between rounded-lg p-4 shadow-sm shadow-stone-400"
                   >
                     <div className="flex">
                       <img
@@ -230,14 +232,16 @@ function Home() {
                         alt="author"
                       />
                       <div className="mt-1">
-                        <h4 className="mb-1">{post.author?.name}</h4>
+                        <h4 className="mb-1 text-textcolor">
+                          {post.author?.name}
+                        </h4>
                         <StarRating
+                          className="justify-start"
                           rating={post.author?.review_rating ?? 0}
                           size="16px"
                         />
                       </div>
                       <div className="ml-auto">
-                        <p>{formatDate(post.created_time)}</p>
                         <div className="ml-auto flex size-10 items-center justify-center">
                           <Heart
                             className="size-6"
@@ -253,8 +257,11 @@ function Home() {
                         </div>
                       </div>
                     </div>
-                    <p className="mx-2 mt-2">
-                      {truncateText(post.description, 24)}
+                    <h3 className="mx-2 mt-2 font-semibold text-textcolor">
+                      {post.title}
+                    </h3>
+                    <p className="mx-2 mt-2 text-textcolor">
+                      {truncateText(post.description, 28)}
                     </p>
                     <div className="mx-2 mt-4 flex gap-2">
                       {post.location?.map((loc, index) => (
@@ -267,18 +274,18 @@ function Home() {
                       ))}
                     </div>
                     <div className="mt-4 flex items-center">
+                      <p className="ml-2 text-sm">
+                        {formatDate(post.created_time)}
+                      </p>
                       <img
                         src={coin}
                         alt="coin"
-                        className="mr-1 size-10 object-cover"
+                        className="ml-auto mr-1 size-10 object-cover"
                       />
-                      <p className="text-2xl font-bold text-yellow-900">
+                      <p className="text-2xl font-bold text-yellow-800">
                         {post.coin_cost}
                       </p>
-                      <button className="ml-auto mr-3 rounded-full bg-amber-600 px-3 py-2 text-xs text-white">
-                        學習歷程表
-                      </button>
-                      <button className="rounded-full bg-slate-200 px-3 py-2 text-xs">
+                      <button className="ml-4 mr-3 rounded-full bg-amber-500 px-3 py-2 text-xs text-white">
                         傳送訊息
                       </button>
                     </div>
@@ -290,32 +297,34 @@ function Home() {
         ) : (
           <div className="p-4">
             <div className="mb-4 flex justify-between px-4">
-              <div className="flex items-center text-lg font-semibold">
+              <div className="flex items-center text-lg font-semibold text-textcolor">
                 排序依據
                 <button
-                  className={`ml-4 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-4 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-orange-100 text-yellow-950" : ""}`}
+                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
                 </button>
               </div>
               <div className="flex items-center">
-                <p className="mr-2 text-sm">找不到想學你技能的人嗎?</p>
+                <p className="mr-2 text-sm text-textcolor">
+                  找不到想學你技能的人嗎?
+                </p>
                 <Link
                   to="/create-post?view=teacher"
-                  className="rounded-full bg-[#BFAA87] px-5 py-2 font-semibold text-white"
+                  className="rounded-full bg-[#BFAA87] px-4 py-2 font-semibold text-white"
                 >
                   發布教學
                 </Link>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-5">
               {findTeachersPosts.length === 0 ? (
                 <div className="text-center text-gray-500">找不到貼文</div>
               ) : (
@@ -323,7 +332,7 @@ function Home() {
                   <Link
                     to={`/post/${post.id}`}
                     key={post.id}
-                    className="flex flex-col justify-between rounded-lg border border-gray-300 p-4"
+                    className="flex flex-col justify-between rounded-lg p-4 shadow-sm shadow-stone-400"
                   >
                     <div className="flex">
                       <img
@@ -332,14 +341,15 @@ function Home() {
                         alt="author"
                       />
                       <div className="mt-1">
-                        <h4 className="mb-1">{post.author?.name}</h4>
+                        <h4 className="mb-1 text-textcolor">
+                          {post.author?.name}
+                        </h4>
                         <StarRating
                           rating={post.author?.review_rating ?? 0}
                           size="16px"
                         />
                       </div>
                       <div className="ml-auto">
-                        <p>{formatDate(post.created_time)}</p>
                         <div className="ml-auto flex size-10 items-center justify-center">
                           <Heart
                             className="size-6"
@@ -355,8 +365,11 @@ function Home() {
                         </div>
                       </div>
                     </div>
-                    <p className="mx-2 mt-2">
-                      {truncateText(post.description, 24)}
+                    <h3 className="mx-2 mt-2 font-semibold text-textcolor">
+                      {post.title}
+                    </h3>
+                    <p className="mx-2 mt-2 text-textcolor">
+                      {truncateText(post.description, 28)}
                     </p>
                     <div className="mx-2 mt-4 flex gap-2">
                       {post.location?.map((loc, index) => (
@@ -369,18 +382,18 @@ function Home() {
                       ))}
                     </div>
                     <div className="mt-4 flex items-center">
+                      <p className="ml-2 text-sm">
+                        {formatDate(post.created_time)}
+                      </p>
                       <img
                         src={coin}
                         alt="coin"
-                        className="mr-1 size-10 object-cover"
+                        className="ml-auto mr-1 size-10 object-cover"
                       />
-                      <p className="text-2xl font-bold text-yellow-900">
+                      <p className="text-2xl font-bold text-yellow-800">
                         {post.coin_cost}
                       </p>
-                      <button className="ml-auto mr-3 rounded-full bg-amber-600 px-3 py-2 text-xs text-white">
-                        學習歷程表
-                      </button>
-                      <button className="rounded-full bg-slate-200 px-3 py-2 text-xs">
+                      <button className="ml-4 mr-3 rounded-full bg-amber-500 px-3 py-2 text-xs text-white">
                         傳送訊息
                       </button>
                     </div>

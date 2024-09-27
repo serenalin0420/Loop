@@ -71,6 +71,7 @@ function Filter({ selectedCategory, onFilterChange }) {
       ...provided,
       fontSize: "16px", // 控制框的文字大小
       padding: " 2px 0",
+      borderRadius: "0.375rem",
     }),
     option: (provided) => ({
       ...provided,
@@ -79,11 +80,22 @@ function Filter({ selectedCategory, onFilterChange }) {
     multiValue: (provided) => ({
       ...provided,
       fontSize: "16px", // 多選值的文字大小
-      backgroundColor: "#F0F4FD",
+      backgroundColor: "#cdd8f8",
+      borderRadius: "0.375rem",
+      marginRight: "12px",
     }),
     multiValueLabel: (provided) => ({
       ...provided,
       fontSize: "16px", // 多選值標籤的文字大小
+      paddingLeft: "12px",
+      paddingRight: "0",
+    }),
+    multiValueRemove: (provided) => ({
+      ...provided,
+      fontSize: "16px", // 多選值刪除按鈕的文字大小
+      padding: "0 8px",
+      borderRadius: "0.375rem",
+      ":hover": { backgroundColor: "#aebff3" },
     }),
   };
 
@@ -98,8 +110,8 @@ function Filter({ selectedCategory, onFilterChange }) {
                 key={index}
                 className={`mr-3 cursor-pointer rounded-md px-3 py-1 ${
                   selectedSubcategories.includes(subcategory)
-                    ? "bg-blue-200"
-                    : "bg-slate-100"
+                    ? "bg-[#cdd8f8]"
+                    : "bg-stone-200"
                 }`}
                 onClick={() => {
                   console.log("Clicked subcategory:", subcategory);
@@ -112,15 +124,15 @@ function Filter({ selectedCategory, onFilterChange }) {
         </div>
       )}
       <div className="flex items-center px-6 pt-6">
-        <h3 className="mr-6 font-semibold">時間</h3>
+        <h3 className="mr-6 font-semibold text-textcolor">時間</h3>
         {timePreferences &&
           timePreferences.map((time) => (
             <div
               key={time.value}
               className={`mr-3 cursor-pointer rounded-md px-3 py-1 ${
                 selectedTimePreferences.includes(time.label)
-                  ? "bg-blue-200"
-                  : "bg-slate-100"
+                  ? "bg-[#cdd8f8]"
+                  : "bg-stone-200"
               }`}
               onClick={() => handleTimePreferenceChange(time.label)}
             >
@@ -129,13 +141,14 @@ function Filter({ selectedCategory, onFilterChange }) {
           ))}
       </div>
       <div className="flex items-center px-6 py-6">
-        <h3 className="mr-6 font-semibold">地點</h3>
+        <h3 className="mr-6 font-semibold text-textcolor">地點</h3>
         <Controller
           name="location"
           control={control}
           render={({ field }) => (
             <Select
               {...field}
+              placeholder="線上, 台北市..."
               options={locations}
               isMulti
               className="min-w-36 rounded-md"

@@ -13,7 +13,7 @@ function SwitchBtn({ onSwitch = () => {} }) {
 
   return (
     <div className="flex flex-col items-center rounded-lg px-8 py-5 shadow-md">
-      <h2 className="text-center text-lg font-bold">
+      <h2 className="text-textcolor text-center text-lg font-bold">
         {findTeachersView ? (
           <>
             想學什麼技能? <br />
@@ -29,7 +29,9 @@ function SwitchBtn({ onSwitch = () => {} }) {
       <div className="flex w-40 justify-center rounded-full bg-[#BFAA87] p-2">
         <button
           className={`rounded-full p-1 px-3 text-white ${
-            findTeachersView ? "text-white" : "bg-[#F2EBDF] text-yellow-900"
+            findTeachersView
+              ? "text-white"
+              : "bg-[#F2EBDF] font-semibold text-yellow-800"
           }`}
           onClick={() => handleSwitch(false)}
         >
@@ -37,7 +39,7 @@ function SwitchBtn({ onSwitch = () => {} }) {
         </button>
         <button
           className={`rounded-full p-1 px-3 text-white ${
-            findTeachersView ? "bg-[#F2EBDF] text-yellow-900" : ""
+            findTeachersView ? "bg-[#F2EBDF] font-semibold text-yellow-800" : ""
           }`}
           onClick={() => handleSwitch(true)}
         >
