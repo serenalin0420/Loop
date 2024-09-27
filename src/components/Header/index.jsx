@@ -55,7 +55,7 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
       <h1 className="text-xl">技能交換</h1>
       {isLoggedIn && (
         <>
-          <button className="m-1 ml-auto flex p-2">
+          <Link to="/learning-portfolio" className="m-1 ml-auto flex p-2">
             <CalendarDots
               className="size-7"
               color="#6a5e4a"
@@ -63,7 +63,7 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
               onMouseEnter={() => setCalendarWeight("fill")}
               onMouseLeave={() => setCalendarWeight("regular")}
             />
-          </button>
+          </Link>
           <button
             className="relative m-1 flex p-2"
             onClick={handleNotificationClick}

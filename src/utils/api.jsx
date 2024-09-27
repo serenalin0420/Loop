@@ -14,8 +14,8 @@ import {
   updateDoc,
   runTransaction,
   onSnapshot,
-  writeBatch,
   and,
+  writeBatch,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -265,6 +265,23 @@ const dbApi = {
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
+      throw error;
+    }
+  },
+
+  async getBooking(bookingId) {
+    try {
+      const bookingRef = doc(db, "bookings", bookingId);
+      const bookingSnapshot = await getDoc(bookingRef);
+
+      if (bookingSnapshot.exists()) {
+        return bookingSnapshot.data();
+      } else {
+        console.log("No such booking!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching booking:", error);
       throw error;
     }
   },
@@ -532,7 +549,7 @@ const dbApi = {
       }
     });
 
-    await batch.commit();
+    // await batch.commit();
 
     return newNotifications;
   },
@@ -580,11 +597,13 @@ const dbApi = {
             course: portfolioData.notification.sequence_number,
             ...(userId === portfolioData.notification.demander_uid
               ? {
+                  time: portfolioData.notification.time,
                   demander_feedback: portfolioData.feedback,
                   demander_suggestions: portfolioData.suggestions,
                   demander_rating: portfolioData.rating,
                 }
               : {
+                  time: portfolioData.notification.time,
                   provider_feedback: portfolioData.feedback,
                   provider_suggestions: portfolioData.suggestions,
                   provider_rating: portfolioData.rating,
@@ -596,21 +615,22 @@ const dbApi = {
       } else {
         // 如果文件不存在，創建一個新的文件
         await setDoc(learningPortfolioRef, {
-          post_id: portfolioData.notification.post_id,
+          post_title: portfolioData.notification.post_title,
           booking_id: portfolioData.notification.booking_id,
           demander_uid: portfolioData.notification.demander_uid,
           provider_uid: portfolioData.notification.provider_uid,
-          time: portfolioData.notification.time,
           feedback: [
             {
               course: portfolioData.notification.sequence_number,
               ...(userId === portfolioData.notification.demander_uid
                 ? {
+                    time: portfolioData.notification.time,
                     demander_feedback: portfolioData.feedback,
                     demander_suggestions: portfolioData.suggestions,
                     demander_rating: portfolioData.rating,
                   }
                 : {
+                    time: portfolioData.notification.time,
                     provider_feedback: portfolioData.feedback,
                     provider_suggestions: portfolioData.suggestions,
                     provider_rating: portfolioData.rating,
