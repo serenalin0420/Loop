@@ -6,9 +6,8 @@ import { CalendarDots, Bell } from "@phosphor-icons/react";
 import { UserContext } from "../../context/userContext";
 import PropTypes from "prop-types";
 import { useLocation } from "react-router-dom";
-import dbApi from "../../utils/api";
 
-function Header({ onNotificationClick }) {
+function Header({ onNotificationClick, hasUnreadNotifications }) {
   const navigate = useNavigate();
   const auth = getAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -16,10 +15,8 @@ function Header({ onNotificationClick }) {
   const [calendarWeight, setCalendarWeight] = useState("regular");
   const [bellWeight, setBellWeight] = useState("regular");
   const location = useLocation();
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   useEffect(() => {
-    // 當路由改變時恢復預設狀態
     setBellWeight("regular");
   }, [location]);
 
@@ -34,20 +31,6 @@ function Header({ onNotificationClick }) {
 
     return () => unsubscribe();
   }, [auth]);
-
-  useEffect(() => {
-    if (user && user.uid) {
-      const unsubscribe = dbApi.listenToNotifications(
-        user.uid,
-        (newNotifications) => {
-          const hasUnread = newNotifications.some((n) => !n.read);
-          setHasUnreadNotifications(hasUnread);
-        },
-      );
-
-      return () => unsubscribe();
-    }
-  }, [user]);
 
   const handleLogout = () => {
     signOut(auth)
@@ -111,6 +94,7 @@ function Header({ onNotificationClick }) {
 
 Header.propTypes = {
   onNotificationClick: PropTypes.func.isRequired,
+  hasUnreadNotifications: PropTypes.bool.isRequired,
 };
 
 export default Header;
