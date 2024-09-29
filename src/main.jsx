@@ -7,10 +7,13 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Post from "./pages/Post";
 import CreatePost from "./pages/CreatePost";
-import Profile from "./pages/Profile/index.jsx";
+import Profile from "./pages/Profile";
+import LearningPortfolio from "./pages/LearningPortfolio/index.jsx";
+import SinglePortfolio from "./pages/LearningPortfolio/SinglePortfolio.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/userContext.jsx";
 import { ViewProvider } from "./context/viewContext.jsx";
+
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
@@ -27,8 +30,27 @@ createRoot(document.getElementById("root")).render(
                 <Route path="post/:postId" element={<Post />} />
                 {/* 發布貼文isLogin */}
                 <Route path="create-post" element={<CreatePost />} />
-                {/* profile需要做role自己or其他人判斷 */}
+
+                {/* 當用戶瀏覽自己的個人資料頁面 */}
                 <Route path="profile" element={<Profile />} />
+                {/* 當用戶瀏覽其他用戶的個人資料頁面 */}
+                <Route path="profile/:userId" element={<Profile />} />
+
+                {/* 當用戶瀏覽自己的學習檔案頁面 */}
+                <Route
+                  path="learning-portfolio"
+                  element={<LearningPortfolio />}
+                />
+
+                {/* 當用戶瀏覽特定的學習檔案詳情頁面 */}
+                {/* <Route
+                  path="learning-portfolio/:userId"
+                  element={<LearningPortfolio />}
+                /> */}
+                <Route
+                  path="learning-portfolio/:bookingId"
+                  element={<SinglePortfolio />}
+                />
               </Route>
             </Routes>
           </BrowserRouter>

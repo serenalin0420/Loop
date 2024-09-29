@@ -53,7 +53,6 @@ function LearningPortfolio() {
                   return acc + demanderRating + providerRating;
                 }, 0) /
                 (item.feedback.length * 2);
-              console.log(averageRating);
 
               return {
                 ...item,
@@ -82,20 +81,20 @@ function LearningPortfolio() {
   }
 
   return (
-    <div className="mx-36 mt-24">
-      <div className="flex flex-col rounded-b-lg shadow-md">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr className="border-b-2 border-slate-300 font-semibold">
-              <th className="px-6 py-3">類型</th>
-              <th className="px-6 py-3">學習分類</th>
+    <div className="h-screen bg-[#f2f9fd] py-24">
+      <div className="mx-6 flex max-w-screen-lg flex-col rounded-xl bg-white shadow-md md:mx-12 lg:mx-28 xl:mx-auto">
+        <table className="min-w-full rounded-xl">
+          <thead className="bg-[#BFAA87]">
+            <tr className="text-lg tracking-wide text-white">
+              <th className="rounded-tl-xl px-6 py-3">類型</th>
+              <th className="px-6 py-3">貼文標題</th>
               <th className="px-6 py-3">使用者</th>
               <th className="px-6 py-3">課程狀態</th>
               <th className="px-6 py-3">評價</th>
-              <th className="px-6 py-3">操作</th>
+              <th className="rounded-tr-xl px-6 py-3"></th>
             </tr>
           </thead>
-          <tbody className="bg-white text-center">
+          <tbody className="rounded-xl text-center text-textcolor">
             {noPortfolio || portfolio.length === 0 ? (
               <tr>
                 <td colSpan="6" className="px-12 py-4">
@@ -103,17 +102,34 @@ function LearningPortfolio() {
                 </td>
               </tr>
             ) : (
-              portfolio.map((item) => (
-                <tr key={item.booking_id} className="bg-gray-100">
-                  <td className="px-6 py-4">{item.type}</td>
-                  <td className="px-6 py-4">{item.post_title}</td>
-                  <td className="px-6 py-4">{item.otherUserName}</td>
-                  <td className="px-6 py-4">{item.status}</td>
-                  <td className="px-6 py-4">
+              portfolio.map((item, index) => (
+                <tr
+                  key={item.booking_id}
+                  className={` ${
+                    index % 2 === 0 ? "bg-white" : "bg-[#F9F7F3]"
+                  } `}
+                >
+                  <td
+                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-bl-xl" : ""}`}
+                  >
+                    {item.type}
+                  </td>
+                  <td className="px-5 py-4">{item.post_title}</td>
+                  <td className="px-5 py-4">{item.otherUserName}</td>
+                  <td className="px-5 py-4">{item.status}</td>
+                  <td className="flex justify-center px-6 py-4">
                     <StarRating rating={item.averageRating} size="18px" />
                   </td>
-                  <td className="px-6 py-4">
-                    <Link className="text-blue-500 hover:underline">查看</Link>
+                  <td
+                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-br-xl" : ""}`}
+                  >
+                    <Link
+                      to={`/learning-portfolio/${item.booking_id}`}
+                      className="rounded-full bg-orange-100 px-4 py-2 text-sm text-orange-800 hover:bg-orange-200 active:bg-orange-200"
+                      state={{ portfolio: item }}
+                    >
+                      查看
+                    </Link>
                   </td>
                 </tr>
               ))
