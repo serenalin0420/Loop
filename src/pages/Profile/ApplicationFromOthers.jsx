@@ -47,6 +47,10 @@ const ApplicationFromOthers = ({ userId }) => {
     fetchBookingsAndApplicants();
   }, [userId]);
 
+  const handleSendMessageClick = (currentBooking) => {
+    window.open(`/chat/${currentBooking.applicant_uid}`, "_blank");
+  };
+
   const handleReviewClick = async (booking) => {
     const postTitle = await dbApi.getPostTitle(booking.post_id);
     setSelectedBooking({
@@ -85,7 +89,7 @@ const ApplicationFromOthers = ({ userId }) => {
       await dbApi.updateUsersCoins(selectedBooking);
       setSelectedBooking({ ...selectedBooking, status: "confirm" });
 
-      await dbApi.notifyUsersOnBookingConfirm(selectedBooking);
+      await dbApi.notifyUsersOnBookingConfirm(selectedBooking, postTitle);
 
       // 更新 bookings 狀態
       setBookings((prevBookings) =>
@@ -134,7 +138,7 @@ const ApplicationFromOthers = ({ userId }) => {
                         (b) => b.id === booking.id && b.status === "confirm",
                       );
                       if (currentBooking) {
-                        console.log("傳送訊息");
+                        handleSendMessageClick(currentBooking);
                       } else {
                         handleReviewClick(bookings[index], booking.applicant);
                       }
@@ -157,7 +161,7 @@ const ApplicationFromOthers = ({ userId }) => {
       </div>
       {showModal && selectedBooking && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-xl bg-white px-8 py-6 shadow-lg">
+          <div className="rounded-lg bg-white p-6 shadow-lg">
             <div className="mb-4 flex">
               <img
                 src={selectedBooking.applicant_profile_picture}

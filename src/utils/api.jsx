@@ -77,7 +77,6 @@ const dbApi = {
         created_time: serverTimestamp(),
       };
 
-      // 過濾掉 undefined 的字段
       const filteredPostData = Object.fromEntries(
         Object.entries(postDataWithId).filter(
           ([_, value]) => value !== undefined,
@@ -85,7 +84,7 @@ const dbApi = {
       );
 
       await setDoc(docRef, filteredPostData);
-      console.log("Data successfully written with ID: ", postId);
+      // console.log("Data successfully written with ID: ", postId);
     } catch (error) {
       console.error("Error writing document: ", error);
     }
@@ -549,7 +548,7 @@ const dbApi = {
       }
     });
 
-    // await batch.commit();
+    await batch.commit();
 
     return newNotifications;
   },
@@ -669,6 +668,95 @@ const dbApi = {
       }
     } catch (error) {
       console.error("Error checking learning portfolio:", error);
+      throw error;
+    }
+  },
+
+  // chats
+  async createOrUpdateChat(userId, otherUserId, messageData) {
+    try {
+      const userChatRef = doc(db, "users", userId, "chats", otherUserId);
+      const otherUserChatRef = doc(db, "users", otherUserId, "chats", userId);
+
+      const userChatSnapshot = await getDoc(userChatRef);
+      const otherUserChatSnapshot = await getDoc(otherUserChatRef);
+
+      const timestamp = new Date();
+
+      const chatData = {
+        with_user_id: otherUserId,
+        last_message: messageData.message,
+        last_message_time: timestamp,
+        messages: [
+          {
+            sender_uid: messageData.sender_uid,
+            message: messageData.message,
+            timestamp: timestamp,
+          },
+        ],
+      };
+      if (!userChatSnapshot.exists()) {
+        await setDoc(userChatRef, chatData);
+      } else {
+        const userChatData = userChatSnapshot.data();
+        await updateDoc(userChatRef, {
+          last_message: messageData.message,
+          last_message_time: timestamp,
+          messages: [...userChatData.messages, { ...chatData.messages[0] }],
+        });
+      }
+
+      if (!otherUserChatSnapshot.exists()) {
+        await setDoc(otherUserChatRef, {
+          ...chatData,
+          with_user_id: userId,
+        });
+      } else {
+        const otherUserChatData = otherUserChatSnapshot.data();
+        await updateDoc(otherUserChatRef, {
+          last_message: messageData.message,
+          last_message_time: timestamp,
+          messages: [
+            ...otherUserChatData.messages,
+            { ...chatData.messages[0] },
+          ],
+        });
+      }
+      console.log("Chat successfully created or updated!");
+    } catch (error) {
+      console.error("Error creating or updating chat: ", error);
+      throw error;
+    }
+  },
+
+  async getChatList(userId) {
+    try {
+      const userChatsRef = collection(db, "users", userId, "chats");
+      const userChatsSnapshot = await getDocs(userChatsRef);
+
+      const chatList = userChatsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return chatList;
+    } catch (error) {
+      console.error("Error fetching chat list: ", error);
+      throw error;
+    }
+  },
+  async getChatMessages(userId, otherUserId) {
+    try {
+      const chatRef = doc(db, "users", userId, "chats", otherUserId);
+      const chatSnapshot = await getDoc(chatRef);
+
+      if (chatSnapshot.exists()) {
+        return chatSnapshot.data().messages || [];
+      } else {
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
       throw error;
     }
   },

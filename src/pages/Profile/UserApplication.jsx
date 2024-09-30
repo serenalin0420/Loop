@@ -29,6 +29,7 @@ const UserApplication = ({ userId }) => {
 
         const updatedBookingsData = bookingsData.map((booking, index) => ({
           ...booking,
+          applicant_uid: applicantIds[index],
           applicant_name: applicantsData[index].name,
           applicant_profile_picture: applicantsData[index].profile_picture,
         }));
@@ -40,6 +41,10 @@ const UserApplication = ({ userId }) => {
 
     fetchBookingsAndApplicants();
   }, [userId]);
+
+  const handleSendMessageClick = (currentBooking) => {
+    window.open(`/chat/${currentBooking.applicant_uid}`, "_blank");
+  };
 
   const handleReviewClick = async (booking) => {
     const postTitle = await dbApi.getPostTitle(booking.post_id);
@@ -101,7 +106,7 @@ const UserApplication = ({ userId }) => {
                         (b) => b.id === booking.id && b.status === "confirm",
                       );
                       if (currentBooking) {
-                        console.log("傳送訊息");
+                        handleSendMessageClick(currentBooking);
                       } else {
                         handleReviewClick(bookings[index], booking.applicant);
                       }
