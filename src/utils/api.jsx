@@ -553,6 +553,28 @@ const dbApi = {
     return newNotifications;
   },
 
+  async markNotificationsAsRead(userId, notifications) {
+    try {
+      const unreadNotifications = notifications.filter((n) => !n.read);
+      const batch = writeBatch(db);
+      unreadNotifications.forEach((notification) => {
+        const notificationRef = doc(
+          db,
+          "users",
+          userId,
+          "notifications",
+          notification.id,
+        );
+        batch.update(notificationRef, { read: true });
+      });
+
+      await batch.commit();
+      console.log("Notifications marked as read in the database.");
+    } catch (error) {
+      console.error("Error marking notifications as read: ", error);
+    }
+  },
+
   async saveLearningPortfolioToDatabase(portfolioData, userId) {
     if (!portfolioData.notification || !portfolioData.notification.booking_id) {
       throw new Error(
@@ -745,20 +767,16 @@ const dbApi = {
       throw error;
     }
   },
-  async getChatMessages(userId, otherUserId) {
-    try {
-      const chatRef = doc(db, "users", userId, "chats", otherUserId);
-      const chatSnapshot = await getDoc(chatRef);
 
-      if (chatSnapshot.exists()) {
-        return chatSnapshot.data().messages || [];
+  listenToChatMessages: (userId, otherUserId, callback) => {
+    const chatRef = doc(db, "users", userId, "chats", otherUserId);
+    return onSnapshot(chatRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        callback(docSnapshot.data().messages || []);
       } else {
-        return [];
+        callback([]);
       }
-    } catch (error) {
-      console.error("Error fetching chat messages:", error);
-      throw error;
-    }
+    });
   },
 };
 

@@ -58,25 +58,49 @@ const Notification = ({ userId, notifications }) => {
     { bookingConfirm: [], courseEndtime: [] },
   );
 
-  sortedNotifications.courseEndtime.sort((a, b) => {
-    const timeA = a.time.split(" - ")[1];
-    const dateA = new Date(`1970-01-01T${timeA}:00Z`);
-    const timeB = b.time.split(" - ")[1];
-    const dateB = new Date(`1970-01-01T${timeB}:00Z`);
-
-    return dateB.getTime() - dateA.getTime();
-  });
-
-  sortedNotifications.bookingConfirm.sort(
-    (a, b) => b.created_time.seconds - a.created_time.seconds,
-  );
-
-  const finalNotifications = [
+  const allNotifications = [
     ...sortedNotifications.courseEndtime,
     ...sortedNotifications.bookingConfirm,
-  ].slice(0, 5);
+  ];
 
-  // console.log(notifications);
+  // 根據時間和條件進行排序
+  allNotifications.sort((a, b) => {
+    const getTime = (notification) => {
+      if (notification.type === "course_endtime") {
+        const [date, timeRange] = notification.time.split("   ");
+        const [startTime] = timeRange.split(" - ");
+        const dateTimeString = `${date} ${startTime}`;
+        return new Date(dateTimeString).getTime();
+      } else if (notification.type === "booking_confirm") {
+        return notification.created_time.seconds * 1000;
+      }
+      return 0;
+    };
+
+    // 若 booking_id 相同，type=booking_confirm 的通知排在 type=course_endtime 的下面
+    if (a.booking_id === b.booking_id) {
+      if (a.type === "booking_confirm" && b.type === "course_endtime") {
+        return 1;
+      } else if (a.type === "course_endtime" && b.type === "booking_confirm") {
+        return -1;
+      }
+    }
+
+    // 若 booking_id 不同，type=booking_confirm 用 created_time 轉換、type=course_endtime 的用 time 轉換，拿兩者比較
+    const timeA = getTime(a);
+    const timeB = getTime(b);
+    if (timeA !== timeB) {
+      return timeB - timeA;
+    }
+
+    // 都是 type=course_endtime 的通知，根據 time 排序
+    if (a.type === "course_endtime" && b.type === "course_endtime") {
+      return timeB - timeA;
+    }
+  });
+
+  const finalNotifications = allNotifications.slice(0, 5);
+
   if (loading) return <div>Loading...</div>;
 
   return (
