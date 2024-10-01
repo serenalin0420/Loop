@@ -46,3 +46,17 @@ export const timePreferences = [
   { value: "weekend_day", label: "周末/白天" },
   { value: "weekend_night", label: "周末/晚上" },
 ];
+
+export const sortCategories = [
+  "語言",
+  "程式語言",
+  "攝影剪輯",
+  "美術設計",
+  "運動健身",
+  "料理烘焙",
+  "投資理財",
+  "音樂",
+  "遊戲",
+  "魔法",
+  "其他",
+];

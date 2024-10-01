@@ -11,28 +11,21 @@ import {
   coursesNum,
   coinsOptions,
   timePreferences,
+  sortCategories,
 } from "./options";
 import TimeTable from "../../components/TimeTable";
 import { useLocation } from "react-router-dom";
+import customStyles from "./selectorStyles";
 
-const customStyles = {
-  control: (provided) => ({
-    ...provided,
-    fontSize: "16px", // 控制框的文字大小
-  }),
-  option: (provided) => ({
-    ...provided,
-    fontSize: "16px", // 選項的文字大小
-  }),
-  multiValue: (provided) => ({
-    ...provided,
-    fontSize: "16px", // 多選值的文字大小
-    backgroundColor: "#F0F4FD",
-  }),
-  multiValueLabel: (provided) => ({
-    ...provided,
-    fontSize: "16px", // 多選值標籤的文字大小
-  }),
+const sortCategoriesFn = (categories) => {
+  const categoryOrder = sortCategories.reduce((acc, category, index) => {
+    acc[category] = index;
+    return acc;
+  }, {});
+
+  return categories.sort((a, b) => {
+    return categoryOrder[a.name] - categoryOrder[b.name];
+  });
 };
 
 function CreatePost() {
@@ -307,56 +300,75 @@ function CreatePost() {
   if (error) return <div>Error loading categories</div>;
 
   return (
-    <div className="mx-24 mt-16 pt-8">
-      <div className="h-auto outline">
+    <div
+      className={`py-24 ${view !== "student" ? "bg-[#fcf9f5]" : "bg-slate-50"}`}
+    >
+      <div className="px-6 md:px-8 lg:px-12">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col justify-center px-8 py-3"
+          className="mx-auto flex max-w-screen-lg flex-col justify-center rounded-lg bg-white px-6 py-3 shadow-md md:px-8"
         >
-          <h1 className="border-b border-b-slate-500 pb-3 text-center text-2xl">
-            發布貼文
+          <h1 className="border-b border-b-zinc-300 pb-2 text-center text-xl">
+            {view !== "student" ? "發布教學" : "發起學習"}
           </h1>
 
           <div className="h-auto py-3">
-            <div className="mb-3 items-center">
-              <label className="mr-12 text-xl">標題</label>
+            <div className="mb-3 flex items-center">
+              <label className="mr-7 flex items-center text-nowrap text-sm md:mr-9 md:text-base">
+                標題
+                <span className="ml-1 mt-2 text-lg font-bold text-red-500">
+                  *
+                </span>
+              </label>
               <input
                 {...register("title", { required: true })}
-                className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
-                placeholder="請簡短描述你的貼文內容"
+                className={`w-3/5 rounded-sm px-3 py-2 text-sm text-textcolor md:w-2/5 md:min-w-96 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.title ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-300"}`}
+                placeholder={errors.title ? "必填" : "請簡短描述你的貼文內容"}
               />
-              {errors.title && <span>必填</span>}
             </div>
 
             <div className="mb-3">
-              <div className="mb-3 flex h-10 items-center">
-                <label className="mr-12 text-xl">類別</label>
-                <Controller
-                  name="category"
-                  control={control}
-                  defaultValue={categories?.[0] || null}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      options={(categories || []).map((cat) => ({
-                        value: cat.id,
-                        label: cat.name,
-                      }))}
-                      value={field.value || categories?.[0] || null}
-                      onChange={(selectedOption) => {
-                        field.onChange(selectedOption);
-                        handleCategoryChange(selectedOption);
-                      }}
-                      components={makeAnimated()}
-                      className="w-36 min-w-32"
-                    />
-                  )}
-                />
-                <div className="flex h-10">
-                  <label className="mr-4 text-xl"></label>
+              <div className="mb-3 flex flex-wrap items-center">
+                <div className="flex h-10 items-center">
+                  <label className="mr-7 flex items-center text-nowrap text-sm md:mr-9 md:text-base">
+                    類別
+                    <span className="ml-1 mt-2 text-lg font-bold text-red-500">
+                      *
+                    </span>
+                  </label>
+                  <Controller
+                    name="category"
+                    control={control}
+                    rules={{ required: true }}
+                    defaultValue={null}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        options={sortCategoriesFn(categories || []).map(
+                          (cat) => ({
+                            value: cat.id,
+                            label: cat.name,
+                          }),
+                        )}
+                        value={field.value || null}
+                        onChange={(selectedOption) => {
+                          field.onChange(selectedOption);
+                          handleCategoryChange(selectedOption);
+                        }}
+                        components={makeAnimated()}
+                        className={`w-1/3 min-w-32 md:w-1/4 ${errors.category ? "rounded border border-red-400" : ""}`}
+                        styles={customStyles(view)}
+                        placeholder="語言"
+                      />
+                    )}
+                  />
+                </div>
+                <div className="mt-2 flex w-5/6 flex-wrap items-center md:mt-0 md:w-4/6 lg:w-3/4">
+                  <label className="mr-16 md:mr-2"></label>
                   <Controller
                     name="subcategories"
                     control={control}
+                    rules={{ required: true }}
                     defaultValue={[]}
                     render={({ field }) => (
                       <Select
@@ -367,22 +379,30 @@ function CreatePost() {
                           label: sub,
                         }))}
                         isMulti
+                        className={`w-5/6 md:w-4/6 lg:w-3/4 ${errors.subcategories ? "rounded border border-red-400" : ""}`}
                         onChange={(selectedOption) => {
                           field.onChange(selectedOption);
                           setValue("subcategories", selectedOption);
                         }}
-                        styles={customStyles}
+                        styles={customStyles(view)}
+                        placeholder="請先選擇類別"
                       />
                     )}
                   />
                 </div>
               </div>
               {view !== "student" && (
-                <div className="mb-3 flex h-10 items-center">
-                  <label className="mr-12 text-xl">專長</label>
+                <div className="flex w-full flex-wrap items-center md:w-5/6 lg:min-w-36">
+                  <label className="mr-7 flex items-center text-nowrap text-sm md:mr-9 md:text-base">
+                    專長
+                    <span className="ml-1 mt-2 text-lg font-bold text-red-500">
+                      *
+                    </span>
+                  </label>
                   <Controller
                     name="skills"
                     control={control}
+                    rules={{ required: true }}
                     render={({ field }) => (
                       <Select
                         {...field}
@@ -392,80 +412,113 @@ function CreatePost() {
                         }))}
                         isMulti
                         components={makeAnimated()}
-                        className="basic-multi-select min-w-60"
+                        className={`w-4/6 md:w-4/6 ${errors.skills ? "rounded border border-red-400" : ""}`}
                         classNamePrefix="select"
-                        styles={customStyles}
+                        styles={customStyles(view)}
+                        placeholder="請先選擇類別"
                       />
                     )}
                   />
                 </div>
               )}
             </div>
-            <div className="mb-3 flex h-10 items-center">
-              <label className="mr-2 text-xl">時間偏好</label>
+
+            <div className="mb-3 flex w-full flex-wrap items-center md:w-5/6 lg:min-w-36">
+              <label className="mr-1 flex items-center text-sm md:text-base">
+                時間偏好
+                <span className="ml-1 mt-1 text-lg font-bold text-red-500">
+                  *
+                </span>
+              </label>
               <Controller
                 name="timePreferences"
                 control={control}
+                rules={{ required: true }}
                 render={({ field }) => (
                   <Select
                     {...field}
                     options={timePreferences}
                     isMulti
-                    className="basic-multi-select min-w-60"
+                    className={`w-4/6 md:w-4/6 ${errors.timePreferences ? "rounded border border-red-400" : ""}`}
                     classNamePrefix="select"
-                    styles={customStyles}
+                    styles={customStyles(view)}
+                    placeholder="平日/白天、周末/晚上..."
                   />
                 )}
               />
             </div>
-            <div className="mb-3 flex h-10 items-center">
-              <label className="mr-12 text-xl">地點</label>
+            <div className="mb-3 flex w-full flex-wrap items-center md:w-5/6 lg:min-w-36">
+              <label className="mr-7 flex items-center text-sm md:mr-9 md:text-base">
+                地點
+                <span className="ml-1 mt-2 text-lg font-bold text-red-500">
+                  *
+                </span>
+              </label>
               <Controller
                 name="location"
                 control={control}
+                rules={{ required: true }}
                 render={({ field }) => (
                   <Select
                     {...field}
                     options={locations}
                     isMulti
-                    className="basic-multi-select min-w-60"
+                    className={`w-4/6 md:w-4/6 ${errors.location ? "rounded border border-red-400" : ""}`}
                     classNamePrefix="select"
                     components={makeAnimated()}
-                    styles={customStyles}
+                    styles={customStyles(view)}
+                    placeholder="線上、台北市..."
                   />
                 )}
               />
             </div>
 
             <div className="mb-3 flex items-center">
-              <label className="mr-12 text-xl">介紹</label>
+              <label className="mr-7 flex items-center text-nowrap text-sm md:mr-9 md:text-base">
+                介紹
+                <span className="ml-1 mt-2 text-lg font-bold text-red-500">
+                  *
+                </span>
+              </label>
               <textarea
                 {...register("description", { required: true })}
-                className="min-h-24 w-2/5 min-w-96 bg-slate-100 px-3 py-2"
-                placeholder={introductionPlaceholder}
+                className={`min-h-28 w-full rounded-sm px-3 py-2 text-sm text-textcolor md:w-4/5 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.description ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-300"}`}
+                placeholder={
+                  errors.description
+                    ? `必填: ${introductionPlaceholder}`
+                    : introductionPlaceholder
+                }
               />
-              {errors.description && <span>必填</span>}
             </div>
 
             <div>
               <div className="flex h-10 items-center">
-                <label className="mr-5 text-xl">代幣/堂</label>
+                <label className="mr-1 flex items-center text-sm md:mr-2 md:text-base">
+                  代幣/堂
+                  <span className="ml-1 mt-1 text-lg font-bold text-red-500">
+                    *
+                  </span>
+                </label>
                 <Controller
                   name="coins"
                   control={control}
+                  rules={{ required: true }}
                   render={({ field }) => (
                     <Select
                       {...field}
                       options={coinsOptions}
                       components={makeAnimated()}
-                      className="w-28 min-w-32"
+                      className={`w-28 min-w-32 ${errors.coins ? "rounded border border-red-400" : ""}`}
+                      placeholder="1枚"
                     />
                   )}
                 />
               </div>
 
-              <div className="mb-6 mt-3 flex items-center">
-                <label className="mr-2 text-xl">課程次數</label>
+              <div className="mb-6 mt-3 flex flex-wrap items-center">
+                <label className="mr-2 text-sm md:mr-3 md:text-base">
+                  課程次數
+                </label>
                 <div className="flex flex-col">
                   <Controller
                     name="coursesNum"
@@ -480,22 +533,19 @@ function CreatePost() {
                         options={coursesNum}
                         isMulti
                         components={makeAnimated()}
-                        className="basic-multi-select min-w-60"
-                        classNamePrefix="select"
-                        styles={customStyles}
+                        className={`min-w-60 ${errors.coursesNum ? "rounded border border-red-400" : ""}`}
+                        styles={customStyles(view)}
+                        placeholder="請至少選擇三個次課程，最多四次"
                       />
                     )}
                   />
-                  {errors.coursesNum && (
-                    <span className="mt-1 text-sm text-red-400">
-                      請至少選擇三個次課程，最多四次
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
             <div className="mb-4 flex gap-1">
-              <label className="mr-1 text-xl">學習時間</label>
+              <label className="mr-2 text-sm md:mr-3 md:text-base">
+                學習時間
+              </label>
               <TimeTable
                 state={state}
                 handleMonthChange={handleMonthChange}
@@ -509,20 +559,24 @@ function CreatePost() {
             </div>
             {view !== "student" && (
               <div className="mb-3 flex h-10 items-center">
-                <label className="mr-12 text-xl">介紹影片</label>
+                <label className="mr-2 text-sm md:mr-3 md:text-base">
+                  介紹影片
+                </label>
                 <input
                   {...register("introVideo")}
-                  className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
+                  className="bg-neon-carrot-50 focus:outline-neon-carrot-300 w-3/5 min-w-60 rounded-sm px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 md:w-2/5 md:min-w-96 md:text-base"
                   placeholder="請提供影片連結"
                 />
               </div>
             )}
             {view !== "student" && (
               <div className="mb-3 flex h-10 items-center">
-                <label className="mr-12 text-xl">參考教材</label>
+                <label className="mr-2 text-sm md:mr-3 md:text-base">
+                  參考教材
+                </label>
                 <input
                   {...register("referenceMaterial")}
-                  className="w-2/5 min-w-96 bg-slate-100 py-2 pl-3 text-base"
+                  className="bg-neon-carrot-50 focus:outline-neon-carrot-300 w-3/5 min-w-60 rounded-sm px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 md:w-2/5 md:min-w-96 md:text-base"
                   placeholder="請提供雲端連結"
                 />
               </div>
@@ -530,9 +584,9 @@ function CreatePost() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                className="rounded-md bg-yellow-800 px-6 py-2 text-base text-white"
+                className={`rounded-md px-6 py-2 text-base text-white ${view === "student" ? "bg-cerulean-400" : "bg-neon-carrot-400"}`}
               >
-                發布貼文
+                {view !== "student" ? "發布教學" : "發起學習"}
               </button>
             </div>
           </div>
