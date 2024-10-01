@@ -2,62 +2,46 @@ import { Outlet, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Notification from "./components/Notification";
-import { useContext, useEffect, useRef, useReducer } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { UserContext } from "../src/context/userContext";
 import dbApi from "./utils/api";
-
-const initialState = {
-  showNotifications: false,
-  notifications: [],
-  hasUnreadNotifications: false,
-};
-
-function notificationReducer(state, action) {
-  switch (action.type) {
-    case "TOGGLE_NOTIFICATIONS":
-      return {
-        ...state,
-        showNotifications: !state.showNotifications,
-      };
-    case "SET_NOTIFICATIONS":
-      return {
-        ...state,
-        notifications: action.payload,
-        hasUnreadNotifications: action.payload.some((n) => !n.read),
-      };
-    case "MARK_AS_READ": {
-      const updatedNotifications = state.notifications.map((notification) => ({
-        ...notification,
-        read: true,
-      }));
-      return {
-        ...state,
-        notifications: updatedNotifications,
-        hasUnreadNotifications: false,
-      };
-    }
-    default:
-      return state;
-  }
-}
 
 function App() {
   const user = useContext(UserContext);
   const location = useLocation();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const intervalRef = useRef(null);
-
-  const [state, dispatch] = useReducer(notificationReducer, initialState);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   useEffect(() => {
-    dispatch({ type: "TOGGLE_NOTIFICATIONS", payload: false });
+    setShowNotifications(false);
   }, [location]);
 
   useEffect(() => {
     if (!user) return;
+
     const unsubscribe = dbApi.listenToNotifications(
       user.uid,
       (newNotifications) => {
-        dispatch({ type: "SET_NOTIFICATIONS", payload: newNotifications });
+        setNotifications((prevNotifications) => {
+          const prevNotificationIds = new Set(
+            prevNotifications.map((n) => n.id),
+          );
+          const filteredNewNotifications = newNotifications.filter(
+            (n) => !prevNotificationIds.has(n.id),
+          );
+
+          const allNotifications = [
+            ...filteredNewNotifications,
+            ...prevNotifications,
+          ];
+
+          const hasUnread = allNotifications.some((n) => !n.read);
+          setHasUnreadNotifications(hasUnread);
+
+          return allNotifications;
+        });
       },
     );
 
@@ -66,9 +50,16 @@ function App() {
       if (now.getMinutes() >= 50 && now.getMinutes() <= 55) {
         const courseEndtimeNotifications =
           await dbApi.checkCourseEndtimeNotifications(user.uid);
-        dispatch({
-          type: "SET_NOTIFICATIONS",
-          payload: [...courseEndtimeNotifications, ...state.notifications],
+        setNotifications((prevNotifications) => {
+          const allNotifications = [
+            ...courseEndtimeNotifications,
+            ...prevNotifications,
+          ];
+
+          const hasUnread = allNotifications.some((n) => !n.read);
+          setHasUnreadNotifications(hasUnread);
+
+          return allNotifications;
         });
       }
     };
@@ -81,33 +72,43 @@ function App() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [user, state.notifications]);
+  }, [user]);
 
   const handleNotificationClick = () => {
-    dispatch({ type: "TOGGLE_NOTIFICATIONS" });
+    setShowNotifications((prev) => !prev);
 
-    if (!state.showNotifications) {
-      dispatch({ type: "MARK_AS_READ" });
+    if (!showNotifications) {
+      // 當通知面板打開時，將所有通知標記為已讀
+      setNotifications((prevNotifications) => {
+        const updatedNotifications = prevNotifications.map((notification) => ({
+          ...notification,
+          read: true,
+        }));
+
+        setHasUnreadNotifications(false);
+
+        return updatedNotifications;
+      });
     }
   };
 
   useEffect(() => {
-    if (state.showNotifications) {
-      const unreadNotifications = state.notifications.filter((n) => !n.read);
+    if (showNotifications) {
+      const unreadNotifications = notifications.filter((n) => !n.read);
       if (unreadNotifications.length > 0) {
         dbApi.markNotificationsAsRead(user.uid, unreadNotifications);
       }
     }
-  }, [state.showNotifications, state.notifications, user]);
+  }, [showNotifications, notifications, user]);
 
   return (
     <>
       <Header
         onNotificationClick={handleNotificationClick}
-        hasUnreadNotifications={state.hasUnreadNotifications}
+        hasUnreadNotifications={hasUnreadNotifications}
       />
-      {state.showNotifications && user && (
-        <Notification userId={user.uid} notifications={state.notifications} />
+      {showNotifications && user && (
+        <Notification userId={user.uid} notifications={notifications} />
       )}
       <Outlet />
       <Footer />
