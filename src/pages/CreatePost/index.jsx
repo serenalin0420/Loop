@@ -3,7 +3,7 @@ import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import dbApi from "../../utils/api";
-import { useReducer, useEffect, useContext } from "react";
+import { useReducer, useEffect, useContext, useState } from "react";
 import { UserContext } from "@/context/userContext";
 import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import {
@@ -14,7 +14,7 @@ import {
   sortCategories,
 } from "./options";
 import TimeTable from "../../components/TimeTable";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import customStyles from "./selectorStyles";
 
 const sortCategoriesFn = (categories) => {
@@ -31,6 +31,8 @@ const sortCategoriesFn = (categories) => {
 function CreatePost() {
   const user = useContext(UserContext);
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const view = queryParams.get("view");
@@ -178,7 +180,7 @@ function CreatePost() {
       calendarDays.push(
         <div
           key={day}
-          className={`cursor-pointer px-3 py-2 text-center ${date.toDateString() === state.selectedDate.toDateString() ? "rounded-full border border-yellow-950" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
+          className={`mx-2 cursor-pointer p-1 text-center sm:p-2 md:mx-1 md:px-0 lg:mx-0 lg:px-3 lg:py-2 ${date.toDateString() === state.selectedDate.toDateString() ? `rounded-full border-2 ${view === "student" ? "border-neon-carrot-500" : "border-cerulean-500"}` : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
           onClick={() =>
             !isDisabled &&
             dispatch({ type: actionTypes.SET_SELECTED_DATE, payload: date })
@@ -236,12 +238,44 @@ function CreatePost() {
       return (
         <div
           key={time}
-          className={`mt-1 flex w-full cursor-pointer flex-col px-4 py-1 text-center ${isSelected ? "bg-yellow-300" : ""} ${!isDisabled && !isSelected ? "hover:bg-yellow-100" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
+          className={`mt-1 flex w-full cursor-pointer flex-col px-1 py-1 text-center md:px-2 lg:px-4 ${isSelected ? (view === "student" ? "bg-neon-carrot-200" : "bg-cerulean-200") : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
           onClick={() => !isDisabled && handleTimeSlotClick(day, time)}
         >
           {time}
         </div>
       );
+    });
+  };
+
+  const handleTimeRangeSelect = (startTime, endTime) => {
+    const updatedSelectedTimes = { ...state.selectedTimes };
+    const now = new Date();
+    const currentHour = now.getHours();
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + 3);
+
+    daysOfWeek.forEach((day) => {
+      const dateString = formatDate(day, "yyyy-MM-dd");
+      const selectedTimesForDate = updatedSelectedTimes[dateString] || {};
+
+      for (let time = startTime; time <= endTime; time++) {
+        const isToday = day.toDateString() === now.toDateString();
+        const isBeforeToday =
+          day < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const isDisabled =
+          isBeforeToday || (isToday && time <= currentHour) || day > maxDate;
+
+        if (!isDisabled) {
+          selectedTimesForDate[time] = true;
+        }
+      }
+
+      updatedSelectedTimes[dateString] = selectedTimesForDate;
+    });
+
+    dispatch({
+      type: actionTypes.SET_SELECTED_TIMES,
+      payload: updatedSelectedTimes,
     });
   };
 
@@ -276,7 +310,13 @@ function CreatePost() {
     },
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = (data, event) => {
+    event.preventDefault();
+    setIsModalVisible(true);
+    setTimeout(() => {
+      setIsModalVisible(false);
+      navigate(`/`);
+    }, 3000);
     const postData = {
       title: data.title,
       type: view === "student" ? "發起學習" : "發布教學",
@@ -303,12 +343,12 @@ function CreatePost() {
     <div
       className={`py-24 ${view !== "student" ? "bg-[#fcf9f5]" : "bg-slate-50"}`}
     >
-      <div className="px-6 md:px-8 lg:px-12">
+      <div className="px-6 md:px-8 lg:px-16">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="mx-auto flex max-w-screen-lg flex-col justify-center rounded-lg bg-white px-6 py-3 shadow-md md:px-8"
+          className="mx-auto flex max-w-screen-xl flex-col justify-center rounded-lg bg-white px-6 py-3 shadow-md md:px-8 lg:px-12 xl:px-28"
         >
-          <h1 className="border-b border-b-zinc-300 pb-2 text-center text-xl">
+          <h1 className="border-b border-b-zinc-300 pb-2 text-center text-xl font-semibold">
             {view !== "student" ? "發布教學" : "發起學習"}
           </h1>
 
@@ -363,8 +403,7 @@ function CreatePost() {
                     )}
                   />
                 </div>
-                <div className="mt-2 flex w-5/6 flex-wrap items-center md:mt-0 md:w-4/6 lg:w-3/4">
-                  <label className="mr-16 md:mr-2"></label>
+                <div className="ml-[68px] mt-2 flex w-5/6 flex-wrap items-center md:ml-3 md:mt-0 md:w-4/6">
                   <Controller
                     name="subcategories"
                     control={control}
@@ -426,7 +465,7 @@ function CreatePost() {
             <div className="mb-3 flex w-full flex-wrap items-center md:w-5/6 lg:min-w-36">
               <label className="mr-1 flex items-center text-sm md:text-base">
                 時間偏好
-                <span className="ml-1 mt-1 text-lg font-bold text-red-500">
+                <span className="mt-1 text-lg font-bold text-red-500 md:ml-1">
                   *
                 </span>
               </label>
@@ -493,7 +532,7 @@ function CreatePost() {
 
             <div>
               <div className="flex h-10 items-center">
-                <label className="mr-1 flex items-center text-sm md:mr-2 md:text-base">
+                <label className="mr-2 flex items-center text-sm md:mr-3 md:text-base">
                   代幣/堂
                   <span className="ml-1 mt-1 text-lg font-bold text-red-500">
                     *
@@ -510,14 +549,18 @@ function CreatePost() {
                       components={makeAnimated()}
                       className={`w-28 min-w-32 ${errors.coins ? "rounded border border-red-400" : ""}`}
                       placeholder="1枚"
+                      styles={customStyles(view)}
                     />
                   )}
                 />
               </div>
 
               <div className="mb-6 mt-3 flex flex-wrap items-center">
-                <label className="mr-2 text-sm md:mr-3 md:text-base">
+                <label className="mr-1 flex items-center text-sm md:text-base">
                   課程次數
+                  <span className="mt-1 text-lg font-bold text-red-500 md:ml-1">
+                    *
+                  </span>
                 </label>
                 <div className="flex flex-col">
                   <Controller
@@ -542,8 +585,8 @@ function CreatePost() {
                 </div>
               </div>
             </div>
-            <div className="mb-4 flex gap-1">
-              <label className="mr-2 text-sm md:mr-3 md:text-base">
+            <div className="mb-4 flex flex-col gap-1 md:flex-row">
+              <label className="mb-2 mr-2 text-sm md:mb-0 md:mr-3 md:text-base">
                 學習時間
               </label>
               <TimeTable
@@ -554,6 +597,7 @@ function CreatePost() {
                 renderCalendar={renderCalendar}
                 daysOfWeek={daysOfWeek}
                 renderTimeSlots={renderTimeSlots}
+                handleTimeRangeSelect={handleTimeRangeSelect}
                 message="請選擇從今天起，未來三個月內的可用時間"
               />
             </div>
@@ -591,6 +635,13 @@ function CreatePost() {
             </div>
           </div>
         </form>
+        {isModalVisible && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="rounded-md bg-white p-6">
+              <p>提交成功！即將返回首頁~</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
