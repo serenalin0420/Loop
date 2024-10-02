@@ -13,6 +13,7 @@ function App() {
   const [notifications, setNotifications] = useState([]);
   const intervalRef = useRef(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const isLoginPage = location.pathname === "/login";
 
   useEffect(() => {
     setShowNotifications(false);
@@ -103,15 +104,17 @@ function App() {
 
   return (
     <>
-      <Header
-        onNotificationClick={handleNotificationClick}
-        hasUnreadNotifications={hasUnreadNotifications}
-      />
+      {!isLoginPage && (
+        <Header
+          onNotificationClick={handleNotificationClick}
+          hasUnreadNotifications={hasUnreadNotifications}
+        />
+      )}
       {showNotifications && user && (
         <Notification userId={user.uid} notifications={notifications} />
       )}
       <Outlet />
-      <Footer />
+      {!isLoginPage && <Footer />}
     </>
   );
 }

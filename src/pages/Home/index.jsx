@@ -1,17 +1,19 @@
 import SwitchBtn from "../../components/SideBar/SwitchBtn";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
 import StarRating from "../../components/StarRating";
 import coin from "../../components/coin.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart } from "@phosphor-icons/react";
 import SubCategories from "../../components/SideBar/SubCategories";
 import Filter from "./Filter";
+import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 
 function Home() {
   const user = useContext(UserContext);
+  const navigate = useNavigate();
   const { findTeachersView } = useContext(ViewContext);
   const [posts, setPosts] = useState([]);
   const [sortedPosts, setSortedPosts] = useState([]);
@@ -24,6 +26,14 @@ function Home() {
     timePreferences: [],
     locations: [],
   });
+  const [showModal, setShowModal] = useState(false);
+  const handleCreatePostClick = (view) => {
+    if (!user) {
+      setShowModal(true);
+    } else {
+      navigate(`/create-post?view=${view}`);
+    }
+  };
 
   // console.log("findTeachersView:", findTeachersView);
 
@@ -107,18 +117,21 @@ function Home() {
     setSortedPosts(filteredPosts);
   }, [filterConditions, posts, selectedCategory]);
 
-  const handleHeartClick = async (postId) => {
-    try {
-      const updatedSavedPosts = savedPosts.includes(postId)
-        ? savedPosts.filter((id) => id !== postId)
-        : [...savedPosts, postId];
+  const handleHeartClick = useCallback(
+    async (postId) => {
+      try {
+        const updatedSavedPosts = savedPosts.includes(postId)
+          ? savedPosts.filter((id) => id !== postId)
+          : [...savedPosts, postId];
 
-      setSavedPosts(updatedSavedPosts);
-      await dbApi.updateUserSavedPosts(user.uid, updatedSavedPosts);
-    } catch (error) {
-      console.error("Error updating saved posts:", error);
-    }
-  };
+        setSavedPosts(updatedSavedPosts);
+        await dbApi.updateUserSavedPosts(user.uid, updatedSavedPosts);
+      } catch (error) {
+        console.error("Error updating saved posts:", error);
+      }
+    },
+    [savedPosts, user],
+  );
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
@@ -164,6 +177,10 @@ function Home() {
     }
   };
 
+  const handleSendMessageClick = (postAuthourId) => {
+    window.open(`/chat/${postAuthourId}`, "_blank");
+  };
+
   const findStudentsPosts = sortedPosts.filter(
     (post) => post.type === "發布教學",
   );
@@ -207,12 +224,12 @@ function Home() {
                 <p className="mr-2 text-sm text-textcolor">
                   找不到你想學的技能嗎?
                 </p>
-                <Link
-                  to="/create-post?view=student"
-                  className="px-ˋ rounded-full bg-[#BFAA87] py-2 font-semibold text-white"
+                <button
+                  className="bg-button rounded-full px-4 py-2 font-semibold text-white"
+                  onClick={() => handleCreatePostClick("student")}
                 >
                   發起學習
-                </Link>
+                </button>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-5">
@@ -228,7 +245,7 @@ function Home() {
                     <div className="flex">
                       <img
                         src={post.author?.profile_picture}
-                        className="mr-2 size-14 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
+                        className="mr-2 size-14 rounded-full border-white bg-red-100 object-cover object-center shadow-md shadow-stone-200"
                         alt="author"
                       />
                       <div className="mt-1">
@@ -285,7 +302,13 @@ function Home() {
                       <p className="text-2xl font-bold text-yellow-800">
                         {post.coin_cost}
                       </p>
-                      <button className="ml-4 mr-3 rounded-full bg-amber-500 px-3 py-2 text-xs text-white">
+                      <button
+                        className="ml-4 mr-2 rounded-full bg-sun-400 px-4 py-2 text-sm text-white"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSendMessageClick(post.author_uid);
+                        }}
+                      >
                         傳送訊息
                       </button>
                     </div>
@@ -316,12 +339,12 @@ function Home() {
                 <p className="mr-2 text-sm text-textcolor">
                   找不到想學你技能的人嗎?
                 </p>
-                <Link
-                  to="/create-post?view=teacher"
-                  className="rounded-full bg-[#BFAA87] px-4 py-2 font-semibold text-white"
+                <button
+                  className="bg-button rounded-full px-4 py-2 font-semibold text-white"
+                  onClick={() => handleCreatePostClick("teacher")}
                 >
                   發布教學
-                </Link>
+                </button>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-5">
@@ -337,7 +360,7 @@ function Home() {
                     <div className="flex">
                       <img
                         src={post.author?.profile_picture}
-                        className="mr-2 size-14 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
+                        className="mr-2 size-14 rounded-full border-white bg-red-100 object-cover object-center shadow-md shadow-stone-200"
                         alt="author"
                       />
                       <div className="mt-1">
@@ -393,7 +416,13 @@ function Home() {
                       <p className="text-2xl font-bold text-yellow-800">
                         {post.coin_cost}
                       </p>
-                      <button className="ml-4 mr-3 rounded-full bg-amber-500 px-3 py-2 text-xs text-white">
+                      <button
+                        className="ml-4 mr-2 rounded-full bg-sun-400 px-4 py-2 text-sm text-white"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSendMessageClick(post.author_uid);
+                        }}
+                      >
                         傳送訊息
                       </button>
                     </div>
@@ -404,6 +433,7 @@ function Home() {
           </div>
         )}
       </div>
+      {showModal && <IsLoggedIn onClose={() => setShowModal(false)} />}
     </div>
   );
 }

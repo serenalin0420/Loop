@@ -636,8 +636,8 @@ function CreatePost() {
           </div>
         </form>
         {isModalVisible && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="rounded-md bg-white p-6">
+          <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
+            <div className="rounded-lg bg-white p-6">
               <p>提交成功！即將返回首頁~</p>
             </div>
           </div>
