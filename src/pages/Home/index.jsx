@@ -4,7 +4,7 @@ import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
 import StarRating from "../../components/StarRating";
-import coin from "../../components/coin.svg";
+import coin from "../../assets/coin.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart } from "@phosphor-icons/react";
 import SubCategories from "../../components/SideBar/SubCategories";
@@ -27,6 +27,8 @@ function Home() {
     locations: [],
   });
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const handleCreatePostClick = (view) => {
     if (!user) {
       setShowModal(true);
@@ -39,6 +41,7 @@ function Home() {
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setIsLoading(true); // 開始載入資料
       try {
         const fetchedPosts = await dbApi.getAllPosts();
         const postsWithAuthors = await Promise.all(
@@ -54,6 +57,8 @@ function Home() {
         setSortedPosts(postsWithAuthors);
       } catch (error) {
         console.error("Error fetching posts:", error);
+      } finally {
+        setIsLoading(false); // 資料載入完成
       }
     };
     const fetchCategories = async () => {
@@ -233,7 +238,14 @@ function Home() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-5">
-              {findStudentsPosts.length === 0 ? (
+              {isLoading ? (
+                <div className="col-span-3 mt-6 flex items-center justify-center">
+                  <div className="text-center text-textcolor-brown">
+                    <img src={coin} className="animate-swing my-2 size-16" />
+                    載入中...
+                  </div>
+                </div>
+              ) : findStudentsPosts.length === 0 ? (
                 <div className="text-center text-gray-500">找不到貼文</div>
               ) : (
                 findStudentsPosts.map((post) => (
@@ -348,7 +360,14 @@ function Home() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-5">
-              {findTeachersPosts.length === 0 ? (
+              {isLoading ? (
+                <div className="col-span-3 mt-6 flex items-center justify-center">
+                  <div className="text-center text-textcolor-brown">
+                    <img src={coin} className="animate-swing my-2 size-16" />
+                    載入中...
+                  </div>
+                </div>
+              ) : findStudentsPosts.length === 0 ? (
                 <div className="text-center text-gray-500">找不到貼文</div>
               ) : (
                 findTeachersPosts.map((post) => (

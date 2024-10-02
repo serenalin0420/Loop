@@ -15,6 +15,15 @@ export default {
         "login-bg": "url('/src/pages/Login/bg.svg')",
         "mobile-login-bg": "url('/src/pages/Login/mobile-bg.svg')",
       },
+      keyframes: {
+        swing: {
+          "0%, 100%": { transform: "rotate(-36deg)" },
+          "50%": { transform: "rotate(16deg)" },
+        },
+      },
+      animation: {
+        swing: "swing 1s ease-in-out infinite",
+      },
 
       colors: {
         textcolor: {
@@ -69,5 +78,6 @@ export default {
       },
     },
   },
+  variants: {},
   plugins: [],
 };
