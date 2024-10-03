@@ -1,35 +1,34 @@
 import dbApi from "../../utils/api";
 import { UserContext } from "../../context/userContext";
 import { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import StarRating from "@/components/StarRating";
 
 function LearningPortfolio() {
   const user = useContext(UserContext);
+  const { userId: otherUserId } = useParams();
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
   const [noPortfolio, setNoPortfolio] = useState(false);
 
   useEffect(() => {
     const fetchLearningPortfolio = async () => {
-      if (user && user.uid) {
+      const uid = otherUserId || (user && user.uid);
+      if (uid) {
         try {
-          const userLearningPortfolio = await dbApi.getLearningPortfolio(
-            user.uid,
-          );
+          const userLearningPortfolio = await dbApi.getLearningPortfolio(uid);
           if (!userLearningPortfolio) {
             console.error("userLearningPortfolio is null or undefined");
             setNoPortfolio(true);
             setLoading(false);
             return;
           }
-
           const updatedPortfolio = await Promise.all(
             userLearningPortfolio.map(async (item) => {
-              const type = user.uid === item.demander_uid ? "學習" : "教學";
+              const type = uid === item.demander_uid ? "學習" : "教學";
 
               const otherUserId =
-                user.uid === item.demander_uid
+                uid === item.demander_uid
                   ? item.provider_uid
                   : item.demander_uid;
               const otherUserProfile = await dbApi.getProfile(otherUserId);
@@ -72,29 +71,29 @@ function LearningPortfolio() {
       }
     };
     fetchLearningPortfolio();
-  }, [user]);
+  }, [user, otherUserId]);
 
-  console.log(portfolio);
+  // console.log(portfolio);
 
   if (loading) {
     return <div>Loading</div>;
   }
 
   return (
-    <div className="h-screen bg-[#f2f9fd] py-24">
-      <div className="mx-6 flex max-w-screen-lg flex-col rounded-xl bg-white shadow-md md:mx-12 lg:mx-28 xl:mx-auto">
-        <table className="min-w-full rounded-xl">
-          <thead className="bg-[#BFAA87]">
+    <div className="h-screen py-24">
+      <div className="mx-6 flex max-w-screen-lg flex-col rounded-lg bg-white shadow-md md:mx-12 lg:mx-28 xl:mx-auto">
+        <table className="min-w-full rounded-lg">
+          <thead className="bg-button">
             <tr className="text-lg tracking-wide text-white">
-              <th className="rounded-tl-xl px-6 py-3">類型</th>
+              <th className="rounded-tl-lg px-6 py-3">類型</th>
               <th className="px-6 py-3">貼文標題</th>
-              <th className="px-6 py-3">使用者</th>
+              <th className="px-6 py-3">技能交換對象</th>
               <th className="px-6 py-3">課程狀態</th>
               <th className="px-6 py-3">評價</th>
-              <th className="rounded-tr-xl px-6 py-3"></th>
+              <th className="rounded-tr-lg px-6 py-3"></th>
             </tr>
           </thead>
-          <tbody className="rounded-xl text-center text-textcolor">
+          <tbody className="rounded-lg text-center text-textcolor">
             {noPortfolio || portfolio.length === 0 ? (
               <tr>
                 <td colSpan="6" className="px-12 py-4">
@@ -110,7 +109,7 @@ function LearningPortfolio() {
                   } `}
                 >
                   <td
-                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-bl-xl" : ""}`}
+                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-bl-lg" : ""}`}
                   >
                     {item.type}
                   </td>
@@ -121,11 +120,15 @@ function LearningPortfolio() {
                     <StarRating rating={item.averageRating} size="18px" />
                   </td>
                   <td
-                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-br-xl" : ""}`}
+                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-br-lg" : ""}`}
                   >
                     <Link
-                      to={`/learning-portfolio/${item.booking_id}`}
-                      className="rounded-full bg-orange-100 px-4 py-2 text-sm text-orange-800 hover:bg-orange-200 active:bg-orange-200"
+                      to={
+                        otherUserId
+                          ? `/learning-portfolio/${otherUserId}/${item.booking_id}`
+                          : `/learning-portfolio/${user.uid}/${item.booking_id}`
+                      }
+                      className="rounded-full bg-neon-carrot-100 px-4 py-2 text-sm text-orange-800 shadow-inner hover:bg-orange-200 active:bg-orange-200"
                       state={{ portfolio: item }}
                     >
                       查看

@@ -38,26 +38,19 @@ createRoot(document.getElementById("root")).render(
                     </PrivateRoute>
                   }
                 />
-
                 {/* 當用戶瀏覽自己的個人資料頁面 */}
                 <Route path="profile" element={<Profile />} />
                 {/* 當用戶瀏覽其他用戶的個人資料頁面 */}
                 <Route path="profile/:userId" element={<Profile />} />
                 <Route path="chat/:chatId" element={<Chat />} />
 
-                {/* 當用戶瀏覽自己的學習檔案頁面 */}
                 <Route
-                  path="learning-portfolio"
+                  path="learning-portfolio/:userId"
                   element={<LearningPortfolio />}
                 />
 
-                {/* 當用戶瀏覽特定的學習檔案詳情頁面 */}
-                {/* <Route
-                  path="learning-portfolio/:userId"
-                  element={<LearningPortfolio />}
-                /> */}
                 <Route
-                  path="learning-portfolio/:bookingId"
+                  path="learning-portfolio/:userId/:bookingId"
                   element={<SinglePortfolio />}
                 />
               </Route>

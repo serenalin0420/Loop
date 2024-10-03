@@ -1,35 +1,58 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import dbApi from "@/utils/api";
 
 function SinglePortfolio() {
   const location = useLocation();
-  const { portfolio } = location.state || {};
+  const { userId } = useParams();
+  const { portfolio: initialPortfolio } = location.state || {};
+  const [portfolio, setPortfolio] = useState(initialPortfolio);
   const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0);
   const [providerProfile, setProviderProfile] = useState();
   const [demanderProfile, setDemanderProfile] = useState();
-  const feedback = portfolio.feedback;
-  const currentFeedback = feedback[currentFeedbackIndex];
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!portfolio && userId) {
+      const fetchPortfolio = async () => {
+        try {
+          const fetchedPortfolio = await dbApi.getPortfolio(userId);
+          setPortfolio(fetchedPortfolio);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      fetchPortfolio();
+    }
+  }, [portfolio, userId]);
+
+  useEffect(() => {
+    if (portfolio) {
+      const fetchProfile = async () => {
+        try {
+          const providerProfile = await dbApi.getProfile(
+            portfolio.provider_uid,
+          );
+          const demanderProfile = await dbApi.getProfile(
+            portfolio.demander_uid,
+          );
+          setProviderProfile(providerProfile);
+          setDemanderProfile(demanderProfile);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      fetchProfile();
+    }
+  }, [portfolio]);
+
+  const feedback = portfolio?.feedback || [];
+  const currentFeedback = feedback[currentFeedbackIndex] || {};
 
   const handleGoBack = () => {
     navigate(-1);
   };
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const providerProfile = await dbApi.getProfile(portfolio.provider_uid);
-        const demanderProfile = await dbApi.getProfile(portfolio.demander_uid);
-        setProviderProfile(providerProfile);
-        setDemanderProfile(demanderProfile);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchProfile();
-  }, [portfolio]);
 
   const handlePrevClick = () => {
     setCurrentFeedbackIndex((prevIndex) =>
@@ -52,10 +75,10 @@ function SinglePortfolio() {
   }
 
   return (
-    <div className="h-screen bg-[#f2f9fd] py-20">
+    <div className="h-screen bg-stone-50 py-20">
       <div
         onClick={handleGoBack}
-        className="mx-6 mb-4 flex max-w-screen-lg items-center md:mx-12 lg:mx-28 xl:mx-auto"
+        className="mx-6 mb-4 flex max-w-screen-lg cursor-pointer items-center md:mx-12 lg:mx-28 xl:mx-auto"
       >
         <CaretLeft className="size-8" />
         返回 學習歷程
@@ -67,7 +90,7 @@ function SinglePortfolio() {
         <div className="mt-4 flex items-center justify-between">
           <CaretLeft
             onClick={handlePrevClick}
-            className="size-10 rounded-full bg-orange-50 p-2 text-orange-800 hover:bg-orange-200 active:bg-orange-200"
+            className="size-10 rounded-full bg-neon-carrot-50 p-2 text-neon-carrot-800 hover:bg-neon-carrot-200 active:bg-neon-carrot-200"
             weight="bold"
           />
           <div className="mx-4 w-4/5">
@@ -80,7 +103,7 @@ function SinglePortfolio() {
                 />
                 <p>{providerProfile?.name}</p>
               </div>
-              <h4 className="mb-2 ml-3 w-5/6 rounded-lg bg-orange-50 p-4">
+              <h4 className="mb-2 ml-3 w-5/6 rounded-lg bg-neon-carrot-50 p-4">
                 {currentFeedback.provider_feedback ? (
                   currentFeedback.provider_feedback
                 ) : (
@@ -97,7 +120,7 @@ function SinglePortfolio() {
                 />
                 <p>{demanderProfile?.name}</p>
               </div>
-              <h4 className="mb-2 ml-3 w-5/6 rounded-lg bg-orange-50 p-4">
+              <h4 className="mb-2 ml-3 w-5/6 rounded-lg bg-neon-carrot-50 p-4">
                 {currentFeedback.demander_feedback ? (
                   currentFeedback.demander_feedback
                 ) : (
@@ -109,7 +132,7 @@ function SinglePortfolio() {
 
           <CaretRight
             onClick={handleNextClick}
-            className="size-10 rounded-full bg-orange-50 p-2 text-orange-800 hover:bg-orange-200 active:bg-orange-200"
+            className="size-10 rounded-full bg-neon-carrot-50 p-2 text-neon-carrot-800 hover:bg-neon-carrot-200 active:bg-neon-carrot-200"
             weight="bold"
           />
         </div>
@@ -118,7 +141,7 @@ function SinglePortfolio() {
           {feedback.map((_, index) => (
             <button
               key={index}
-              className={`size-2 rounded-full ${index === currentFeedbackIndex ? "bg-orange-400" : "bg-stone-300"}`}
+              className={`size-2 rounded-full ${index === currentFeedbackIndex ? "bg-neon-carrot-400" : "bg-stone-300"}`}
               onClick={() => handleDotClick(index)}
             ></button>
           ))}
