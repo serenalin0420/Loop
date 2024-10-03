@@ -1,17 +1,65 @@
 import PropTypes from "prop-types";
-// import StarRating from "../../components/StarRating";
 import { Heart, BookBookmark, ChatCircleDots } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext, useEffect, useCallback } from "react";
+import { UserContext } from "../../context/UserContext";
+import dbApi from "../../utils/api";
 
 const Introduction = ({ post, author }) => {
+  const user = useContext(UserContext);
   const [bookmarkWeight, setBookmarkWeight] = useState("regular");
   const [chatWeight, setChatWeight] = useState("regular");
+  const [savedPost, setSavedPost] = useState([]);
+
+  useEffect(() => {
+    const fetchSavedPosts = async () => {
+      try {
+        if (user) {
+          const userProfile = await dbApi.getProfile(user.uid);
+          setSavedPost(userProfile.saved_posts);
+        } else {
+          console.log("No saved posts found for this user.");
+        }
+      } catch (error) {
+        console.error("Error fetching saved posts:", error);
+      }
+    };
+
+    if (user) {
+      fetchSavedPosts();
+    }
+  }, [user]);
+
+  const handleHeartClick = useCallback(
+    async (postId) => {
+      try {
+        const postSummary = {
+          post_id: postId,
+          title: post.title,
+          author: author.name,
+        };
+
+        const isPostSaved = savedPost.some(
+          (savedPost) => savedPost.post_id === postId,
+        );
+
+        const updatedSavedPosts = isPostSaved
+          ? savedPost.filter((savedPost) => savedPost.post_id !== postId)
+          : [...savedPost, postSummary];
+
+        setSavedPost(updatedSavedPosts);
+        await dbApi.updateUserSavedPosts(user.uid, updatedSavedPosts);
+      } catch (error) {
+        console.error("Error updating saved posts:", error);
+      }
+    },
+    [savedPost, user, post, author],
+  );
 
   const handleSendMessageClick = (postAuthourId) => {
     window.open(`/chat/${postAuthourId}`, "_blank");
   };
-  console.log(author);
+  // console.log(post);
 
   return (
     <div className="rounded-lg p-4 shadow-md">
@@ -22,10 +70,7 @@ const Introduction = ({ post, author }) => {
           alt="author"
         />
         <div className="flex flex-col gap-1">
-          <h3 className="flex items-center gap-3 md:text-lg">
-            {author.name}
-            {/* <StarRating rating={author.review_rating} /> */}
-          </h3>
+          <h3 className="flex items-center gap-3 md:text-lg">{author.name}</h3>
           <h4 className="font-semibold md:text-lg">{post.title}</h4>
         </div>
         <Link
@@ -59,7 +104,19 @@ const Introduction = ({ post, author }) => {
         </button>
 
         <div className="flex size-8 items-center justify-center md:size-10">
-          <Heart className="size-7 md:size-8" color="#FF8964" weight="bold" />
+          <Heart
+            className="size-7 md:size-8"
+            color="#FF8964"
+            weight={
+              savedPost.some((savedPost) => savedPost.post_id === post.post_id)
+                ? "fill"
+                : "bold"
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              handleHeartClick(post.post_id);
+            }}
+          />
         </div>
       </div>
 
@@ -120,6 +177,7 @@ const Introduction = ({ post, author }) => {
 
 Introduction.propTypes = {
   post: PropTypes.shape({
+    post_id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     skills: PropTypes.arrayOf(PropTypes.string),
     time_preference: PropTypes.arrayOf(PropTypes.string),
