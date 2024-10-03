@@ -5,8 +5,8 @@ import Introduction from "./Introduction";
 import TimeTable from "../../components/TimeTable";
 import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import CourseSelection from "./CourseSelection";
-import infinite from "../../components/infinite.svg";
-import { CaretLeft } from "@phosphor-icons/react";
+import infinite from "../../assets/infinite.svg";
+import { CaretLeft, CheckFat } from "@phosphor-icons/react";
 
 function Post() {
   const { postId } = useParams();
@@ -201,18 +201,23 @@ function Post() {
       </div>
     );
   };
-  console.log(post);
-  if (!post || !author) return <div>加載中...</div>;
+  // console.log(post);
+  if (!post || !author) return <div>LLoading...</div>;
 
   return (
-    <div className="mx-8 mt-20 flex justify-center gap-6">
-      <div className="w-3/4">
-        <div className="flex items-center gap-6">
-          <div onClick={handleGoBack} className="flex items-center">
-            <CaretLeft className="size-8" />
+    <div className="my-20 flex justify-center gap-6">
+      <div className="mx-6 flex max-w-screen-lg flex-col md:mx-12 lg:mx-28 xl:mx-auto">
+        <div className="mb-4 flex items-center gap-6">
+          <div
+            onClick={handleGoBack}
+            className="flex cursor-pointer items-center"
+          >
+            <CaretLeft className="size-6 sm:size-8" />
             返回
           </div>
-          <h2 className="text-xl font-semibold">{postCategory?.name}</h2>
+          <h2 className="text-lg font-semibold sm:text-xl">
+            {postCategory?.name}
+          </h2>
         </div>
         <Introduction post={post} author={author} />
         <CourseSelection
@@ -226,15 +231,19 @@ function Post() {
           renderTimeSlots={(day) => renderTimeSlots(day, true)}
         />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
-          <div className="flex h-12 items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+          <div className="flex h-11 items-center rounded-t-lg bg-button px-6">
             <img
               src={infinite}
               alt="infinite-logo"
-              className="mr-2 mt-2 w-14 object-cover"
+              className="mr-2 mt-2 w-12 object-cover"
             />
-            學習時間表
+            <p className="mt-1 text-lg text-white">學習時間表</p>
           </div>
-          <div className="mx-4 my-6 flex justify-center gap-4">
+          <p className="mx-10 mt-4 flex text-textcolor">
+            <CheckFat className="mr-2 size-6 text-icon" weight="duotone" />
+            要預約課程，請先選取您的上課需求~
+          </p>
+          <div className="mx-4 my-4 flex flex-col justify-center gap-4 md:flex-row">
             <TimeTable
               post={post}
               state={state}

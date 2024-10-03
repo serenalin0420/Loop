@@ -1,13 +1,14 @@
 import PropTypes from "prop-types";
-import coin from "../../components/coin.svg";
-import { useReducer, useState, useContext } from "react";
+import coin from "../../assets/coin.svg";
+import { useReducer, useState, useContext, useEffect } from "react";
 import TimeTable from "../../components/TimeTable";
 import { initialState, reducer, actionTypes } from "../../context/postReducer";
 import dbApi from "@/utils/api";
 import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
-import infinite from "../../components/infinite.svg";
+import infinite from "../../assets/infinite.svg";
 import { X } from "@phosphor-icons/react";
+import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 
 const CourseSelection = ({
   post,
@@ -24,6 +25,7 @@ const CourseSelection = ({
   const [selectedCoinCost, setSelectedCoinCost] = useState();
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { findTeachersView } = useContext(ViewContext);
   const user = useContext(UserContext);
@@ -104,7 +106,7 @@ const CourseSelection = ({
                   isAvailable
                     ? "font-semibold text-yellow-800"
                     : "text-zinc-400"
-                } ${isSelected ? "bg-yellow-300" : ""}`}
+                } ${isSelected ? "bg-cerulean-200" : ""}`}
                 onClick={() => isAvailable && handleTimeSlotClick(day, time)}
               >
                 {time}
@@ -121,6 +123,10 @@ const CourseSelection = ({
   };
 
   const handleConfirm = async () => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
     if (
       (selectedCourse === "體驗" && selectedTimes.length < 1) ||
       (selectedCourse !== "體驗" &&
@@ -161,7 +167,7 @@ const CourseSelection = ({
         },
         {},
       );
-      console.log("updatedTimes", updatedTimes);
+      // console.log("updatedTimes", updatedTimes);
 
       await dbApi.updatePost(post.post_id, {
         datetime: {
@@ -199,64 +205,91 @@ const CourseSelection = ({
     return `${formattedDate} (${dayOfWeek})   ${startTime} - ${endTime}`;
   };
 
+  useEffect(() => {
+    if (showModal) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [showModal]);
+
   return (
     <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
-      <div className="flex h-12 items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+      <div className="flex h-11 items-center rounded-t-lg bg-button px-6 text-lg text-white">
         <img
           src={infinite}
           alt="infinite-logo"
-          className="mr-2 mt-2 w-14 object-cover"
+          className="mr-2 mt-2 w-12 object-cover"
         />
-        上課需求
+        <p className="mt-1">上課需求</p>
       </div>
-      <div className="flex justify-between gap-6 p-4">
+      <div
+        className={`flex flex-col justify-between gap-4 py-4 sm:flex-row ${sortedCourseNum.length === 3 ? "px-16 xl:px-24" : "px-6"} `}
+      >
         {sortedCourseNum.map((num, index) => {
           const coinCost =
             num === "體驗" ? 1 : post.coin_cost * parseInt(num, 10);
+          const widthClass =
+            sortedCourseNum.length === 3
+              ? "sm:w-1/3 sm:mx-2 md:mx-7 xl:mx-6"
+              : "sm:w-1/4 ";
           return (
             <div
               key={index}
-              className="card flex w-1/4 flex-wrap items-center justify-center gap-3 rounded-md border-2 p-4"
+              className={`flex ${widthClass} items-center justify-center gap-2 rounded-md border-2 p-2 sm:flex-wrap sm:p-3 lg:p-4`}
               onClick={() => {
                 setShowModal(true);
                 setSelectedCourse(num);
                 setSelectedCoinCost(coinCost);
               }}
             >
-              <img src={coin} alt="coin" className="size-16 object-cover" />
-              <p className="text-xl">x</p>
-              <p className="text-3xl font-bold text-yellow-900">{coinCost}</p>
-              <p className="w-full text-center">{getDisplayText(num)}</p>
+              <img
+                src={coin}
+                alt="coin"
+                className="size-7 object-cover sm:size-10 md:size-12 lg:size-14"
+              />
+              <p className="md:text-xl">x</p>
+              <p className="text-lg font-bold text-yellow-800 md:text-xl lg:text-2xl">
+                {coinCost}
+              </p>
+              <p className="ml-8 text-center text-xs sm:ml-0 sm:text-sm lg:text-base">
+                {getDisplayText(num)}
+              </p>
             </div>
           );
         })}
       </div>
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative top-16 flex max-h-[calc(100vh-32px)] flex-col overflow-y-auto rounded-xl bg-white px-8 py-4 shadow-md">
+        <div className="fixed inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50 px-8 py-32 md:px-16">
+          <div className="relative top-20 flex max-h-[calc(100vh-32px)] flex-col overflow-y-auto rounded-lg bg-white px-6 pb-6 pt-4 shadow-md lg:px-8">
             <div className="flex items-center">
               <img
                 src={author.profile_picture}
-                className="my-2 mr-3 h-20 w-20 rounded-full border-white bg-red-100 object-cover object-center shadow-md"
+                className="my-2 mr-3 size-14 rounded-full border-white bg-red-100 object-cover object-center shadow-md sm:size-16 lg:size-20"
                 alt="author"
               />
               <div className="flex flex-col">
-                <h2 className="mb-1 text-xl font-semibold">{post.title}</h2>
-                <h3>{author.name}</h3>
+                <h2 className="mb-1 text-nowrap font-semibold lg:text-xl">
+                  {post.title}
+                </h2>
+                <h3 className="text-nowrap">{author.name}</h3>
               </div>
               {selectedCourse && (
-                <div className="ml-52 mr-8 mt-auto text-lg">
+                <div className="mb-1 ml-auto mr-4 mt-auto text-nowrap sm:mr-8 lg:mb-0 lg:text-lg">
                   次數：{selectedCourse}
                 </div>
               )}
-              <div className="mt-auto flex items-center text-lg">
+              <div className="mt-auto flex items-center text-nowrap lg:text-lg">
                 獲得：
                 <img
                   src={coin}
                   alt="coin"
                   className="mr-2 size-8 object-cover"
                 />
-                <p className="text-lg">x {selectedCoinCost}</p>
+                <p className="lg:text-lg">x {selectedCoinCost}</p>
               </div>
               <button
                 className="ml-auto self-start p-2"
@@ -266,17 +299,17 @@ const CourseSelection = ({
               </button>
             </div>
 
-            <div className="mt-2 flex gap-4">
+            <div className="mt-2 flex flex-col justify-around sm:flex-row lg:justify-start lg:gap-4">
               <div className="flex flex-col rounded-b-lg shadow-md">
-                <div className="flex h-12 w-full items-center rounded-t-lg bg-zinc-500 px-6 text-xl text-white">
+                <div className="flex h-10 w-full items-center rounded-t-lg bg-button px-6 sm:h-12">
                   <img
                     src={infinite}
                     alt="infinite-logo"
-                    className="mr-2 mt-2 w-14 object-cover"
+                    className="mr-2 mt-2 w-12 object-cover sm:w-14"
                   />
-                  學習時間表
+                  <p className="mt-1 text-white sm:text-lg">學習時間表</p>
                 </div>
-                <div className="m-6 flex justify-center">
+                <div className="mx-2 my-4 flex flex-col justify-center md:ml-6 lg:flex-row">
                   <TimeTable
                     post={post}
                     state={modalState}
@@ -291,28 +324,38 @@ const CourseSelection = ({
                   />
                 </div>
               </div>
-              <div className="flex flex-col items-center">
-                <h3 className="mt-12 text-lg font-semibold">已選擇的時段</h3>
-                <ul>
-                  {selectedTimes.map((time, index) => (
-                    <li key={index}>{formatSelectedTime(time)}</li>
-                  ))}
-                </ul>
-                {errorMessage && (
-                  <div className="mt-4 text-sm text-red-500">
-                    {errorMessage}
-                  </div>
-                )}
-                <button
-                  className="mt-auto self-end rounded-md bg-orange-400 px-4 py-2 text-white"
-                  onClick={handleConfirm}
-                >
-                  確認
-                </button>
+              <div className="ml-4 mt-16 flex flex-col lg:mx-2">
+                <div className="sticky top-0 flex w-full flex-col bg-neon-carrot-50 p-2 shadow md:p-4">
+                  <h3 className="font-semibold lg:text-lg">已選擇的時段</h3>
+                  <ul className="mt-2">
+                    {selectedTimes.map((time, index) => (
+                      <li key={index} className="mt-2 text-nowrap">
+                        {formatSelectedTime(time)}
+                      </li>
+                    ))}
+                  </ul>
+                  {errorMessage && (
+                    <div className="mt-4 text-sm text-red-500">
+                      {errorMessage}
+                    </div>
+                  )}
+                  <button
+                    className="mt-4 rounded-md bg-neon-carrot-400 px-4 py-2 text-white"
+                    onClick={handleConfirm}
+                  >
+                    確認
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      )}
+      {showLoginModal && (
+        <IsLoggedIn
+          onClose={() => setShowLoginModal(false)}
+          message="預約時段要先登入，才能知道你是誰喔~趕快登入吧！"
+        />
       )}
     </div>
   );
