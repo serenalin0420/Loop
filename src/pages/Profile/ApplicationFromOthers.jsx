@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import dbApi from "../../utils/api";
 import PropTypes from "prop-types";
-import coin from "../../components/coin.svg";
-import infinite from "../../components/infinite.svg";
+import coin from "../../assets/coin.svg";
+import infinite from "../../assets/infinite.svg";
 import { X } from "@phosphor-icons/react";
+import { SmileyMelting } from "@phosphor-icons/react";
 
 const ApplicationFromOthers = ({ userId }) => {
   const [bookings, setBookings] = useState([]);
@@ -12,6 +13,8 @@ const ApplicationFromOthers = ({ userId }) => {
   const [postTitle, setPostTitle] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] =
+    useState(false);
 
   useEffect(() => {
     const fetchBookingsAndApplicants = async () => {
@@ -85,38 +88,50 @@ const ApplicationFromOthers = ({ userId }) => {
 
   const handleAcceptClick = async () => {
     if (selectedBooking) {
-      await dbApi.updateBookingStatus(selectedBooking.id, "confirm");
-      await dbApi.updateUsersCoins(selectedBooking);
-      setSelectedBooking({ ...selectedBooking, status: "confirm" });
+      try {
+        // 確認代幣足夠
+        await dbApi.updateUsersCoins(selectedBooking);
 
-      await dbApi.notifyUsersOnBookingConfirm(selectedBooking, postTitle);
+        await dbApi.updateBookingStatus(selectedBooking.id, "confirm");
+        setSelectedBooking({ ...selectedBooking, status: "confirm" });
 
-      // 更新 bookings 狀態
-      setBookings((prevBookings) =>
-        prevBookings.map((booking) =>
-          booking.id === selectedBooking.id
-            ? { ...booking, status: "confirm" }
-            : booking,
-        ),
-      );
+        await dbApi.notifyUsersOnBookingConfirm(selectedBooking, postTitle);
 
-      setShowModal(false);
-      setTimeout(() => {
-        setShowSuccessModal(true);
+        setBookings((prevBookings) =>
+          prevBookings.map((booking) =>
+            booking.id === selectedBooking.id
+              ? { ...booking, status: "confirm" }
+              : booking,
+          ),
+        );
+
+        setShowModal(false);
         setTimeout(() => {
-          setShowSuccessModal(false);
-        }, 2000);
-      }, 0);
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 2000);
+        }, 0);
+      } catch (error) {
+        if (
+          error.message === "Insufficient coins to complete the transaction!"
+        ) {
+          setShowInsufficientCoinsModal(true);
+          setShowModal(false);
+        } else {
+          console.error("Error accepting booking:", error);
+        }
+      }
     }
   };
 
   return (
     <>
-      <div className="flex flex-col rounded-lg shadow-md">
-        <h3 className="max-w-max rounded-r-lg bg-[#BFAA87] px-4 py-2 text-center tracking-wider text-white">
+      <div className="flex flex-col overflow-x-auto rounded-lg shadow-md">
+        <h3 className="max-w-max rounded-r-lg bg-button px-4 py-2 text-center tracking-wider text-white">
           他人預約 / 申請
         </h3>
-        <div className="flex gap-8 px-6 py-4">
+        <div className="flex max-w-full gap-3 overflow-x-auto px-6 py-4">
           {bookings && bookings.length > 0 ? (
             bookings
               .filter(
@@ -124,15 +139,18 @@ const ApplicationFromOthers = ({ userId }) => {
                   booking.status === "pending" || booking.status === "confirm",
               )
               .map((booking, index) => (
-                <div key={index} className="flex flex-col items-center">
+                <div
+                  key={index}
+                  className="flex min-w-[68%] flex-col items-center md:min-w-[38%] lg:min-w-[25%]"
+                >
                   <img
                     src={booking.applicant_profile_picture}
-                    className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center p-2 shadow-md"
+                    className="size-16 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md"
                     alt="author"
                   />
-                  <p className="mt-2">{booking.applicant_name}</p>
+                  <p className="mt-2 text-sm">{booking.applicant_name}</p>
                   <button
-                    className="mb-4 mt-2 max-w-max rounded-full bg-yellow-700 px-4 py-2 text-sm text-white"
+                    className="mb-4 mt-2 max-w-max rounded-full bg-sun-400 px-3 py-2 text-sm text-white"
                     onClick={() => {
                       const currentBooking = bookings.find(
                         (b) => b.id === booking.id && b.status === "confirm",
@@ -153,71 +171,75 @@ const ApplicationFromOthers = ({ userId }) => {
                 </div>
               ))
           ) : (
-            <p className="my-4 text-slate-400">
+            <p className="my-4 text-stone-500">
               目前沒有人預約，趕快去看看有興趣的貼文!
             </p>
           )}
         </div>
       </div>
       {showModal && selectedBooking && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-lg bg-white p-6 shadow-lg">
-            <div className="mb-4 flex">
+        <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative rounded-xl bg-white px-8 py-6 shadow-lg">
+            <button
+              className="absolute right-2 top-2 p-2"
+              onClick={handleCloseModal}
+            >
+              <X className="size-6" />
+            </button>
+            <div className="mb-2 flex">
               <img
                 src={selectedBooking.applicant_profile_picture}
-                className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center p-2 shadow-md"
+                className="size-16 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md"
                 alt="applicant"
               />
               <div className="my-auto ml-3">
-                <h2 className="mb-2 mt-1 text-lg font-semibold">{postTitle}</h2>
+                <h2 className="mt-1 text-lg font-semibold">{postTitle}</h2>
                 <p>{selectedBooking.applicant_name}</p>
               </div>
-              <p className="mb-2 mr-2 mt-auto">
+              <p className="ml-8 mr-1 mt-auto leading-8">
                 次數 : {selectedBooking.selected_times.length}
               </p>
-              <div className="flex flex-col items-end">
-                <button className="p-2" onClick={handleCloseModal}>
-                  <X className="size-6" />
-                </button>
+              <div className="mt-auto flex flex-col">
                 <div className="mr-2 flex items-center">
-                  <p className="p-2">
+                  <p className="pl-2">
                     {selectedBooking.provider_uid === userId
-                      ? "獲得 : "
-                      : "支付 : "}
+                      ? "獲得 :"
+                      : "支付 :"}
                   </p>
-                  <img src={coin} alt="coin" className="size-9 object-cover" />
-                  <p className="px-2">x {selectedBooking.coins_total}</p>
+                  <img src={coin} alt="coin" className="size-8 object-cover" />
+                  <p className="px-1">x {selectedBooking.coins_total}</p>
                 </div>
               </div>
             </div>
-            <div className="jus flex h-11 w-full items-center rounded-t-lg bg-zinc-500 px-4 text-white">
+            <div className="flex h-10 w-full items-center rounded-t-lg bg-button px-4 text-white">
               <img
                 src={infinite}
                 alt="infinite-logo"
                 className="mr-2 mt-2 w-12 object-cover"
               />
-              學習時間表
+              <p className="mt-1">學習時間表</p>
             </div>
             {selectedBooking.selected_times.map((time, index) => (
               <p
                 key={index}
-                className="px-4 py-2 text-center"
-                style={{
-                  backgroundColor: index % 2 === 0 ? "white" : "lightgray",
-                }}
+                className={`px-4 py-2 text-center shadow ${
+                  index === selectedBooking.selected_times.length - 1
+                    ? "rounded-b-lg"
+                    : ""
+                } ${index % 2 === 0 ? "bg-white" : "bg-stone-200"}`}
               >
                 {time}
               </p>
             ))}
-            <div className="flex justify-end">
+            <div className="mt-6 flex justify-end">
               <button
-                className="mr-4 mt-4 rounded-md bg-slate-300 px-6 py-2"
+                className="mr-4 rounded-md bg-neon-carrot-100 px-4 py-2"
                 onClick={handleRejectClick}
               >
                 拒絕
               </button>
               <button
-                className="mt-4 rounded-md bg-orange-400 px-6 py-2 text-white"
+                className="rounded-md bg-neon-carrot-400 px-4 py-2 text-white"
                 onClick={handleAcceptClick}
               >
                 同意
@@ -227,7 +249,7 @@ const ApplicationFromOthers = ({ userId }) => {
         </div>
       )}
       {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
           <div className="rounded-xl bg-white px-20 py-6 text-center shadow-lg">
             <p className="text-lg leading-8">
               要拒絕對方的申請嗎? <br />
@@ -251,13 +273,31 @@ const ApplicationFromOthers = ({ userId }) => {
         </div>
       )}
       {showSuccessModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
           <div className="rounded-xl bg-white px-12 py-8 text-center shadow-lg">
             <p className="text-lg leading-8">
               恭喜找到技能交換的夥伴!
               <br />
               期待你們的學習旅程~
             </p>
+          </div>
+        </div>
+      )}
+      {showInsufficientCoinsModal && (
+        <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="rounded-xl bg-white px-8 py-6 text-center shadow-md">
+            <p className="flex flex-col items-center">
+              <span className="mb-1 flex">
+                代幣餘額不足 <SmileyMelting className="ml-2 size-6" />
+              </span>
+              去發布教學來獲得更多代幣吧~
+            </p>
+            <button
+              className="mt-4 rounded-md bg-neon-carrot-400 px-6 py-2 text-white"
+              onClick={() => setShowInsufficientCoinsModal(false)}
+            >
+              關閉
+            </button>
           </div>
         </div>
       )}

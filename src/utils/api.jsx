@@ -20,6 +20,25 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const dbApi = {
+  async updateUserDocument(user, isRegistering, username) {
+    const userDocRef = doc(db, "users", user.uid);
+    if (isRegistering) {
+      await setDoc(userDocRef, {
+        bg_image:
+          "https://images.pexels.com/photos/1227511/pexels-photo-1227511.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+        uid: user.uid,
+        email: user.email,
+        name: username,
+        coins: 10,
+        profile_picture:
+          "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj5OuPYNMNMB968AvAIEUDprCeMPpidHb3RfNY45kxV_dipXngeswnCCZhwaR4S9Wz8Uaa_QwA_Zy4tnw7nan1CVFfM6OS0SZ51D4Rj79RD__oIFMxjRDAYsdgschVM5zJgdjG9SkpKdEIm/s644/animal_hamster.png",
+        bio: "歡迎加入Loop平台! 趕快介紹一下自己吧~",
+        skills: [],
+        saved_posts: [],
+        review_rating: 0,
+      });
+    }
+  },
   async getAllPosts() {
     try {
       const querySnapshot = await getDocs(collection(db, "posts"));
@@ -118,7 +137,6 @@ const dbApi = {
   },
 
   async getLearningPortfolio(userId) {
-    console.log(userId);
     if (!userId) {
       throw new Error("Invalid userId: userId is undefined or null");
     }
@@ -346,9 +364,17 @@ const dbApi = {
           throw new Error("Demander does not exist!");
         }
 
-        const newDemanderCoins = demanderDoc.data().coins - coinsTotal;
+        const currentDemanderCoins = demanderDoc.data().coins;
+        const newDemanderCoins = currentDemanderCoins - coinsTotal;
+
+        // 確認 demander 的 coins 不會是負數
+        if (newDemanderCoins < 0) {
+          throw new Error("Insufficient coins to complete the transaction!");
+        }
+
         transaction.update(demanderRef, { coins: newDemanderCoins });
       });
+
       // 更新 provider 的 coins
       const providerRef = doc(db, "users", selectedBooking.provider_uid);
       await runTransaction(db, async (transaction) => {
@@ -440,7 +466,7 @@ const dbApi = {
         const notificationData = {
           type: "course_endtime",
           time: time,
-          message: "恭喜你完成一堂充實的課程！ 別忘了填寫學習計畫表喔",
+          message: "恭喜你完成一堂充實的課程！ 別忘了填寫學習歷程表喔",
           created_time: serverTimestamp(),
           read: false,
           post_title: postTitle,
