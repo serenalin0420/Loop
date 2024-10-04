@@ -3,10 +3,9 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
-import StarRating from "../../components/StarRating";
 import coin from "../../assets/coin.svg";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart } from "@phosphor-icons/react";
+import { Heart, SmileyWink } from "@phosphor-icons/react";
 import SubCategories from "../../components/SideBar/SubCategories";
 import Filter from "./Filter";
 import IsLoggedIn from "../../components/Modal/IsLoggedIn";
@@ -41,7 +40,7 @@ function Home() {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      setIsLoading(true); // 開始載入資料
+      setIsLoading(true);
       try {
         const fetchedPosts = await dbApi.getAllPosts();
         const postsWithAuthors = await Promise.all(
@@ -58,7 +57,7 @@ function Home() {
       } catch (error) {
         console.error("Error fetching posts:", error);
       } finally {
-        setIsLoading(false); // 資料載入完成
+        setIsLoading(false);
       }
     };
     const fetchCategories = async () => {
@@ -85,7 +84,9 @@ function Home() {
 
     fetchPosts();
     fetchCategories();
-    fetchSavedPosts();
+    if (user) {
+      fetchSavedPosts();
+    }
   }, [user]);
 
   useEffect(() => {
@@ -125,9 +126,25 @@ function Home() {
   const handleHeartClick = useCallback(
     async (postId) => {
       try {
-        const updatedSavedPosts = savedPosts.includes(postId)
-          ? savedPosts.filter((id) => id !== postId)
-          : [...savedPosts, postId];
+        const post = posts.find((p) => p.id === postId);
+        if (!post) {
+          console.error("Post not found");
+          return;
+        }
+
+        const postSummary = {
+          post_id: postId,
+          title: post.title,
+          author: post.author.name,
+        };
+
+        const isPostSaved = savedPosts.some(
+          (savedPost) => savedPost.post_id === postId,
+        );
+
+        const updatedSavedPosts = isPostSaved
+          ? savedPosts.filter((savedPost) => savedPost.post_id !== postId)
+          : [...savedPosts, postSummary];
 
         setSavedPosts(updatedSavedPosts);
         await dbApi.updateUserSavedPosts(user.uid, updatedSavedPosts);
@@ -135,7 +152,7 @@ function Home() {
         console.error("Error updating saved posts:", error);
       }
     },
-    [savedPosts, user],
+    [savedPosts, user, posts],
   );
 
   const formatDate = (timestamp) => {
@@ -144,14 +161,6 @@ function Home() {
       timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000,
     );
     return date.toLocaleDateString();
-  };
-
-  const truncateText = (text, maxLength) => {
-    if (!text) return "";
-    if (text.length <= maxLength) {
-      return text;
-    }
-    return text.slice(0, maxLength) + "...";
   };
 
   const sortByCreatedTime = () => {
@@ -230,25 +239,30 @@ function Home() {
                   找不到你想學的技能嗎?
                 </p>
                 <button
-                  className="bg-button rounded-full px-4 py-2 font-semibold text-white"
+                  className="rounded-full bg-button px-4 py-2 font-semibold text-white"
                   onClick={() => handleCreatePostClick("student")}
                 >
                   發起學習
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-5">
+            <div
+              className={`grid gap-5 ${findTeachersPosts.length === 0 ? "grid-cols-1" : "grid-cols-3"}`}
+            >
               {isLoading ? (
                 <div className="col-span-3 mt-6 flex items-center justify-center">
-                  <div className="text-center text-textcolor-brown">
-                    <img src={coin} className="animate-swing my-2 size-16" />
-                    載入中...
+                  <div className="flex flex-col items-center justify-center text-textcolor-brown">
+                    <img src={coin} className="my-2 size-16 animate-swing" />
+                    <p>請再稍等一下...</p>
                   </div>
                 </div>
-              ) : findStudentsPosts.length === 0 ? (
-                <div className="text-center text-gray-500">找不到貼文</div>
+              ) : findTeachersPosts.length === 0 ? (
+                <div className="flex justify-center text-stone-600">
+                  找不到貼文， 你來發一篇吧！
+                  <SmileyWink className="size-6" />
+                </div>
               ) : (
-                findStudentsPosts.map((post) => (
+                findTeachersPosts.map((post) => (
                   <Link
                     to={`/post/${post.id}`}
                     key={post.id}
@@ -264,11 +278,9 @@ function Home() {
                         <h4 className="mb-1 text-textcolor">
                           {post.author?.name}
                         </h4>
-                        <StarRating
-                          className="justify-start"
-                          rating={post.author?.review_rating ?? 0}
-                          size="16px"
-                        />
+                        <h3 className="line-clamp-1 font-semibold text-textcolor">
+                          {post.title}
+                        </h3>
                       </div>
                       <div className="ml-auto">
                         <div className="ml-auto flex size-10 items-center justify-center">
@@ -276,7 +288,11 @@ function Home() {
                             className="size-6"
                             color="#FF8964"
                             weight={
-                              savedPosts.includes(post.id) ? "fill" : "bold"
+                              savedPosts.some(
+                                (savedPost) => savedPost.post_id === post.id,
+                              )
+                                ? "fill"
+                                : "bold"
                             }
                             onClick={(e) => {
                               e.preventDefault();
@@ -286,11 +302,8 @@ function Home() {
                         </div>
                       </div>
                     </div>
-                    <h3 className="mx-2 mt-2 font-semibold text-textcolor">
-                      {post.title}
-                    </h3>
-                    <p className="mx-2 mt-2 text-textcolor">
-                      {truncateText(post.description, 28)}
+                    <p className="mx-2 mt-3 line-clamp-2 text-textcolor">
+                      {post.description}
                     </p>
                     <div className="mx-2 mt-4 flex gap-2">
                       {post.location?.map((loc, index) => (
@@ -330,7 +343,7 @@ function Home() {
             </div>
           </div>
         ) : (
-          <div className="p-4">
+          <div className="m-4">
             <div className="mb-4 flex justify-between px-4">
               <div className="flex items-center text-lg font-semibold text-textcolor">
                 排序依據
@@ -352,23 +365,28 @@ function Home() {
                   找不到想學你技能的人嗎?
                 </p>
                 <button
-                  className="bg-button rounded-full px-4 py-2 font-semibold text-white"
+                  className="rounded-full bg-button px-4 py-2 font-semibold text-white"
                   onClick={() => handleCreatePostClick("teacher")}
                 >
                   發布教學
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-5">
+            <div
+              className={`grid gap-5 ${findStudentsPosts.length === 0 ? "grid-cols-1" : "grid-cols-3"}`}
+            >
               {isLoading ? (
                 <div className="col-span-3 mt-6 flex items-center justify-center">
                   <div className="text-center text-textcolor-brown">
-                    <img src={coin} className="animate-swing my-2 size-16" />
+                    <img src={coin} className="my-2 size-16 animate-swing" />
                     載入中...
                   </div>
                 </div>
               ) : findStudentsPosts.length === 0 ? (
-                <div className="text-center text-gray-500">找不到貼文</div>
+                <div className="flex justify-center text-stone-600">
+                  找不到貼文， 你來發一篇吧！
+                  <SmileyWink className="size-6" />
+                </div>
               ) : (
                 findTeachersPosts.map((post) => (
                   <Link
@@ -386,10 +404,9 @@ function Home() {
                         <h4 className="mb-1 text-textcolor">
                           {post.author?.name}
                         </h4>
-                        <StarRating
-                          rating={post.author?.review_rating ?? 0}
-                          size="16px"
-                        />
+                        <h3 className="line-clamp-1 font-semibold text-textcolor">
+                          {post.title}
+                        </h3>
                       </div>
                       <div className="ml-auto">
                         <div className="ml-auto flex size-10 items-center justify-center">
@@ -397,7 +414,11 @@ function Home() {
                             className="size-6"
                             color="#FF8964"
                             weight={
-                              savedPosts.includes(post.id) ? "fill" : "bold"
+                              savedPosts.some(
+                                (savedPost) => savedPost.post_id === post.id,
+                              )
+                                ? "fill"
+                                : "bold"
                             }
                             onClick={(e) => {
                               e.preventDefault();
@@ -407,11 +428,8 @@ function Home() {
                         </div>
                       </div>
                     </div>
-                    <h3 className="mx-2 mt-2 font-semibold text-textcolor">
-                      {post.title}
-                    </h3>
-                    <p className="mx-2 mt-2 text-textcolor">
-                      {truncateText(post.description, 28)}
+                    <p className="mx-2 mt-3 line-clamp-2 text-textcolor">
+                      {post.description}
                     </p>
                     <div className="mx-2 mt-4 flex gap-2">
                       {post.location?.map((loc, index) => (
@@ -452,7 +470,12 @@ function Home() {
           </div>
         )}
       </div>
-      {showModal && <IsLoggedIn onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <IsLoggedIn
+          onClose={() => setShowModal(false)}
+          message="發布內容要先登入，才能查看誰對你的內容有興趣喔！"
+        />
+      )}
     </div>
   );
 }

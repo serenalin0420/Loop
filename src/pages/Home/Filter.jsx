@@ -110,8 +110,8 @@ function Filter({ selectedCategory, onFilterChange }) {
                 key={index}
                 className={`mr-3 cursor-pointer rounded-md px-3 py-1 ${
                   selectedSubcategories.includes(subcategory)
-                    ? "bg-[#cdd8f8]"
-                    : "bg-stone-200"
+                    ? "bg-cerulean-200"
+                    : "bg-slate-200"
                 }`}
                 onClick={() => {
                   console.log("Clicked subcategory:", subcategory);
@@ -131,8 +131,8 @@ function Filter({ selectedCategory, onFilterChange }) {
               key={time.value}
               className={`mr-3 cursor-pointer rounded-md px-3 py-1 ${
                 selectedTimePreferences.includes(time.label)
-                  ? "bg-[#cdd8f8]"
-                  : "bg-stone-200"
+                  ? "bg-cerulean-200"
+                  : "bg-slate-200"
               }`}
               onClick={() => handleTimePreferenceChange(time.label)}
             >
