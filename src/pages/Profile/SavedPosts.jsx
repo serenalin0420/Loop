@@ -32,19 +32,26 @@ function SavedPosts({ userId }) {
         我的收藏
       </h3>
       <div className="flex flex-col gap-3 px-6 py-4">
-        {savedPosts.map((post) => (
-          <Link
-            to={`/post/${post.post_id}`}
-            key={post.post_id}
-            className="flex gap-6 rounded-md bg-neon-carrot-100 px-3 py-2"
-          >
-            <p>{post.author}</p>
-            <p className="font-semibold">{post.title}</p>
-            <span className="ml-auto flex text-textcolor-brown">
-              查看 <CaretRight className="ml-1 size-6" />
-            </span>
-          </Link>
-        ))}
+        {savedPosts && savedPosts.length > 0 ? (
+          savedPosts.map((post) => (
+            <Link
+              to={`/post/${post.post_id}`}
+              key={post.post_id}
+              className="flex gap-6 rounded-md bg-neon-carrot-50 px-3 py-2"
+            >
+              <p className="hidden sm:inline md:text-nowrap">{post.author}</p>
+              <p className="font-semibold">{post.title}</p>
+              <span className="my-auto ml-2 flex items-center text-nowrap text-sm text-textcolor-brown">
+                <p className="hidden md:inline">查看</p>
+                <CaretRight className="hl-1 size-6" />
+              </span>
+            </Link>
+          ))
+        ) : (
+          <p className="my-2 text-stone-500">
+            去看看感興趣的文章，收藏起來吧！
+          </p>
+        )}
       </div>
     </div>
   );

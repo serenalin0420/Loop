@@ -2,7 +2,8 @@ import { useState, useContext, useEffect, useRef } from "react";
 import { UserContext } from "../../context/userContext";
 import ApplicationFromOthers from "./ApplicationFromOthers";
 import UserApplication from "./UserApplication";
-import coin from "../../components/coin.svg";
+import SavedPosts from "./SavedPosts";
+import coin from "../../assets/coin.svg";
 import dbApi from "../../utils/api";
 import { useQuery } from "@tanstack/react-query";
 import { UploadSimple, NotePencil } from "@phosphor-icons/react";
@@ -95,11 +96,19 @@ function Profile() {
     setSkills(updatedSkills);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-textcolor-brown">
+          <img src={coin} className="my-2 size-16 animate-swing" />
+          <p>請再稍等一下...</p>
+        </div>
+      </div>
+    );
   if (error) return <div>Error loading categories</div>;
 
   return (
-    <div className="mt-16">
+    <div className="my-16 min-h-screen">
       {user && (
         <div className="relative flex justify-center">
           <img
@@ -109,7 +118,7 @@ function Profile() {
           <div className="absolute -bottom-20 flex flex-col items-center">
             <img
               src={profilePicture}
-              className="size-24 rounded-full border-2 border-white bg-red-100 object-cover object-center p-2 shadow-md"
+              className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md sm:size-24"
               alt="author"
             />
             {isEditing && (
@@ -136,7 +145,7 @@ function Profile() {
                 type="text"
                 value={userName}
                 onChange={handleNameChange}
-                className="mt-2 w-4/5 rounded-md bg-slate-200 px-3 py-2"
+                className="mt-2 w-4/5 rounded-md bg-cerulean-100 px-3 py-2"
               />
             ) : (
               <p className="mt-2 text-center font-semibold">{userName}</p>
@@ -144,8 +153,8 @@ function Profile() {
           </div>
         </div>
       )}
-      <div className="mx-28 mt-16 grid auto-rows-auto grid-cols-2 gap-6">
-        <div className="col-span-2">
+      <div className="mt-16 grid max-w-screen-lg auto-rows-auto gap-6 px-6 sm:grid-cols-2 sm:px-4 md:mx-8 md:px-0 lg:mx-auto lg:px-4">
+        <div className="sm:col-span-2">
           <div className="mt-4 flex flex-col">
             <button
               onClick={handleEditClick}
@@ -155,9 +164,9 @@ function Profile() {
               {isEditing ? "儲存" : "編輯個人資料"}
             </button>
 
-            <div className="flex gap-8">
-              <div className="flex w-1/2 flex-col rounded-lg shadow-md">
-                <h3 className="max-w-max rounded-r-lg bg-[#BFAA87] px-4 py-2 text-center tracking-wider text-white">
+            <div className="flex flex-col gap-6 sm:flex-row">
+              <div className="flex flex-col rounded-lg shadow-md sm:w-1/2">
+                <h3 className="max-w-max rounded-r-lg bg-button px-4 py-2 text-center tracking-wider text-white">
                   簡介
                 </h3>
                 {isEditing ? (
@@ -166,16 +175,15 @@ function Profile() {
                     name="bio"
                     value={bio}
                     onChange={handleBioChange}
-                    className="mx-6 mb-6 mt-4 rounded-md bg-slate-200 px-3 py-2"
+                    className="mx-6 mb-6 mt-4 rounded-md bg-cerulean-100 px-3 py-2"
                   />
                 ) : (
                   <p className="mx-6 mb-6 mt-4 rounded-md">{bio}</p>
                 )}
               </div>
 
-              {/* 技能編輯區 */}
-              <div className="flex w-1/2 flex-col rounded-lg shadow-md">
-                <h3 className="max-w-max rounded-r-lg bg-[#BFAA87] px-4 py-2 text-center tracking-wider text-white">
+              <div className="flex flex-col rounded-lg shadow-md sm:w-1/2">
+                <h3 className="max-w-max rounded-r-lg bg-button px-4 py-2 text-center tracking-wider text-white">
                   技能
                 </h3>
                 {isEditing ? (
@@ -189,7 +197,7 @@ function Profile() {
                           name="category_name"
                           value={skill.category_name}
                           onChange={(e) => handleSkillChange(index, e)}
-                          className="rounded-md bg-slate-200 p-2"
+                          className="rounded-md bg-cerulean-100 p-2"
                           key={index}
                         >
                           {categories.map((category) => (
@@ -202,11 +210,11 @@ function Profile() {
                           name="skills"
                           value={skill.skills}
                           onChange={(e) => handleSkillChange(index, e)}
-                          className="w-full rounded-md bg-slate-200 px-3 py-2"
+                          className="w-full rounded-md bg-cerulean-100 px-3 py-2"
                         />
                         <button
                           onClick={() => removeSkill(index)}
-                          className="text-nowrap rounded-sm bg-slate-400 px-2 py-1 text-sm text-white"
+                          className="text-nowrap rounded bg-button px-2 py-2 text-sm text-white"
                         >
                           刪除
                         </button>
@@ -214,7 +222,7 @@ function Profile() {
                     ))}
                     <button
                       onClick={addSkill}
-                      className="mb-4 mt-2 max-w-max rounded-full bg-yellow-700 px-4 py-2 text-sm text-white"
+                      className="mb-4 mt-2 max-w-max rounded-full bg-sun-400 px-4 py-2 text-sm text-white"
                     >
                       新增技能
                     </button>
@@ -224,12 +232,12 @@ function Profile() {
                     {skills.map((skill, index) => (
                       <div
                         key={index}
-                        className="mx-6 mt-4 flex items-center gap-3 rounded-md"
+                        className="mx-6 mt-4 flex flex-col gap-1 rounded-md md:flex-row md:items-center md:gap-3"
                       >
-                        <p className="max-w-max rounded-md bg-slate-200 px-3 py-1">
+                        <p className="max-w-max text-nowrap rounded-md bg-cerulean-100 px-3 py-1">
                           {skill.category_name}
                         </p>
-                        <p>{skill.skills}</p>
+                        <p className="ml-4 md:ml-0">- {skill.skills}</p>
                       </div>
                     ))}
                   </div>
@@ -244,15 +252,16 @@ function Profile() {
             <UserApplication userId={user.uid} />
           </>
         )}
-        <div className="flex flex-col rounded-lg shadow-md">
-          <h3 className="max-w-max rounded-r-lg bg-[#BFAA87] px-4 py-2 text-center tracking-wider text-white">
+        <div className="flex h-fit flex-col rounded-lg shadow-md">
+          <h3 className="max-w-max rounded-r-lg bg-button px-4 py-2 text-center tracking-wider text-white">
             代幣數量
           </h3>
           <div className="flex items-center gap-2 px-6 py-4">
             <img src={coin} alt="coin" className="size-14 object-cover" />
-            <p className="text-xl font-bold text-yellow-900">{user?.coins}枚</p>
+            <p className="text-xl font-bold text-yellow-800">{user?.coins}枚</p>
           </div>
         </div>
+        {user && user.uid && <SavedPosts userId={user.uid} />}
       </div>
     </div>
   );

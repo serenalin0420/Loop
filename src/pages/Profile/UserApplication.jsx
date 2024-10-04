@@ -94,7 +94,7 @@ const UserApplication = ({ userId }) => {
               .map((booking, index) => (
                 <div
                   key={index}
-                  className="flex min-w-[68%] flex-col items-center md:min-w-[38%] lg:min-w-[25%]"
+                  className="flex min-w-[20%] flex-col items-center sm:min-w-[42%] md:min-w-[38%] lg:min-w-[25%]"
                 >
                   <img
                     src={booking.applicant_profile_picture}
