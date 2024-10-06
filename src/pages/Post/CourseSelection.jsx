@@ -123,6 +123,9 @@ const CourseSelection = ({
   };
 
   const handleConfirm = async () => {
+    // if (errorMessage) {
+    //   return;
+    // }
     if (!user) {
       setShowLoginModal(true);
       return;
@@ -167,7 +170,6 @@ const CourseSelection = ({
         },
         {},
       );
-      // console.log("updatedTimes", updatedTimes);
 
       await dbApi.updatePost(post.post_id, {
         datetime: {
@@ -210,6 +212,15 @@ const CourseSelection = ({
       document.body.classList.add("overflow-hidden");
     } else {
       document.body.classList.remove("overflow-hidden");
+      // reset state
+      setSelectedCourse();
+      setSelectedCoinCost();
+      setSelectedTimes([]);
+      setErrorMessage("");
+      modalDispatch({
+        type: actionTypes.SET_SELECTED_TIMES,
+        payload: {},
+      });
     }
     return () => {
       document.body.classList.remove("overflow-hidden");
@@ -218,7 +229,7 @@ const CourseSelection = ({
 
   return (
     <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
-      <div className="flex h-11 items-center rounded-t-lg bg-button px-6 text-lg text-white">
+      <div className="flex h-11 items-center rounded-t-lg bg-indian-khaki-400 px-6 text-lg text-white">
         <img
           src={infinite}
           alt="infinite-logo"
@@ -299,9 +310,9 @@ const CourseSelection = ({
               </button>
             </div>
 
-            <div className="mt-2 flex flex-col justify-around sm:flex-row lg:justify-start lg:gap-4">
+            <div className="mt-2 flex flex-col justify-around md:flex-row lg:justify-start lg:gap-4">
               <div className="flex flex-col rounded-b-lg shadow-md">
-                <div className="flex h-10 w-full items-center rounded-t-lg bg-button px-6 sm:h-12">
+                <div className="flex h-10 w-full items-center rounded-t-lg bg-indian-khaki-400 px-6 sm:h-12">
                   <img
                     src={infinite}
                     alt="infinite-logo"
@@ -325,9 +336,9 @@ const CourseSelection = ({
                 </div>
               </div>
               <div className="ml-4 mt-16 flex flex-col lg:mx-2">
-                <div className="sticky top-0 flex w-full flex-col bg-neon-carrot-50 p-2 shadow md:p-4">
+                <div className="sticky top-0 flex w-full flex-col bg-neon-carrot-50 p-4 shadow md:w-52">
                   <h3 className="font-semibold lg:text-lg">已選擇的時段</h3>
-                  <ul className="mt-2">
+                  <ul className="mt-2 grid grid-cols-2 md:grid-cols-1">
                     {selectedTimes.map((time, index) => (
                       <li key={index} className="mt-2 text-nowrap">
                         {formatSelectedTime(time)}

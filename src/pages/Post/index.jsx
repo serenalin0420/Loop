@@ -7,6 +7,7 @@ import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import CourseSelection from "./CourseSelection";
 import infinite from "../../assets/infinite.svg";
 import { CaretLeft, CheckFat } from "@phosphor-icons/react";
+import coin from "../../assets/coin.svg";
 
 function Post() {
   const { postId } = useParams();
@@ -202,7 +203,15 @@ function Post() {
     );
   };
   // console.log(post);
-  if (!post || !author) return <div>LLoading...</div>;
+  if (!post || !author)
+    return (
+      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
+        <div className="text-indian-khaki-800 flex flex-col items-center justify-center">
+          <img src={coin} className="my-2 size-16 animate-swing" />
+          <p>請再稍等一下...</p>
+        </div>
+      </div>
+    );
 
   return (
     <div className="my-20 flex justify-center gap-6">
@@ -231,7 +240,7 @@ function Post() {
           renderTimeSlots={(day) => renderTimeSlots(day, true)}
         />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
-          <div className="flex h-11 items-center rounded-t-lg bg-button px-6">
+          <div className="bg-indian-khaki-400 flex h-11 items-center rounded-t-lg px-6">
             <img
               src={infinite}
               alt="infinite-logo"
@@ -239,8 +248,11 @@ function Post() {
             />
             <p className="mt-1 text-lg text-white">學習時間表</p>
           </div>
-          <p className="mx-10 mt-4 flex text-textcolor">
-            <CheckFat className="mr-2 size-6 text-icon" weight="duotone" />
+          <p className="text-indian-khaki-700 mx-10 mt-4 flex">
+            <CheckFat
+              className="text-indian-khaki-600 mr-2 size-6"
+              weight="duotone"
+            />
             要預約課程，請先選取您的上課需求~
           </p>
           <div className="mx-4 my-4 flex flex-col justify-center gap-4 md:flex-row">
@@ -253,7 +265,7 @@ function Post() {
               renderCalendar={renderCalendar}
               daysOfWeek={daysOfWeek}
               renderTimeSlots={(day) => renderTimeSlots(day, false)} // 不可選擇
-              message="請選擇您方便的時間，最多可見未來三個月的時間"
+              message="僅供瀏覽可預約的時段，最多可見未來三個月時間"
             />
           </div>
         </div>
