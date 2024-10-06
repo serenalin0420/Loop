@@ -228,7 +228,7 @@ const CourseSelection = ({
   }, [showModal]);
 
   return (
-    <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
+    <div className="mt-2 flex flex-col rounded-b-lg shadow-md xs:mt-8">
       <div className="flex h-11 items-center rounded-t-lg bg-indian-khaki-400 px-6 text-lg text-white">
         <img
           src={infinite}
@@ -238,7 +238,7 @@ const CourseSelection = ({
         <p className="mt-1">上課需求</p>
       </div>
       <div
-        className={`flex flex-col justify-between gap-4 py-4 sm:flex-row ${sortedCourseNum.length === 3 ? "px-16 xl:px-24" : "px-6"} `}
+        className={`flex flex-col justify-between gap-4 py-4 sm:flex-row ${sortedCourseNum.length === 3 ? "px-12 xs:px-16 xl:px-24" : "px-6"} `}
       >
         {sortedCourseNum.map((num, index) => {
           const coinCost =

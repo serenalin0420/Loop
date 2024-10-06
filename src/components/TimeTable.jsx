@@ -1,8 +1,8 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
-import tamtam1 from "./tamtam1.svg";
-import tamtam2 from "./tamtam2.svg";
+import tamtam1 from "../assets/tamtam1.svg";
+import tamtam2 from "../assets/tamtam2.svg";
 import { useLocation } from "react-router-dom";
 import Select from "react-select";
 import customStyles from "../pages/CreatePost/selectorStyles";
@@ -129,7 +129,7 @@ const TimeTable = ({
           {daysOfWeek.map((day) => (
             <div
               key={day}
-              className="text-center font-semibold text-textcolor-brown"
+              className="text-indian-khaki-700 text-center font-bold"
             >
               <div>{formatDate(day, "EEE")}</div> {/* 星期 */}
               <div>{formatDate(day, "dd")}</div> {/* 日期 */}

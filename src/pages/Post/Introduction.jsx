@@ -59,10 +59,9 @@ const Introduction = ({ post, author }) => {
   const handleSendMessageClick = (postAuthourId) => {
     window.open(`/chat/${postAuthourId}`, "_blank");
   };
-  // console.log(post);
 
   return (
-    <div className="rounded-lg p-4 shadow-md">
+    <div className="rounded-lg xs:p-4 xs:shadow-md">
       <div className="flex items-center gap-2">
         <img
           src={author.profile_picture}
@@ -120,12 +119,12 @@ const Introduction = ({ post, author }) => {
         </div>
       </div>
 
-      <div className="mb-4 ml-6 mt-2 flex items-center">
+      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
         <h3 className="mr-11 text-nowrap">類別 </h3>
         {(post.subcategories ?? []).map((sub, index) => (
           <p
             key={index}
-            className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1"
+            className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1 text-sm xs:text-base"
           >
             {sub}
           </p>
@@ -133,43 +132,43 @@ const Introduction = ({ post, author }) => {
       </div>
 
       {post.type !== "發起學習" && (
-        <div className="mb-4 ml-6 mt-2 flex items-center">
+        <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
           <h3 className="mr-11 text-nowrap">專長 </h3>
           {(post.skills ?? []).map((skill, index) => (
             <p
               key={index}
-              className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1"
+              className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1 text-sm xs:text-base"
             >
               {skill}
             </p>
           ))}
         </div>
       )}
-      <div className="mb-4 ml-6 mt-2 flex items-center">
+      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
         <h3 className="mr-3 text-nowrap">時間偏好 </h3>
         {(post.time_preference ?? []).map((time, index) => (
           <p
             key={index}
-            className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1"
+            className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1 text-sm xs:text-base"
           >
             {time}
           </p>
         ))}
       </div>
-      <div className="mb-4 ml-6 mt-2 flex items-center">
+      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
         <h3 className="mr-11 text-nowrap">地點 </h3>
         {(post.location ?? []).map((location, index) => (
           <p
             key={index}
-            className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1"
+            className="mr-3 text-nowrap rounded-md bg-cerulean-100 px-3 py-1 text-sm xs:text-base"
           >
             {location}
           </p>
         ))}
       </div>
-      <div className="mb-4 ml-6 mt-2 flex items-center">
+      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
         <h3 className="mr-11 text-nowrap">介紹 </h3>
-        <p>{post.description}</p>
+        <p className="text-sm xs:text-base">{post.description}</p>
       </div>
     </div>
   );

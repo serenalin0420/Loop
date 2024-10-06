@@ -16,6 +16,7 @@ import {
 import TimeTable from "../../components/TimeTable";
 import { useLocation, useNavigate } from "react-router-dom";
 import customStyles from "./selectorStyles";
+import coin from "../../assets/coin.svg";
 
 const sortCategoriesFn = (categories) => {
   const categoryOrder = sortCategories.reduce((acc, category, index) => {
@@ -336,19 +337,27 @@ function CreatePost() {
     mutation.mutate(postData);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
+          <img src={coin} className="my-2 size-16 animate-swing" />
+          <p>請再稍等一下...</p>
+        </div>
+      </div>
+    );
   if (error) return <div>Error loading categories</div>;
 
   return (
     <div
-      className={`py-24 ${view !== "student" ? "bg-[#fcf9f5]" : "bg-slate-50"}`}
+      className={`py-20 md:py-24 ${view !== "student" ? "bg-[#fcf9f5]" : "bg-slate-50"}`}
     >
-      <div className="px-6 md:px-8 lg:px-16">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-16">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="mx-auto flex max-w-screen-xl flex-col justify-center rounded-lg bg-white px-6 py-3 shadow-md md:px-8 lg:px-12 xl:px-28"
+          className="mx-auto flex max-w-screen-xl flex-col justify-center rounded-lg bg-white px-3 py-3 shadow-md sm:px-6 md:px-8 lg:px-12 xl:px-28"
         >
-          <h1 className="border-b border-b-zinc-300 pb-2 text-center text-xl font-semibold">
+          <h1 className="border-b border-b-zinc-300 pb-2 text-center text-lg font-semibold md:text-xl">
             {view !== "student" ? "發布教學" : "發起學習"}
           </h1>
 
@@ -603,24 +612,25 @@ function CreatePost() {
             </div>
             {view !== "student" && (
               <div className="mb-3 flex h-10 items-center">
-                <label className="mr-2 text-sm md:mr-3 md:text-base">
+                <label className="mr-2 text-nowrap text-sm md:mr-3 md:text-base">
                   介紹影片
                 </label>
+                {/*  className={`w-3/5 rounded-sm px-3 py-2 text-sm text-textcolor md:w-2/5 md:min-w-96 md:text-base */}
                 <input
                   {...register("introVideo")}
-                  className="bg-neon-carrot-50 focus:outline-neon-carrot-300 w-3/5 min-w-60 rounded-sm px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 md:w-2/5 md:min-w-96 md:text-base"
+                  className="w-4/5 rounded-sm bg-neon-carrot-50 px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 focus:outline-neon-carrot-300 sm:w-3/5 md:w-2/5 md:min-w-96 md:text-base"
                   placeholder="請提供影片連結"
                 />
               </div>
             )}
             {view !== "student" && (
               <div className="mb-3 flex h-10 items-center">
-                <label className="mr-2 text-sm md:mr-3 md:text-base">
+                <label className="mr-2 text-nowrap text-sm md:mr-3 md:text-base">
                   參考教材
                 </label>
                 <input
                   {...register("referenceMaterial")}
-                  className="bg-neon-carrot-50 focus:outline-neon-carrot-300 w-3/5 min-w-60 rounded-sm px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 md:w-2/5 md:min-w-96 md:text-base"
+                  className="w-4/5 rounded-sm bg-neon-carrot-50 px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 focus:outline-neon-carrot-300 sm:w-3/5 md:w-2/5 md:min-w-96 md:text-base"
                   placeholder="請提供雲端連結"
                 />
               </div>

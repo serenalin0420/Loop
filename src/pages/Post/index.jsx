@@ -206,7 +206,7 @@ function Post() {
   if (!post || !author)
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
-        <div className="text-indian-khaki-800 flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
           <img src={coin} className="my-2 size-16 animate-swing" />
           <p>請再稍等一下...</p>
         </div>
@@ -215,7 +215,7 @@ function Post() {
 
   return (
     <div className="my-20 flex justify-center gap-6">
-      <div className="mx-6 flex max-w-screen-lg flex-col md:mx-12 lg:mx-28 xl:mx-auto">
+      <div className="mx-4 flex max-w-screen-lg flex-col sm:mx-6 md:mx-12 lg:mx-28 xl:mx-auto">
         <div className="mb-4 flex items-center gap-6">
           <div
             onClick={handleGoBack}
@@ -240,7 +240,7 @@ function Post() {
           renderTimeSlots={(day) => renderTimeSlots(day, true)}
         />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
-          <div className="bg-indian-khaki-400 flex h-11 items-center rounded-t-lg px-6">
+          <div className="flex h-11 items-center rounded-t-lg bg-indian-khaki-400 px-6">
             <img
               src={infinite}
               alt="infinite-logo"
@@ -248,9 +248,9 @@ function Post() {
             />
             <p className="mt-1 text-lg text-white">學習時間表</p>
           </div>
-          <p className="text-indian-khaki-700 mx-10 mt-4 flex">
+          <p className="mx-10 mt-4 flex items-center text-sm text-indian-khaki-700 sm:text-base">
             <CheckFat
-              className="text-indian-khaki-600 mr-2 size-6"
+              className="mr-2 size-6 text-indian-khaki-600"
               weight="duotone"
             />
             要預約課程，請先選取您的上課需求~
