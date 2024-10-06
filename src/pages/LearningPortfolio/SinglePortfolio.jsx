@@ -2,6 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import dbApi from "@/utils/api";
+import coin from "@/assets/coin.svg";
 
 function SinglePortfolio() {
   const location = useLocation();
@@ -71,68 +72,93 @@ function SinglePortfolio() {
   };
 
   if (!portfolio) {
-    return <div>Loading...</div>;
+    return (
+      <div className="col-span-3 mt-6 flex h-5/6 items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
+          <img src={coin} className="my-2 size-16 animate-swing" />
+          <p>請再稍等一下...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="h-screen bg-stone-50 py-20">
-      <div
-        onClick={handleGoBack}
-        className="mx-6 mb-4 flex max-w-screen-lg cursor-pointer items-center md:mx-12 lg:mx-28 xl:mx-auto"
-      >
-        <CaretLeft className="size-8" />
-        返回 學習歷程
+    <div className="h-screen py-20 sm:h-full">
+      <div className="mx-4 mb-4 flex max-w-screen-lg cursor-pointer items-center sm:mx-6 md:mx-12 lg:mx-28 xl:mx-auto">
+        <div className="flex items-center gap-6">
+          <div
+            onClick={handleGoBack}
+            className="flex cursor-pointer items-center"
+          >
+            <CaretLeft className="size-6 sm:size-8" />
+            返回
+          </div>
+          <h2 className="text-lg font-semibold sm:text-xl">學習歷程</h2>
+        </div>
       </div>
-      <div className="mx-6 flex max-w-screen-lg flex-col rounded-xl bg-white px-4 py-6 shadow-md md:mx-12 lg:mx-28 xl:mx-auto">
+      <div className="mx-4 py-6 sm:hidden">
         <h1 className="text-center text-xl font-semibold">
           {portfolio.post_title} 第 {currentFeedback.course} 堂
         </h1>
         <div className="mt-4 flex items-center justify-between">
           <CaretLeft
             onClick={handlePrevClick}
-            className="size-10 rounded-full bg-neon-carrot-50 p-2 text-neon-carrot-800 hover:bg-neon-carrot-200 active:bg-neon-carrot-200"
+            className="size-8 rounded-full bg-indian-khaki-50 p-1 text-indian-khaki-800 hover:bg-indian-khaki-200 active:bg-indian-khaki-200 sm:size-10 sm:p-2"
             weight="bold"
           />
-          <div className="mx-4 w-4/5">
-            <div className="mb-6 flex flex-1 items-center justify-around">
-              <div className="text-center">
+          <div className="mx-2 w-5/6">
+            <div className="mb-6 flex flex-1 justify-between gap-1 sm:gap-3">
+              <div className="flex min-w-16 flex-col items-center gap-2 text-nowrap text-center sm:min-w-20">
                 <img
                   src={providerProfile?.profile_picture}
-                  className="size-16 rounded-full border-white bg-red-100 object-cover object-center p-1"
+                  className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow sm:size-16"
                   alt="author"
                 />
-                <p>{providerProfile?.name}</p>
+                <p className="text-sm sm:text-base">{providerProfile?.name}</p>
               </div>
-              <h4 className="mb-2 ml-3 w-5/6 rounded-lg bg-neon-carrot-50 p-4">
-                {currentFeedback.provider_feedback ? (
-                  currentFeedback.provider_feedback
-                ) : (
-                  <span className="text-stone-400">尚未填寫</span>
-                )}
-              </h4>
+              <div className="ml-1 flex w-full flex-col">
+                <p className="mb-1 ml-1 text-xs sm:text-sm">
+                  {currentFeedback.time}
+                </p>
+                <h4
+                  className={`w-full rounded-lg p-3 ${currentFeedback.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
+                >
+                  {currentFeedback.provider_feedback ? (
+                    currentFeedback.provider_feedback
+                  ) : (
+                    <span className="text-stone-400">尚未填寫</span>
+                  )}
+                </h4>
+              </div>
             </div>
-            <div className="mb-6 flex flex-1 items-center justify-around">
-              <div className="text-center">
+            <div className="mb-6 flex flex-1 justify-between gap-1 sm:gap-3">
+              <div className="flex min-w-16 flex-col items-center gap-2 text-nowrap text-center sm:min-w-20">
                 <img
                   src={demanderProfile?.profile_picture}
-                  className="size-16 rounded-full border-white bg-red-100 object-cover object-center p-1"
+                  className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow sm:size-16"
                   alt="author"
                 />
-                <p>{demanderProfile?.name}</p>
+                <p className="text-sm sm:text-base">{demanderProfile?.name}</p>
               </div>
-              <h4 className="mb-2 ml-3 w-5/6 rounded-lg bg-neon-carrot-50 p-4">
-                {currentFeedback.demander_feedback ? (
-                  currentFeedback.demander_feedback
-                ) : (
-                  <span className="text-stone-400">尚未填寫</span>
-                )}
-              </h4>
+              <div className="ml-1 flex w-full flex-col">
+                <p className="mb-1 ml-1 text-xs sm:text-sm">
+                  {currentFeedback.time}
+                </p>
+                <h4
+                  className={`w-full rounded-lg p-3 ${currentFeedback.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
+                >
+                  {currentFeedback.demander_feedback ? (
+                    currentFeedback.demander_feedback
+                  ) : (
+                    <span className="text-stone-400">尚未填寫</span>
+                  )}
+                </h4>
+              </div>
             </div>
           </div>
-
           <CaretRight
             onClick={handleNextClick}
-            className="size-10 rounded-full bg-neon-carrot-50 p-2 text-neon-carrot-800 hover:bg-neon-carrot-200 active:bg-neon-carrot-200"
+            className="size-8 rounded-full bg-indian-khaki-50 p-1 text-indian-khaki-800 hover:bg-indian-khaki-200 active:bg-indian-khaki-200 sm:size-10 sm:p-2"
             weight="bold"
           />
         </div>
@@ -141,11 +167,77 @@ function SinglePortfolio() {
           {feedback.map((_, index) => (
             <button
               key={index}
-              className={`size-2 rounded-full ${index === currentFeedbackIndex ? "bg-neon-carrot-400" : "bg-stone-300"}`}
+              className={`size-2 rounded-full ${index === currentFeedbackIndex ? "bg-indian-khaki-500" : "bg-stone-200"}`}
               onClick={() => handleDotClick(index)}
             ></button>
           ))}
         </div>
+      </div>
+
+      {/* desktop */}
+      <div className="mx-6 hidden max-w-screen-lg flex-col sm:flex md:mx-12 lg:mx-28 xl:mx-auto">
+        <h1 className="mb-4 text-center text-xl font-semibold">
+          {portfolio.post_title}
+        </h1>
+        <div className="mx-auto mb-2 flex items-center gap-2">
+          技能提供者（老師）:
+          <img
+            src={providerProfile?.profile_picture}
+            className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
+            alt="技能提供者"
+          />
+          <p className="text-base">{providerProfile?.name}</p>
+        </div>
+        <div className="mx-auto mb-4 flex items-center gap-2">
+          技能需求者（學生）:
+          <img
+            src={demanderProfile?.profile_picture}
+            className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
+            alt="技能需求者"
+          />
+          <p className="text-base">{demanderProfile?.name}</p>
+        </div>
+        {portfolio.feedback.map((item, index) => (
+          <div
+            key={index}
+            className="mx-2 mb-6 rounded-xl p-4 shadow md:mx-4 md:px-8 lg:px-12"
+          >
+            <div className="mx-2 flex">
+              <p>第 {item.course} 堂</p>
+              <p className="ml-2">{item.time}</p>
+            </div>
+            <div className="mx-2">
+              <div className="mb-4 mt-2 flex items-center gap-2">
+                <p className="min-w-20 text-nowrap text-base">
+                  {providerProfile?.name}
+                </p>
+                <h4
+                  className={`w-full rounded-lg p-3 md:w-5/6 ${item.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
+                >
+                  {item.provider_feedback ? (
+                    item.provider_feedback
+                  ) : (
+                    <span className="text-stone-400">尚未填寫</span>
+                  )}
+                </h4>
+              </div>
+              <div className="flex items-center gap-2">
+                <p className="min-w-20 text-nowrap text-base">
+                  {demanderProfile?.name}
+                </p>
+                <h4
+                  className={`w-full rounded-lg p-3 md:w-5/6 ${item.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
+                >
+                  {item.demander_feedback ? (
+                    item.demander_feedback
+                  ) : (
+                    <span className="text-stone-400">尚未填寫</span>
+                  )}
+                </h4>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

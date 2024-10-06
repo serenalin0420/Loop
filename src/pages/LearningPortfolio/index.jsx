@@ -3,12 +3,13 @@ import { UserContext } from "../../context/userContext";
 import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import StarRating from "@/components/StarRating";
+import coin from "../../assets/coin.svg";
 
 function LearningPortfolio() {
   const user = useContext(UserContext);
   const { userId: otherUserId } = useParams();
   const [portfolio, setPortfolio] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [noPortfolio, setNoPortfolio] = useState(false);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ function LearningPortfolio() {
           if (!userLearningPortfolio) {
             console.error("userLearningPortfolio is null or undefined");
             setNoPortfolio(true);
-            setLoading(false);
+            setIsLoading(false);
             return;
           }
           const updatedPortfolio = await Promise.all(
@@ -64,7 +65,7 @@ function LearningPortfolio() {
           );
 
           setPortfolio(updatedPortfolio);
-          setLoading(false);
+          setIsLoading(false);
         } catch (error) {
           console.error("Error fetching learning portfolio:", error);
         }
@@ -73,72 +74,81 @@ function LearningPortfolio() {
     fetchLearningPortfolio();
   }, [user, otherUserId]);
 
-  // console.log(portfolio);
-
-  if (loading) {
-    return <div>Loading</div>;
+  if (isLoading) {
+    return (
+      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
+          <img src={coin} className="my-2 size-16 animate-swing" />
+          <p>請再稍等一下...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="h-screen py-24">
-      <div className="mx-6 flex max-w-screen-lg flex-col rounded-lg bg-white shadow-md md:mx-12 lg:mx-28 xl:mx-auto">
-        <table className="min-w-full rounded-lg">
-          <thead className="bg-button">
-            <tr className="text-lg tracking-wide text-white">
-              <th className="rounded-tl-lg px-6 py-3">類型</th>
-              <th className="px-6 py-3">貼文標題</th>
-              <th className="px-6 py-3">技能交換對象</th>
-              <th className="px-6 py-3">課程狀態</th>
-              <th className="px-6 py-3">評價</th>
-              <th className="rounded-tr-lg px-6 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="rounded-lg text-center text-textcolor">
-            {noPortfolio || portfolio.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="px-12 py-4">
-                  還沒開始你的學習嗎?
-                </td>
+      <div className="mx-4 flex max-w-screen-lg flex-col rounded-lg bg-white shadow-md sm:mx-6 md:mx-12 lg:mx-28 xl:mx-auto">
+        <div className="overflow-x-auto">
+          <table className="min-w-[768px] rounded-lg md:w-full">
+            <thead className="bg-indian-khaki-400">
+              <tr className="tracking-wide text-white lg:text-lg">
+                <th className="text-nowrap rounded-tl-lg px-3 py-4 md:px-6">
+                  類型
+                </th>
+                <th className="px-2 py-3 md:px-6">貼文標題</th>
+                <th className="px-2 py-3">技能交換對象</th>
+                <th className="px-2 py-3 md:px-4">課程狀態</th>
+                <th className="text-nowrap px-6 py-3">評價</th>
+                <th className="rounded-tr-lg px-4 py-3"></th>
               </tr>
-            ) : (
-              portfolio.map((item, index) => (
-                <tr
-                  key={item.booking_id}
-                  className={` ${
-                    index % 2 === 0 ? "bg-white" : "bg-[#F9F7F3]"
-                  } `}
-                >
-                  <td
-                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-bl-lg" : ""}`}
-                  >
-                    {item.type}
-                  </td>
-                  <td className="px-5 py-4">{item.post_title}</td>
-                  <td className="px-5 py-4">{item.otherUserName}</td>
-                  <td className="px-5 py-4">{item.status}</td>
-                  <td className="flex justify-center px-6 py-4">
-                    <StarRating rating={item.averageRating} size="18px" />
-                  </td>
-                  <td
-                    className={`px-5 py-4 ${index === portfolio.length - 1 ? "rounded-br-lg" : ""}`}
-                  >
-                    <Link
-                      to={
-                        otherUserId
-                          ? `/learning-portfolio/${otherUserId}/${item.booking_id}`
-                          : `/learning-portfolio/${user.uid}/${item.booking_id}`
-                      }
-                      className="rounded-full bg-neon-carrot-100 px-4 py-2 text-sm text-orange-800 shadow-inner hover:bg-orange-200 active:bg-orange-200"
-                      state={{ portfolio: item }}
-                    >
-                      查看
-                    </Link>
+            </thead>
+            <tbody className="rounded-lg text-center text-textcolor">
+              {noPortfolio || portfolio.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="px-12 py-4">
+                    還沒開始你的學習嗎?
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                portfolio.map((item, index) => (
+                  <tr
+                    key={item.booking_id}
+                    className={` ${
+                      index % 2 === 0 ? "bg-white" : "bg-indian-khaki-50"
+                    } `}
+                  >
+                    <td
+                      className={`text-nowrap px-4 py-4 md:px-5 ${index === portfolio.length - 1 ? "rounded-bl-lg" : ""}`}
+                    >
+                      {item.type}
+                    </td>
+                    <td className="px-2 py-3 md:px-6">{item.post_title}</td>
+                    <td className="px-2 py-4">{item.otherUserName}</td>
+                    <td className="px-2 py-4 md:px-4">{item.status}</td>
+                    <td className="flex justify-center px-2 py-4">
+                      <StarRating rating={item.averageRating} size="18px" />
+                    </td>
+                    <td
+                      className={`px-3 py-4 md:px-4 ${index === portfolio.length - 1 ? "rounded-br-lg" : ""}`}
+                    >
+                      <Link
+                        to={
+                          otherUserId
+                            ? `/learning-portfolio/${otherUserId}/${item.booking_id}`
+                            : `/learning-portfolio/${user.uid}/${item.booking_id}`
+                        }
+                        className="rounded-full bg-neon-carrot-100 px-4 py-2 text-sm text-orange-800 shadow-inner hover:bg-orange-200 active:bg-orange-200"
+                        state={{ portfolio: item }}
+                      >
+                        查看
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
