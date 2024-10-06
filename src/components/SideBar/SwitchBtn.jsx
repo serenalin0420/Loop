@@ -1,4 +1,5 @@
-import tamtam from "./tamtam.svg";
+import tamtam1 from "../../assets/tamtam1.svg";
+import tamtam2 from "../../assets/tamtam2.svg";
 import { useContext } from "react";
 import { ViewContext } from "../../context/viewContext";
 import PropTypes from "prop-types";
@@ -12,8 +13,8 @@ function SwitchBtn({ onSwitch = () => {} }) {
   };
 
   return (
-    <div className="flex flex-col items-center rounded-lg px-8 py-5 shadow-md">
-      <h2 className="text-textcolor text-center text-lg font-bold">
+    <div className="flex items-center rounded-lg sm:h-56 sm:flex-col sm:justify-between sm:p-4 sm:shadow-md md:h-64 xl:h-72 xl:px-8">
+      <h2 className="hidden text-center font-bold text-textcolor sm:flex md:text-lg">
         {findTeachersView ? (
           <>
             想學什麼技能? <br />
@@ -25,27 +26,43 @@ function SwitchBtn({ onSwitch = () => {} }) {
           </>
         )}
       </h2>
-      <img src={tamtam} className="w-36" />
-      <div className="flex w-40 justify-center rounded-full bg-[#BFAA87] p-2">
-        <button
-          className={`rounded-full p-1 px-3 text-white ${
-            findTeachersView
-              ? "text-white"
-              : "bg-[#F2EBDF] font-semibold text-yellow-800"
-          }`}
-          onClick={() => handleSwitch(false)}
-        >
-          找學生
-        </button>
-        <button
-          className={`rounded-full p-1 px-3 text-white ${
-            findTeachersView ? "bg-[#F2EBDF] font-semibold text-yellow-800" : ""
-          }`}
-          onClick={() => handleSwitch(true)}
-        >
-          找老師
-        </button>
+
+      <div className="sm:flex-co ml-2 flex items-center sm:order-last sm:ml-0">
+        <p className="mr-2 sm:hidden">想找什麼類型的技能交換?</p>
+        <div className="bg-indian-khaki-400 mr-4 flex w-[136px] justify-center rounded-full p-2 sm:mr-0 md:w-40">
+          <button
+            className={`text-nowrap rounded-full p-1 px-2 text-sm md:px-3 md:text-base ${
+              findTeachersView
+                ? "text-white"
+                : "text-indian-khaki-700 bg-indian-khaki-100 font-semibold"
+            }`}
+            onClick={() => handleSwitch(false)}
+          >
+            找學生
+          </button>
+          <button
+            className={`text-nowrap rounded-full p-1 px-2 text-sm md:px-3 md:text-base ${
+              findTeachersView
+                ? "text-indian-khaki-700 bg-indian-khaki-100 font-semibold"
+                : "text-white"
+            }`}
+            onClick={() => handleSwitch(true)}
+          >
+            找老師
+          </button>
+        </div>
       </div>
+      {findTeachersView ? (
+        <img
+          src={tamtam2}
+          className="mb-2 mt-1 w-14 scale-x-[-1] sm:h-20 sm:w-auto sm:scale-100 md:h-28 xl:h-[140px]"
+        />
+      ) : (
+        <img
+          src={tamtam1}
+          className="mb-2 mt-1 w-14 scale-x-[-1] sm:h-20 sm:w-auto sm:scale-100 md:h-28 xl:h-32"
+        />
+      )}
     </div>
   );
 }

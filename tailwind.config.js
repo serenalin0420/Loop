@@ -4,7 +4,7 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     screens: {
-      xs: "375px",
+      xs: "386px",
       sm: "576px",
       md: "768px",
       lg: "1024px",
@@ -28,13 +28,6 @@ export default {
       colors: {
         textcolor: {
           DEFAULT: "#262626",
-          brown: "#6a5e4a",
-        },
-        icon: {
-          DEFAULT: "#89795F",
-        },
-        button: {
-          DEFAULT: "#bfaa87",
         },
         sun: {
           50: "#fff9eb",
@@ -74,6 +67,19 @@ export default {
           800: "#9d360f",
           900: "#7e2e10",
           950: "#441406",
+        },
+        "indian-khaki": {
+          50: "#f9f7f3",
+          100: "#f1ede3",
+          200: "#e1dac7",
+          300: "#cec1a3",
+          400: "#bfaa87",
+          500: "#ab8d64",
+          600: "#9e7c58",
+          700: "#84654a",
+          800: "#6c5340",
+          900: "#584536",
+          950: "#2f231b",
         },
       },
     },

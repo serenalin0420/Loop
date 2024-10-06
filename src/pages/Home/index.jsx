@@ -5,7 +5,7 @@ import { UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
 import coin from "../../assets/coin.svg";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, SmileyWink } from "@phosphor-icons/react";
+import { Heart, SmileyWink, ChatCircleDots } from "@phosphor-icons/react";
 import SubCategories from "../../components/SideBar/SubCategories";
 import Filter from "./Filter";
 import IsLoggedIn from "../../components/Modal/IsLoggedIn";
@@ -27,6 +27,15 @@ function Home() {
   });
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 可愛的虎爪
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCreatePostClick = (view) => {
     if (!user) {
@@ -203,8 +212,8 @@ function Home() {
   );
 
   return (
-    <div className="mx-8 mt-20 flex">
-      <div className="flex flex-col">
+    <div className="my-16 flex max-w-screen-xl flex-col sm:my-20 sm:flex-row md:mx-2 lg:mx-auto">
+      <div className="mx-4 flex-col sm:mr-0 lg:ml-8">
         <SwitchBtn />
         <SubCategories
           categories={categories}
@@ -217,29 +226,29 @@ function Home() {
           onFilterChange={setFilterConditions}
         />
         {findTeachersView ? (
-          <div className="m-4">
-            <div className="mb-4 flex justify-between px-4">
-              <div className="flex items-center text-lg font-semibold text-textcolor">
-                排序依據
+          <div className="my-4 ml-4 mr-4 md:ml-6 lg:mr-8">
+            <div className="mb-2 flex justify-between px-1 md:mb-4 md:px-4">
+              <div className="flex items-center font-semibold text-textcolor lg:text-lg">
+                <p className="hidden xs:inline">排序依據</p>
                 <button
-                  className={`ml-4 rounded-md px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal xs:ml-2 lg:ml-4 lg:px-4 ${btnColor === "created_time" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal lg:px-4 ${btnColor === "coin_cost" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
                 </button>
               </div>
               <div className="flex items-center">
-                <p className="mr-2 text-sm text-textcolor">
+                <p className="mr-2 hidden text-sm text-textcolor lg:inline">
                   找不到你想學的技能嗎?
                 </p>
                 <button
-                  className="rounded-full bg-button px-4 py-2 font-semibold text-white"
+                  className="bg-indian-khaki-400 rounded-full px-4 py-2 font-semibold text-white"
                   onClick={() => handleCreatePostClick("student")}
                 >
                   發起學習
@@ -247,26 +256,28 @@ function Home() {
               </div>
             </div>
             <div
-              className={`grid gap-5 ${findTeachersPosts.length === 0 ? "grid-cols-1" : "grid-cols-3"}`}
+              className={`grid gap-5 ${findStudentsPosts.length === 0 ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"}`}
             >
               {isLoading ? (
-                <div className="col-span-3 mt-6 flex items-center justify-center">
-                  <div className="flex flex-col items-center justify-center text-textcolor-brown">
+                <div className="col-span-3 mt-6 flex h-5/6 items-center justify-center">
+                  <div className="text-indian-khaki-800 flex flex-col items-center justify-center">
                     <img src={coin} className="my-2 size-16 animate-swing" />
                     <p>請再稍等一下...</p>
                   </div>
                 </div>
-              ) : findTeachersPosts.length === 0 ? (
-                <div className="flex justify-center text-stone-600">
-                  找不到貼文， 你來發一篇吧！
-                  <SmileyWink className="size-6" />
+              ) : findStudentsPosts.length === 0 ? (
+                <div className="mt-6 flex h-5/6 items-center justify-center">
+                  <div className="flex justify-center text-stone-600">
+                    找不到貼文， 你來發一篇吧！
+                    <SmileyWink className="size-6" />
+                  </div>
                 </div>
               ) : (
-                findTeachersPosts.map((post) => (
+                findStudentsPosts.map((post) => (
                   <Link
                     to={`/post/${post.id}`}
                     key={post.id}
-                    className="flex flex-col justify-between rounded-lg p-4 shadow-sm shadow-stone-400"
+                    className="flex flex-col justify-between rounded-lg p-4 shadow-sm shadow-stone-300"
                   >
                     <div className="flex">
                       <img
@@ -309,7 +320,7 @@ function Home() {
                       {post.location?.map((loc, index) => (
                         <p
                           key={index}
-                          className="rounded-md bg-slate-200 px-2 py-1 text-sm"
+                          className="rounded-md bg-cerulean-100 px-2 py-1 text-sm"
                         >
                           {loc}
                         </p>
@@ -328,13 +339,14 @@ function Home() {
                         {post.coin_cost}
                       </p>
                       <button
-                        className="ml-4 mr-2 rounded-full bg-sun-400 px-4 py-2 text-sm text-white"
+                        className="ml-4 mr-2 rounded-full bg-sun-400 p-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 md:px-4"
                         onClick={(e) => {
                           e.preventDefault();
                           handleSendMessageClick(post.author_uid);
                         }}
                       >
-                        傳送訊息
+                        <p className="hidden md:flex">傳送訊息</p>
+                        <ChatCircleDots className="flex size-6 md:hidden" />
                       </button>
                     </div>
                   </Link>
@@ -343,29 +355,29 @@ function Home() {
             </div>
           </div>
         ) : (
-          <div className="m-4">
-            <div className="mb-4 flex justify-between px-4">
-              <div className="flex items-center text-lg font-semibold text-textcolor">
-                排序依據
+          <div className="my-4 ml-4 mr-4 md:ml-6 lg:mr-8">
+            <div className="mb-2 flex justify-between px-1 md:mb-4 md:px-4">
+              <div className="flex items-center font-semibold text-textcolor lg:text-lg">
+                <p className="hidden xs:inline">排序依據</p>
                 <button
-                  className={`ml-4 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "created_time" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal xs:ml-2 lg:ml-4 lg:px-4 ${btnColor === "created_time" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`ml-1 rounded-lg px-4 py-2 text-base font-normal ${btnColor === "coin_cost" ? "bg-[#F2EBDF] font-semibold text-yellow-800" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal lg:px-4 ${btnColor === "coin_cost" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
                 </button>
               </div>
               <div className="flex items-center">
-                <p className="mr-2 text-sm text-textcolor">
+                <p className="mr-2 hidden text-sm text-textcolor lg:inline">
                   找不到想學你技能的人嗎?
                 </p>
                 <button
-                  className="rounded-full bg-button px-4 py-2 font-semibold text-white"
+                  className="bg-indian-khaki-400 rounded-full px-4 py-2 font-semibold text-white"
                   onClick={() => handleCreatePostClick("teacher")}
                 >
                   發布教學
@@ -373,26 +385,28 @@ function Home() {
               </div>
             </div>
             <div
-              className={`grid gap-5 ${findStudentsPosts.length === 0 ? "grid-cols-1" : "grid-cols-3"}`}
+              className={`grid gap-5 ${findTeachersPosts.length === 0 ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"}`}
             >
               {isLoading ? (
-                <div className="col-span-3 mt-6 flex items-center justify-center">
-                  <div className="text-center text-textcolor-brown">
+                <div className="col-span-3 mt-6 flex h-5/6 items-center justify-center">
+                  <div className="text-indian-khaki-800 flex flex-col items-center justify-center">
                     <img src={coin} className="my-2 size-16 animate-swing" />
-                    載入中...
+                    <p>請再稍等一下...</p>
                   </div>
                 </div>
-              ) : findStudentsPosts.length === 0 ? (
-                <div className="flex justify-center text-stone-600">
-                  找不到貼文， 你來發一篇吧！
-                  <SmileyWink className="size-6" />
+              ) : findTeachersPosts.length === 0 ? (
+                <div className="mt-6 flex h-full items-center justify-center">
+                  <div className="flex justify-center text-stone-600">
+                    找不到貼文， 你來發一篇吧！
+                    <SmileyWink className="size-6" />
+                  </div>
                 </div>
               ) : (
                 findTeachersPosts.map((post) => (
                   <Link
                     to={`/post/${post.id}`}
                     key={post.id}
-                    className="flex flex-col justify-between rounded-lg p-4 shadow-sm shadow-stone-400"
+                    className="flex flex-col justify-between rounded-lg p-4 shadow-sm shadow-stone-300"
                   >
                     <div className="flex">
                       <img
@@ -435,7 +449,7 @@ function Home() {
                       {post.location?.map((loc, index) => (
                         <p
                           key={index}
-                          className="rounded-md bg-slate-200 px-2 py-1 text-sm"
+                          className="rounded-md bg-cerulean-100 px-2 py-1 text-sm"
                         >
                           {loc}
                         </p>
@@ -454,13 +468,14 @@ function Home() {
                         {post.coin_cost}
                       </p>
                       <button
-                        className="ml-4 mr-2 rounded-full bg-sun-400 px-4 py-2 text-sm text-white"
+                        className="ml-4 mr-2 rounded-full bg-sun-400 p-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 md:px-4"
                         onClick={(e) => {
                           e.preventDefault();
                           handleSendMessageClick(post.author_uid);
                         }}
                       >
-                        傳送訊息
+                        <p className="hidden md:flex">傳送訊息</p>
+                        <ChatCircleDots className="flex size-6 md:hidden" />
                       </button>
                     </div>
                   </Link>
