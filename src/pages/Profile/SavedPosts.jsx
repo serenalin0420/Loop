@@ -28,7 +28,7 @@ function SavedPosts({ userId }) {
 
   return (
     <div className="flex flex-col rounded-lg shadow-md">
-      <h3 className="max-w-max rounded-r-lg bg-button px-4 py-2 text-center tracking-wider text-white">
+      <h3 className="bg-indian-khaki-400 max-w-max rounded-r-lg px-4 py-2 text-center tracking-wider text-white">
         我的收藏
       </h3>
       <div className="flex flex-col gap-3 px-6 py-4">
@@ -41,7 +41,7 @@ function SavedPosts({ userId }) {
             >
               <p className="hidden sm:inline md:text-nowrap">{post.author}</p>
               <p className="font-semibold">{post.title}</p>
-              <span className="my-auto ml-2 flex items-center text-nowrap text-sm text-textcolor-brown">
+              <span className="text-indian-khaki-800 my-auto ml-2 flex items-center text-nowrap text-sm">
                 <p className="hidden md:inline">查看</p>
                 <CaretRight className="hl-1 size-6" />
               </span>
