@@ -11,6 +11,20 @@ const Introduction = ({ post, author }) => {
   const [chatWeight, setChatWeight] = useState("regular");
   const [savedPost, setSavedPost] = useState([]);
 
+  const videoUrl = post.video_url;
+  const getYouTubeVideoId = (url) => {
+    if (url !== undefined) {
+      const regExp =
+        /(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const match = url.match(regExp);
+      return match && match[1] ? match[1] : null;
+    }
+    return null;
+  };
+
+  const videoId = getYouTubeVideoId(videoUrl);
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+
   useEffect(() => {
     const fetchSavedPosts = async () => {
       try {
@@ -61,12 +75,12 @@ const Introduction = ({ post, author }) => {
   };
 
   return (
-    <div className="rounded-lg xs:p-4 xs:shadow-md">
+    <div className="rounded-lg xs:px-2 xs:py-4 sm:p-4 sm:shadow-md">
       <div className="flex items-center gap-2">
         <Link to={`/profile/${author.uid}`}>
           <img
             src={author.profile_picture}
-            className="size-16 rounded-full border-white bg-red-100 object-cover object-center p-1 shadow-md md:size-20"
+            className="size-16 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md md:size-20"
             alt="author"
           />
         </Link>
@@ -121,7 +135,7 @@ const Introduction = ({ post, author }) => {
         </div>
       </div>
 
-      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
+      <div className="mb-4 ml-4 mt-2 flex flex-wrap items-center gap-y-1 sm:ml-6">
         <h3 className="mr-11 text-nowrap">類別 </h3>
         {(post.subcategories ?? []).map((sub, index) => (
           <p
@@ -133,8 +147,8 @@ const Introduction = ({ post, author }) => {
         ))}
       </div>
 
-      {post.type !== "發起學習" && (
-        <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
+      {post.type === "發布教學" && (
+        <div className="mb-4 ml-4 mt-2 flex flex-wrap items-center gap-y-1 sm:ml-6">
           <h3 className="mr-11 text-nowrap">專長 </h3>
           {(post.skills ?? []).map((skill, index) => (
             <p
@@ -146,7 +160,7 @@ const Introduction = ({ post, author }) => {
           ))}
         </div>
       )}
-      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
+      <div className="mb-4 ml-4 mt-2 flex flex-wrap items-center gap-y-1 sm:ml-6">
         <h3 className="mr-3 text-nowrap">時間偏好 </h3>
         {(post.time_preference ?? []).map((time, index) => (
           <p
@@ -157,7 +171,7 @@ const Introduction = ({ post, author }) => {
           </p>
         ))}
       </div>
-      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
+      <div className="mb-4 ml-4 mt-2 flex flex-wrap items-center gap-y-1 sm:ml-6">
         <h3 className="mr-11 text-nowrap">地點 </h3>
         {(post.location ?? []).map((location, index) => (
           <p
@@ -168,10 +182,44 @@ const Introduction = ({ post, author }) => {
           </p>
         ))}
       </div>
-      <div className="mb-4 ml-4 mt-2 flex items-center sm:ml-6">
+      <div className="mb-4 ml-4 mt-2 flex sm:ml-6">
         <h3 className="mr-11 text-nowrap">介紹 </h3>
         <p className="text-sm xs:text-base">{post.description}</p>
       </div>
+      {post.type === "發布教學" && (
+        <div className="mb-4 ml-4 mt-2 flex sm:ml-6">
+          <h3 className="mr-3 text-nowrap">影片介紹 </h3>
+          {videoUrl && embedUrl ? (
+            <iframe
+              className="aspect-video w-3/5 rounded-lg"
+              src={embedUrl}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title="Embedded YouTube Video"
+            ></iframe>
+          ) : videoUrl === "" ? (
+            <p className="text-stone-400">尚未提供影片</p>
+          ) : (
+            <p className="text-stone-400">無效的影片連結</p>
+          )}
+        </div>
+      )}
+      {post.type === "發布教學" && (
+        <div className="mb-4 ml-4 mt-2 flex sm:ml-6">
+          <h3 className="mr-3 text-nowrap">參考教材 </h3>
+          {post.attachment_url === "" ? (
+            <p className="text-stone-400">尚未提供相關資料</p>
+          ) : (
+            <Link
+              className="text-sm text-cerulean-600 xs:text-base"
+              target="_blank"
+              to={post.attachment_url}
+            >
+              {post.attachment_url}
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -186,13 +234,14 @@ Introduction.propTypes = {
     description: PropTypes.string,
     type: PropTypes.oneOf(["發起學習", "發布教學"]).isRequired,
     subcategories: PropTypes.arrayOf(PropTypes.string),
+    video_url: PropTypes.string,
+    attachment_url: PropTypes.string,
   }).isRequired,
   author: PropTypes.shape({
     name: PropTypes.string,
     profile_picture: PropTypes.string,
     review_rating: PropTypes.number,
     uid: PropTypes.string,
-    // saved_posts: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
 };
 
