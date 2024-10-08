@@ -15,6 +15,10 @@ function SinglePortfolio() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (!portfolio && userId) {
       const fetchPortfolio = async () => {
         try {
@@ -83,7 +87,7 @@ function SinglePortfolio() {
   }
 
   return (
-    <div className="h-screen py-20 sm:h-full">
+    <div className="flex-grow py-20">
       <div className="mx-4 mb-4 flex max-w-screen-lg cursor-pointer items-center sm:mx-6 md:mx-12 lg:mx-28 xl:mx-auto">
         <div className="flex items-center gap-6">
           <div
@@ -103,15 +107,15 @@ function SinglePortfolio() {
         <div className="mt-4 flex items-center justify-between">
           <CaretLeft
             onClick={handlePrevClick}
-            className="size-8 rounded-full bg-indian-khaki-50 p-1 text-indian-khaki-800 hover:bg-indian-khaki-200 active:bg-indian-khaki-200 sm:size-10 sm:p-2"
+            className="size-8 rounded-full bg-indian-khaki-50 p-1 text-indian-khaki-800 hover:bg-indian-khaki-200 active:bg-indian-khaki-200"
             weight="bold"
           />
           <div className="mx-2 w-5/6">
-            <div className="mb-6 flex flex-1 justify-between gap-1 sm:gap-3">
-              <div className="flex min-w-16 flex-col items-center gap-2 text-nowrap text-center sm:min-w-20">
+            <div className="mb-6 flex flex-1 justify-between gap-1">
+              <div className="flex min-w-16 flex-col items-center gap-2 text-nowrap text-center">
                 <img
                   src={providerProfile?.profile_picture}
-                  className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow sm:size-16"
+                  className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
                   alt="author"
                 />
                 <p className="text-sm sm:text-base">{providerProfile?.name}</p>
@@ -131,19 +135,17 @@ function SinglePortfolio() {
                 </h4>
               </div>
             </div>
-            <div className="mb-6 flex flex-1 justify-between gap-1 sm:gap-3">
-              <div className="flex min-w-16 flex-col items-center gap-2 text-nowrap text-center sm:min-w-20">
+            <div className="mb-6 flex flex-1 justify-between gap-1">
+              <div className="flex min-w-16 flex-col items-center gap-2 text-nowrap text-center">
                 <img
                   src={demanderProfile?.profile_picture}
-                  className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow sm:size-16"
+                  className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
                   alt="author"
                 />
-                <p className="text-sm sm:text-base">{demanderProfile?.name}</p>
+                <p className="text-sm">{demanderProfile?.name}</p>
               </div>
               <div className="ml-1 flex w-full flex-col">
-                <p className="mb-1 ml-1 text-xs sm:text-sm">
-                  {currentFeedback.time}
-                </p>
+                <p className="mb-1 ml-1 text-xs">{currentFeedback.time}</p>
                 <h4
                   className={`w-full rounded-lg p-3 ${currentFeedback.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
                 >
@@ -158,7 +160,7 @@ function SinglePortfolio() {
           </div>
           <CaretRight
             onClick={handleNextClick}
-            className="size-8 rounded-full bg-indian-khaki-50 p-1 text-indian-khaki-800 hover:bg-indian-khaki-200 active:bg-indian-khaki-200 sm:size-10 sm:p-2"
+            className="size-8 rounded-full bg-indian-khaki-50 p-1 text-indian-khaki-800 hover:bg-indian-khaki-200 active:bg-indian-khaki-200"
             weight="bold"
           />
         </div>
@@ -180,7 +182,7 @@ function SinglePortfolio() {
           {portfolio.post_title}
         </h1>
         <div className="mx-auto mb-2 flex items-center gap-2">
-          技能提供者（老師）:
+          技能提供者:
           <img
             src={providerProfile?.profile_picture}
             className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
@@ -189,7 +191,7 @@ function SinglePortfolio() {
           <p className="text-base">{providerProfile?.name}</p>
         </div>
         <div className="mx-auto mb-4 flex items-center gap-2">
-          技能需求者（學生）:
+          技能需求者:
           <img
             src={demanderProfile?.profile_picture}
             className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"

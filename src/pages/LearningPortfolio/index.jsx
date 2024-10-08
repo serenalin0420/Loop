@@ -13,6 +13,10 @@ function LearningPortfolio() {
   const [noPortfolio, setNoPortfolio] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const fetchLearningPortfolio = async () => {
       const uid = otherUserId || (user && user.uid);
       if (uid) {
@@ -86,7 +90,10 @@ function LearningPortfolio() {
   }
 
   return (
-    <div className="h-screen py-24">
+    <div className="h-screen py-20 md:py-24">
+      <h2 className="mb-4 text-center text-lg font-semibold sm:text-xl">
+        學習歷程
+      </h2>
       <div className="mx-4 flex max-w-screen-lg flex-col rounded-lg bg-white shadow-md sm:mx-6 md:mx-12 lg:mx-28 xl:mx-auto">
         <div className="overflow-x-auto">
           <table className="min-w-[768px] rounded-lg md:w-full">
@@ -114,7 +121,7 @@ function LearningPortfolio() {
                   <tr
                     key={item.booking_id}
                     className={` ${
-                      index % 2 === 0 ? "bg-white" : "bg-indian-khaki-50"
+                      index % 2 === 0 ? "bg-white" : "bg-indian-khaki-100"
                     } `}
                   >
                     <td
