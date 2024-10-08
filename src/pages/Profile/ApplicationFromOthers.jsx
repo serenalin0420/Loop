@@ -6,7 +6,7 @@ import infinite from "../../assets/infinite.svg";
 import { X } from "@phosphor-icons/react";
 import { SmileyMelting } from "@phosphor-icons/react";
 
-const ApplicationFromOthers = ({ userId }) => {
+const ApplicationFromOthers = ({ userId, setCoins }) => {
   const [bookings, setBookings] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -104,6 +104,8 @@ const ApplicationFromOthers = ({ userId }) => {
               : booking,
           ),
         );
+        const updatedUserProfile = await dbApi.getProfile(userId);
+        setCoins(updatedUserProfile.coins);
 
         setShowModal(false);
         setTimeout(() => {
@@ -128,7 +130,7 @@ const ApplicationFromOthers = ({ userId }) => {
   return (
     <>
       <div className="flex flex-col overflow-x-auto rounded-lg shadow-md">
-        <h3 className="max-w-max rounded-r-lg bg-button px-4 py-2 text-center tracking-wider text-white">
+        <h3 className="max-w-max rounded-r-lg bg-indian-khaki-400 px-4 py-2 text-center tracking-wider text-white">
           他人預約 / 申請
         </h3>
         <div className="flex max-w-full gap-3 overflow-x-auto px-6 py-4">
@@ -141,7 +143,7 @@ const ApplicationFromOthers = ({ userId }) => {
               .map((booking, index) => (
                 <div
                   key={index}
-                  className="flex min-w-[20%] flex-col items-center sm:min-w-[42%] md:min-w-[38%] lg:min-w-[25%]"
+                  className="flex min-w-[36%] flex-col items-center xs:min-w-[30%] sm:min-w-[42%] md:min-w-[38%] lg:min-w-[25%]"
                 >
                   <img
                     src={booking.applicant_profile_picture}
@@ -179,9 +181,9 @@ const ApplicationFromOthers = ({ userId }) => {
       </div>
       {showModal && selectedBooking && (
         <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative rounded-xl bg-white px-8 py-6 shadow-lg">
+          <div className="relative mx-4 rounded-xl bg-white px-6 py-6 shadow-lg sm:mx-auto md:px-8">
             <button
-              className="absolute right-2 top-2 p-2"
+              className="absolute right-1 top-1 p-2"
               onClick={handleCloseModal}
             >
               <X className="size-6" />
@@ -192,26 +194,32 @@ const ApplicationFromOthers = ({ userId }) => {
                 className="size-16 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md"
                 alt="applicant"
               />
-              <div className="my-auto ml-3">
-                <h2 className="mt-1 text-lg font-semibold">{postTitle}</h2>
+              <div className="ml-1 sm:my-auto">
+                <h2 className="my-1 font-semibold">{postTitle}</h2>
                 <p>{selectedBooking.applicant_name}</p>
               </div>
-              <p className="ml-8 mr-1 mt-auto leading-8">
-                次數 : {selectedBooking.selected_times.length}
-              </p>
-              <div className="mt-auto flex flex-col">
-                <div className="mr-2 flex items-center">
-                  <p className="pl-2">
-                    {selectedBooking.provider_uid === userId
-                      ? "獲得 :"
-                      : "支付 :"}
-                  </p>
-                  <img src={coin} alt="coin" className="size-8 object-cover" />
-                  <p className="px-1">x {selectedBooking.coins_total}</p>
+              <div className="ml-9 flex flex-col text-sm sm:ml-0 sm:flex-row sm:text-base">
+                <p className="ml-2 mr-1 leading-8 sm:ml-8 sm:mt-auto">
+                  次數 : {selectedBooking.selected_times.length}
+                </p>
+                <div className="mt-auto flex flex-col">
+                  <div className="mr-2 flex items-center">
+                    <p className="pl-2">
+                      {selectedBooking.provider_uid === userId
+                        ? "獲得 :"
+                        : "支付 :"}
+                    </p>
+                    <img
+                      src={coin}
+                      alt="coin"
+                      className="size-8 object-cover"
+                    />
+                    <p className="px-1">x {selectedBooking.coins_total}</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex h-10 w-full items-center rounded-t-lg bg-button px-4 text-white">
+            <div className="flex h-10 w-full items-center rounded-t-lg bg-indian-khaki-400 px-4 text-white">
               <img
                 src={infinite}
                 alt="infinite-logo"
@@ -226,20 +234,20 @@ const ApplicationFromOthers = ({ userId }) => {
                   index === selectedBooking.selected_times.length - 1
                     ? "rounded-b-lg"
                     : ""
-                } ${index % 2 === 0 ? "bg-white" : "bg-stone-200"}`}
+                } ${index % 2 === 0 ? "bg-white" : "bg-indian-khaki-100"}`}
               >
                 {time}
               </p>
             ))}
             <div className="mt-6 flex justify-end">
               <button
-                className="mr-4 rounded-md bg-neon-carrot-100 px-4 py-2"
+                className="mr-4 rounded-md bg-neon-carrot-100 px-4 py-2 shadow"
                 onClick={handleRejectClick}
               >
                 拒絕
               </button>
               <button
-                className="rounded-md bg-neon-carrot-400 px-4 py-2 text-white"
+                className="rounded-md bg-neon-carrot-400 px-4 py-2 text-white shadow"
                 onClick={handleAcceptClick}
               >
                 同意
@@ -250,20 +258,20 @@ const ApplicationFromOthers = ({ userId }) => {
       )}
       {showConfirmModal && (
         <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-xl bg-white px-20 py-6 text-center shadow-lg">
+          <div className="mx-4 rounded-xl bg-white px-6 py-6 text-center shadow-lg sm:px-12 md:mx-auto md:px-16">
             <p className="text-lg leading-8">
               要拒絕對方的申請嗎? <br />
               再考慮一下吧~別錯過交流的機會!
             </p>
             <div className="flex justify-center">
               <button
-                className="mr-4 mt-4 rounded-md bg-slate-300 px-6 py-2"
+                className="mr-4 mt-4 rounded-md bg-neon-carrot-400 px-6 py-2 text-white shadow"
                 onClick={() => setShowConfirmModal(false)}
               >
                 否
               </button>
               <button
-                className="mt-4 rounded-md bg-red-400 px-6 py-2 text-white"
+                className="mt-4 rounded-md bg-indian-khaki-100 px-6 py-2 shadow"
                 onClick={handleConfirmReject}
               >
                 是
@@ -307,6 +315,7 @@ const ApplicationFromOthers = ({ userId }) => {
 
 ApplicationFromOthers.propTypes = {
   userId: PropTypes.string.isRequired,
+  setCoins: PropTypes.func.isRequired,
 };
 
 export default ApplicationFromOthers;
