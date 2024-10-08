@@ -63,11 +63,13 @@ const Introduction = ({ post, author }) => {
   return (
     <div className="rounded-lg xs:p-4 xs:shadow-md">
       <div className="flex items-center gap-2">
-        <img
-          src={author.profile_picture}
-          className="size-16 rounded-full border-white bg-red-100 object-cover object-center p-1 shadow-md md:size-20"
-          alt="author"
-        />
+        <Link to={`/profile/${author.uid}`}>
+          <img
+            src={author.profile_picture}
+            className="size-16 rounded-full border-white bg-red-100 object-cover object-center p-1 shadow-md md:size-20"
+            alt="author"
+          />
+        </Link>
         <div className="flex flex-col gap-1">
           <h3 className="flex items-center gap-3 md:text-lg">{author.name}</h3>
           <h4 className="font-semibold md:text-lg">{post.title}</h4>
@@ -83,7 +85,7 @@ const Introduction = ({ post, author }) => {
               onMouseEnter={() => setBookmarkWeight("fill")}
               onMouseLeave={() => setBookmarkWeight("regular")}
             />
-            <p className="hidden text-sm md:inline">學習歷程表</p>
+            <p className="hidden text-sm md:inline">學習歷程</p>
           </span>
         </Link>
         <button
@@ -104,7 +106,7 @@ const Introduction = ({ post, author }) => {
 
         <div className="flex size-8 items-center justify-center md:size-10">
           <Heart
-            className="size-7 md:size-8"
+            className="size-7 cursor-pointer md:size-8"
             color="#FF8964"
             weight={
               savedPost.some((savedPost) => savedPost.post_id === post.post_id)

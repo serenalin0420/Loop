@@ -9,6 +9,7 @@ import { UserContext } from "../../context/userContext";
 import infinite from "../../assets/infinite.svg";
 import { X } from "@phosphor-icons/react";
 import IsLoggedIn from "../../components/Modal/IsLoggedIn";
+import { WarningCircle } from "@phosphor-icons/react";
 
 const CourseSelection = ({
   post,
@@ -26,11 +27,13 @@ const CourseSelection = ({
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const { findTeachersView } = useContext(ViewContext);
   const user = useContext(UserContext);
 
-  console.log("findTeachersView", findTeachersView);
+  // console.log("findTeachersView", findTeachersView);
 
   const order = ["體驗", "1", "3", "5", "10"];
   const sortedCourseNum = post.course_num
@@ -75,9 +78,15 @@ const CourseSelection = ({
       selectedCourse === "體驗" ? 1 : parseInt(selectedCourse, 10);
     if (newSelectedTimes.length > maxSelectableTimes) {
       setErrorMessage(`您只能選擇 ${maxSelectableTimes} 個時段`);
+      setShowErrorModal(true);
+      setTimeout(() => {
+        setShowErrorModal(false);
+        setErrorMessage("");
+      }, 3000);
       newSelectedTimes = selectedTimes; // revert to previous state
     } else {
       setErrorMessage("");
+      setShowErrorModal(false);
       setSelectedTimes(newSelectedTimes);
       modalDispatch({
         type: actionTypes.SET_SELECTED_TIMES,
@@ -123,9 +132,9 @@ const CourseSelection = ({
   };
 
   const handleConfirm = async () => {
-    // if (errorMessage) {
-    //   return;
-    // }
+    if (errorMessage) {
+      return;
+    }
     if (!user) {
       setShowLoginModal(true);
       return;
@@ -138,6 +147,7 @@ const CourseSelection = ({
       setErrorMessage(
         `您需要選擇 ${selectedCourse === "體驗" ? 1 : selectedCourse} 個時段`,
       );
+      setShowErrorModal(true);
       return;
     }
 
@@ -186,6 +196,10 @@ const CourseSelection = ({
       });
 
       setShowModal(false);
+      setShowConfirmModal(true);
+      setTimeout(() => {
+        setShowConfirmModal(false);
+      }, 2000);
     } catch (error) {
       console.error("Error updating post:", error);
     }
@@ -217,6 +231,7 @@ const CourseSelection = ({
       setSelectedCoinCost();
       setSelectedTimes([]);
       setErrorMessage("");
+      setShowErrorModal(false);
       modalDispatch({
         type: actionTypes.SET_SELECTED_TIMES,
         payload: {},
@@ -335,7 +350,7 @@ const CourseSelection = ({
                   />
                 </div>
               </div>
-              <div className="ml-4 mt-16 flex flex-col lg:mx-2">
+              <div className="relative ml-4 mt-16 flex flex-col lg:mx-2">
                 <div className="sticky top-0 flex w-full flex-col bg-neon-carrot-50 p-4 shadow md:w-52">
                   <h3 className="font-semibold lg:text-lg">已選擇的時段</h3>
                   <ul className="mt-2 grid grid-cols-2 md:grid-cols-1">
@@ -345,11 +360,6 @@ const CourseSelection = ({
                       </li>
                     ))}
                   </ul>
-                  {errorMessage && (
-                    <div className="mt-4 text-sm text-red-500">
-                      {errorMessage}
-                    </div>
-                  )}
                   <button
                     className="mt-4 rounded-md bg-neon-carrot-400 px-4 py-2 text-white"
                     onClick={handleConfirm}
@@ -357,6 +367,14 @@ const CourseSelection = ({
                     確認
                   </button>
                 </div>
+                {showErrorModal && (
+                  <div className="absolute -top-16 mt-4 flex rounded bg-neon-carrot-100 p-2 shadow-md md:relative md:top-0">
+                    <WarningCircle className="size-5 text-neon-carrot-700" />
+                    <p className="pl-1 text-sm font-semibold text-neon-carrot-700">
+                      {errorMessage}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -367,6 +385,13 @@ const CourseSelection = ({
           onClose={() => setShowLoginModal(false)}
           message="預約時段要先登入，才能知道你是誰喔~趕快登入吧！"
         />
+      )}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="rounded-lg bg-white p-4 shadow-md">
+            <p>您的預約 / 申請已成功送出！</p>
+          </div>
+        </div>
       )}
     </div>
   );

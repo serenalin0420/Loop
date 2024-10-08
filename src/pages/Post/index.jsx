@@ -17,6 +17,10 @@ function Post() {
   const [postCategory, setPostCategory] = useState();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -202,7 +206,7 @@ function Post() {
       </div>
     );
   };
-  // console.log(post);
+
   if (!post || !author)
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
