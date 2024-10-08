@@ -28,7 +28,6 @@ createRoot(document.getElementById("root")).render(
               <Route path="/" element={<App />}>
                 <Route index element={<Home />} />
                 <Route path="login" element={<Login />} />
-                {/* 只有登入的才能申請課程 */}
                 <Route path="post/:postId" element={<Post />} />
                 <Route
                   path="create-post"
@@ -38,10 +37,18 @@ createRoot(document.getElementById("root")).render(
                     </PrivateRoute>
                   }
                 />
-                {/* 當用戶瀏覽自己的個人資料頁面 */}
-                <Route path="profile" element={<Profile />} />
                 {/* 當用戶瀏覽其他用戶的個人資料頁面 */}
                 <Route path="profile/:userId" element={<Profile />} />
+                {/* 當用戶瀏覽自己的個人資料頁面 */}
+                <Route
+                  path="profile"
+                  element={
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  }
+                />
+
                 <Route path="chat/:chatId" element={<Chat />} />
 
                 <Route
