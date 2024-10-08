@@ -122,7 +122,7 @@ export default function Login() {
             {isRegistering ? "登入" : "註冊 "}
           </button>
         </div>
-        <div className="mt-32 flex h-fit flex-col flex-wrap items-center py-4 sm:mt-24 md:order-2 md:w-2/5 md:py-6">
+        <div className="mt-32 flex h-fit flex-col flex-wrap items-center py-4 sm:mt-52 md:order-2 md:w-2/5 md:py-6">
           <Link to="/" className="mx-8 cursor-pointer">
             <img src={logo} alt="Loop" className="w-44 md:w-56" />{" "}
           </Link>
