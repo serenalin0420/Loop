@@ -94,7 +94,7 @@ function App() {
   };
 
   useEffect(() => {
-    if (showNotifications) {
+    if (!showNotifications) {
       const unreadNotifications = notifications.filter((n) => !n.read);
       if (unreadNotifications.length > 0) {
         dbApi.markNotificationsAsRead(user.uid, unreadNotifications);

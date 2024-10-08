@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import dbApi from "../../utils/api";
 import PropTypes from "prop-types";
 import Modal from "./Modal";
+import { CalendarCheck, Pencil } from "@phosphor-icons/react";
 
 const Notification = ({ userId, notifications }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,58 +105,68 @@ const Notification = ({ userId, notifications }) => {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="fixed right-12 top-0 z-30 mt-[72px] min-w-48 rounded-lg bg-slate-100 px-3 py-1">
+    <div className="fixed right-10 top-0 z-30 mt-16 min-w-60 rounded-lg bg-indian-khaki-50 px-3 py-1 shadow-xl">
       {finalNotifications.length === 0 ? (
-        <p className="px-12">沒有通知</p>
+        <p className="px-12 text-textcolor">沒有通知</p>
       ) : (
         finalNotifications.map((notification, index) => (
-          <div key={index} className="my-2 rounded-lg bg-slate-200 px-3 py-2">
-            <p className="text-sm">{notification.message.split(" ")[0]}</p>
-            <p className="text-sm">
-              {notification.fromName} {notification.message.split(" ")[1]}
-            </p>
+          <div key={index} className="flex py-3">
             {notification.type === "booking_confirm" && (
-              <span className="text-xs">
-                {`${new Date(
-                  notification.created_time.seconds * 1000,
-                ).toLocaleDateString("zh-TW", {
-                  month: "numeric",
-                  day: "numeric",
-                })}  ${new Date(
-                  notification.created_time.seconds * 1000,
-                ).toLocaleTimeString("zh-TW", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })}`}
-              </span>
+              <CalendarCheck className="size-8 text-indian-khaki-800" />
             )}
             {notification.type === "course_endtime" && (
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs">
-                  {notification.time.split(" ")[0]}
-                  {notification.time.split(")")[1]}
-                </span>
-                {filledNotifications.has(notification.id) ? (
-                  <div className="rounded-md bg-stone-400 px-3 py-2 text-xs text-white">
-                    已填寫
-                  </div>
-                ) : (
-                  <button
-                    className="ml-6 rounded-md bg-amber-500 px-3 py-2 text-xs text-white"
-                    onClick={() => handleOpenModal(notification)}
-                  >
-                    填寫學習歷程
-                  </button>
-                )}
-                {isModalOpen && selectedNotification && (
-                  <Modal
-                    notification={selectedNotification}
-                    onClose={handleCloseModal}
-                  />
-                )}
-              </div>
+              <Pencil className="size-8 text-indian-khaki-800" />
             )}
+            <div className="ml-2 w-full">
+              <p className="text-xs text-stone-700">
+                {notification.message.split(" ")[0]}
+              </p>
+              <p className="text-xs text-textcolor">
+                {notification.fromName} {notification.message.split(" ")[1]}
+              </p>
+              {notification.type === "booking_confirm" && (
+                <span className="text-xs text-stone-700">
+                  {`${new Date(
+                    notification.created_time.seconds * 1000,
+                  ).toLocaleDateString("zh-TW", {
+                    month: "numeric",
+                    day: "numeric",
+                  })}  ${new Date(
+                    notification.created_time.seconds * 1000,
+                  ).toLocaleTimeString("zh-TW", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}`}
+                </span>
+              )}
+              {notification.type === "course_endtime" && (
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-xs text-stone-700">
+                    {notification.time.split(" ")[0]}
+                    {notification.time.split(")")[1]}
+                  </span>
+                  {filledNotifications.has(notification.id) ? (
+                    <div className="rounded-md bg-indian-khaki-100 px-2 py-2 text-xs text-indian-khaki-700 shadow-sm">
+                      已填寫
+                    </div>
+                  ) : (
+                    <button
+                      className="ml-6 rounded-md bg-neon-carrot-400 px-3 py-2 text-xs text-white shadow-sm"
+                      onClick={() => handleOpenModal(notification)}
+                    >
+                      填寫學習歷程
+                    </button>
+                  )}
+                  {isModalOpen && selectedNotification && (
+                    <Modal
+                      notification={selectedNotification}
+                      onClose={handleCloseModal}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ))
       )}
