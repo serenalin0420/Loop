@@ -20,6 +20,7 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
   const user = useContext(UserContext);
   const [calendarWeight, setCalendarWeight] = useState("regular");
   const [bellWeight, setBellWeight] = useState("regular");
+  const [chatWeight, setChatWeight] = useState("regular");
   const [topChatId, setTopChatId] = useState();
   const location = useLocation();
 
@@ -88,7 +89,7 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
 
   return (
     <>
-      <header className="fixed left-0 top-0 z-20 flex h-[60px] w-full transform items-center justify-center bg-white shadow-md transition-all duration-500 sm:justify-start">
+      <header className="fixed left-0 top-0 z-30 flex h-[60px] w-full transform items-center justify-center bg-white shadow-md transition-all duration-500 sm:justify-start">
         <Link to="/" className="relative mx-8 mt-1">
           <img src={logo} alt="Loop" className="w-24" />
         </Link>
@@ -106,21 +107,31 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
                     onMouseEnter={() => setCalendarWeight("fill")}
                     onMouseLeave={() => setCalendarWeight("regular")}
                   />
-                  學習歷程表
+                  學習歷程
                 </Link>
               )}
               <Link
                 to={topChatId ? `/chat/${topChatId}` : "/chat"}
                 className="mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
               >
-                <ChatCircleDots className="size-7" />
+                <ChatCircleDots
+                  className="size-7"
+                  weight={chatWeight}
+                  onMouseEnter={() => setChatWeight("fill")}
+                  onMouseLeave={() => setChatWeight("regular")}
+                />
                 訊息
               </Link>
               <button
                 className="relative mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
                 onClick={handleNotificationClick}
               >
-                <Bell className="size-7" weight={bellWeight} />
+                <Bell
+                  className="size-7"
+                  weight={bellWeight}
+                  onMouseEnter={() => setBellWeight("fill")}
+                  onMouseLeave={() => setBellWeight("regular")}
+                />
                 {hasUnreadNotifications && (
                   <span className="absolute right-2 top-[6px] h-3 w-3 rounded-full bg-red-400"></span>
                 )}

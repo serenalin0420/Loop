@@ -93,7 +93,7 @@ function Modal({ notification, onClose }) {
         </div>
         <div className="flex justify-end">
           <button
-            className="bg-neon-carrot-400 mt-4 rounded-md px-6 py-2 text-white"
+            className="mt-4 rounded-md bg-neon-carrot-400 px-6 py-2 text-white"
             onClick={handleSubmit}
           >
             送出

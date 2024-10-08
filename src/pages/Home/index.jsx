@@ -231,13 +231,13 @@ function Home() {
               <div className="flex items-center font-semibold text-textcolor lg:text-lg">
                 <p className="hidden xs:inline">排序依據</p>
                 <button
-                  className={`rounded-full px-3 py-2 text-base font-normal xs:ml-2 lg:ml-4 lg:px-4 ${btnColor === "created_time" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal xs:ml-2 lg:ml-4 lg:px-4 ${btnColor === "created_time" ? "bg-indian-khaki-100 font-semibold text-indian-khaki-700" : "text-textcolor"}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`rounded-full px-3 py-2 text-base font-normal lg:px-4 ${btnColor === "coin_cost" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal lg:px-4 ${btnColor === "coin_cost" ? "bg-indian-khaki-100 font-semibold text-indian-khaki-700" : "text-textcolor"}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
@@ -248,7 +248,7 @@ function Home() {
                   找不到你想學的技能嗎?
                 </p>
                 <button
-                  className="bg-indian-khaki-400 rounded-full px-4 py-2 font-semibold text-white"
+                  className="rounded-full bg-indian-khaki-400 px-4 py-2 font-semibold text-white"
                   onClick={() => handleCreatePostClick("student")}
                 >
                   發起學習
@@ -259,8 +259,8 @@ function Home() {
               className={`grid gap-5 ${findStudentsPosts.length === 0 ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"}`}
             >
               {isLoading ? (
-                <div className="col-span-3 mt-6 flex h-5/6 items-center justify-center">
-                  <div className="text-indian-khaki-800 flex flex-col items-center justify-center">
+                <div className="col-span-3 mt-6 flex h-[60vh] items-center justify-center">
+                  <div className="flex flex-col items-center justify-center text-indian-khaki-800">
                     <img src={coin} className="my-2 size-16 animate-swing" />
                     <p>請再稍等一下...</p>
                   </div>
@@ -360,13 +360,13 @@ function Home() {
               <div className="flex items-center font-semibold text-textcolor lg:text-lg">
                 <p className="hidden xs:inline">排序依據</p>
                 <button
-                  className={`rounded-full px-3 py-2 text-base font-normal xs:ml-2 lg:ml-4 lg:px-4 ${btnColor === "created_time" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal xs:ml-2 lg:ml-4 lg:px-4 ${btnColor === "created_time" ? "bg-indian-khaki-100 font-semibold text-indian-khaki-700" : "text-textcolor"}`}
                   onClick={sortByCreatedTime}
                 >
                   發文時間
                 </button>
                 <button
-                  className={`rounded-full px-3 py-2 text-base font-normal lg:px-4 ${btnColor === "coin_cost" ? "bg-indian-khaki-100 text-indian-khaki-700 font-semibold" : "text-textcolor"}`}
+                  className={`rounded-full px-3 py-2 text-base font-normal lg:px-4 ${btnColor === "coin_cost" ? "bg-indian-khaki-100 font-semibold text-indian-khaki-700" : "text-textcolor"}`}
                   onClick={sortByCoinCost}
                 >
                   代幣數量
@@ -377,7 +377,7 @@ function Home() {
                   找不到想學你技能的人嗎?
                 </p>
                 <button
-                  className="bg-indian-khaki-400 rounded-full px-4 py-2 font-semibold text-white"
+                  className="rounded-full bg-indian-khaki-400 px-4 py-2 font-semibold text-white"
                   onClick={() => handleCreatePostClick("teacher")}
                 >
                   發布教學
@@ -388,8 +388,8 @@ function Home() {
               className={`grid gap-5 ${findTeachersPosts.length === 0 ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"}`}
             >
               {isLoading ? (
-                <div className="col-span-3 mt-6 flex h-5/6 items-center justify-center">
-                  <div className="text-indian-khaki-800 flex flex-col items-center justify-center">
+                <div className="col-span-3 mt-6 flex h-[60vh] items-center justify-center">
+                  <div className="flex flex-col items-center justify-center text-indian-khaki-800">
                     <img src={coin} className="my-2 size-16 animate-swing" />
                     <p>請再稍等一下...</p>
                   </div>
