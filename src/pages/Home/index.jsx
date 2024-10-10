@@ -3,7 +3,7 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
-import coin from "../../assets/coin.svg";
+import { Coin } from "../../assets/images";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, SmileyWink, ChatCircleDots } from "@phosphor-icons/react";
 import SubCategories from "../../components/SideBar/SubCategories";
@@ -35,6 +35,10 @@ function Home() {
     }, 2000);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
   }, []);
 
   const handleCreatePostClick = (view) => {
@@ -261,7 +265,7 @@ function Home() {
               {isLoading ? (
                 <div className="col-span-3 mt-6 flex h-[60vh] items-center justify-center">
                   <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-                    <img src={coin} className="my-2 size-16 animate-swing" />
+                    <Coin className="my-2 size-16 animate-swing" />
                     <p>請再稍等一下...</p>
                   </div>
                 </div>
@@ -330,8 +334,7 @@ function Home() {
                       <p className="ml-2 text-sm">
                         {formatDate(post.created_time)}
                       </p>
-                      <img
-                        src={coin}
+                      <Coin
                         alt="coin"
                         className="ml-auto mr-1 size-10 object-cover"
                       />
@@ -390,7 +393,7 @@ function Home() {
               {isLoading ? (
                 <div className="col-span-3 mt-6 flex h-[60vh] items-center justify-center">
                   <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-                    <img src={coin} className="my-2 size-16 animate-swing" />
+                    <Coin className="my-2 size-16 animate-swing" />
                     <p>請再稍等一下...</p>
                   </div>
                 </div>
@@ -459,8 +462,7 @@ function Home() {
                       <p className="ml-2 text-sm">
                         {formatDate(post.created_time)}
                       </p>
-                      <img
-                        src={coin}
+                      <Coin
                         alt="coin"
                         className="ml-auto mr-1 size-10 object-cover"
                       />

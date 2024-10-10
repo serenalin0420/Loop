@@ -16,7 +16,7 @@ import {
 import TimeTable from "../../components/TimeTable";
 import { useLocation, useNavigate } from "react-router-dom";
 import customStyles from "./selectorStyles";
-import coin from "../../assets/coin.svg";
+import { Coin } from "../../assets/images";
 
 const sortCategoriesFn = (categories) => {
   const categoryOrder = sortCategories.reduce((acc, category, index) => {
@@ -341,7 +341,7 @@ function CreatePost() {
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <img src={coin} className="my-2 size-16 animate-swing" />
+          <Coin className="my-2 size-16 animate-swing" />
           <p>請再稍等一下...</p>
         </div>
       </div>

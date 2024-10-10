@@ -3,7 +3,7 @@ import { UserContext } from "../../context/userContext";
 import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import StarRating from "@/components/StarRating";
-import coin from "../../assets/coin.svg";
+import { Coin } from "../../assets/images";
 
 function LearningPortfolio() {
   const user = useContext(UserContext);
@@ -82,7 +82,7 @@ function LearningPortfolio() {
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <img src={coin} className="my-2 size-16 animate-swing" />
+          <Coin className="my-2 size-16 animate-swing" />
           <p>請再稍等一下...</p>
         </div>
       </div>

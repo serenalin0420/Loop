@@ -1,12 +1,11 @@
 import PropTypes from "prop-types";
-import coin from "../../assets/coin.svg";
+import { Coin, Infinte } from "../../assets/images";
 import { useReducer, useState, useContext, useEffect } from "react";
 import TimeTable from "../../components/TimeTable";
 import { initialState, reducer, actionTypes } from "../../context/postReducer";
 import dbApi from "@/utils/api";
 import { ViewContext } from "../../context/viewContext";
 import { UserContext } from "../../context/userContext";
-import infinite from "../../assets/infinite.svg";
 import { X } from "@phosphor-icons/react";
 import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 import { WarningCircle } from "@phosphor-icons/react";
@@ -245,11 +244,7 @@ const CourseSelection = ({
   return (
     <div className="mt-2 flex flex-col rounded-b-lg shadow-md xs:mt-8">
       <div className="flex h-11 items-center rounded-t-lg bg-indian-khaki-400 px-6 text-lg text-white">
-        <img
-          src={infinite}
-          alt="infinite-logo"
-          className="mr-2 mt-2 w-12 object-cover"
-        />
+        <Infinte alt="infinite-logo" className="mr-2 mt-2 w-12 object-cover" />
         <p className="mt-1">上課需求</p>
       </div>
       <div
@@ -265,15 +260,15 @@ const CourseSelection = ({
           return (
             <div
               key={index}
-              className={`flex ${widthClass} items-center justify-center gap-2 rounded-md border-2 p-2 sm:flex-wrap sm:p-3 lg:p-4`}
+              className={`flex cursor-pointer ${widthClass} items-center justify-center gap-2 rounded-md border-2 p-2 sm:flex-wrap sm:p-3 lg:p-4`}
               onClick={() => {
                 setShowModal(true);
                 setSelectedCourse(num);
                 setSelectedCoinCost(coinCost);
               }}
             >
-              <img
-                src={coin}
+              <Coin
+                // src={coin}
                 alt="coin"
                 className="size-7 object-cover sm:size-10 md:size-12 lg:size-14"
               />
@@ -310,8 +305,8 @@ const CourseSelection = ({
               )}
               <div className="mt-auto flex items-center text-nowrap lg:text-lg">
                 獲得：
-                <img
-                  src={coin}
+                <Coin
+                  // src={coin}
                   alt="coin"
                   className="mr-2 size-8 object-cover"
                 />
@@ -328,8 +323,8 @@ const CourseSelection = ({
             <div className="mt-2 flex flex-col justify-around md:flex-row lg:justify-start lg:gap-4">
               <div className="flex flex-col rounded-b-lg shadow-md">
                 <div className="flex h-10 w-full items-center rounded-t-lg bg-indian-khaki-400 px-6 sm:h-12">
-                  <img
-                    src={infinite}
+                  <Infinte
+                    // src={infinite}
                     alt="infinite-logo"
                     className="mr-2 mt-2 w-12 object-cover sm:w-14"
                   />

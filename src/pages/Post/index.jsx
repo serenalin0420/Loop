@@ -5,9 +5,8 @@ import Introduction from "./Introduction";
 import TimeTable from "../../components/TimeTable";
 import { initialState, actionTypes, reducer } from "../../context/postReducer";
 import CourseSelection from "./CourseSelection";
-import infinite from "../../assets/infinite.svg";
+import { Coin, Infinte } from "../../assets/images";
 import { CaretLeft, CheckFat } from "@phosphor-icons/react";
-import coin from "../../assets/coin.svg";
 
 function Post() {
   const { postId } = useParams();
@@ -211,7 +210,7 @@ function Post() {
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <img src={coin} className="my-2 size-16 animate-swing" />
+          <Coin className="my-2 size-16 animate-swing" />
           <p>請再稍等一下...</p>
         </div>
       </div>
@@ -245,8 +244,7 @@ function Post() {
         />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">
           <div className="flex h-11 items-center rounded-t-lg bg-indian-khaki-400 px-6">
-            <img
-              src={infinite}
+            <Infinte
               alt="infinite-logo"
               className="mr-2 mt-2 w-12 object-cover"
             />

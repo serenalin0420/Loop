@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import dbApi from "../../utils/api";
 import PropTypes from "prop-types";
-import coin from "../../assets/coin.svg";
-import infinite from "../../assets/infinite.svg";
+import { Coin, Infinte } from "../../assets/images";
 import { X } from "@phosphor-icons/react";
 
 const UserApplication = ({ userId }) => {
@@ -160,19 +159,14 @@ const UserApplication = ({ userId }) => {
                         ? "獲得 :"
                         : "支付 :"}
                     </p>
-                    <img
-                      src={coin}
-                      alt="coin"
-                      className="size-8 object-cover"
-                    />
+                    <Coin alt="coin" className="size-8 object-cover" />
                     <p className="px-1">x {selectedBooking.coins_total}</p>
                   </div>
                 </div>
               </div>
             </div>
             <div className="flex h-10 w-full items-center rounded-t-lg bg-indian-khaki-400 px-4 text-white">
-              <img
-                src={infinite}
+              <Infinte
                 alt="infinite-logo"
                 className="mr-2 mt-2 w-12 object-cover"
               />

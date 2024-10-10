@@ -1,5 +1,5 @@
-import tamtam1 from "../../assets/tamtam1.svg";
-import tamtam2 from "../../assets/tamtam2.svg";
+import tamtam1 from "../../assets/tamtam1.png";
+import tamtam2 from "../../assets/tamtam2.png";
 import { useContext } from "react";
 import { ViewContext } from "../../context/viewContext";
 import PropTypes from "prop-types";
@@ -29,12 +29,12 @@ function SwitchBtn({ onSwitch = () => {} }) {
 
       <div className="sm:flex-co ml-2 flex items-center sm:order-last sm:ml-0">
         <p className="mr-2 sm:hidden">想找什麼類型的技能交換?</p>
-        <div className="bg-indian-khaki-400 mr-4 flex w-[136px] justify-center rounded-full p-2 sm:mr-0 md:w-40">
+        <div className="mr-4 flex w-[136px] justify-center rounded-full bg-indian-khaki-400 p-2 sm:mr-0 md:w-40">
           <button
             className={`text-nowrap rounded-full p-1 px-2 text-sm md:px-3 md:text-base ${
               findTeachersView
                 ? "text-white"
-                : "text-indian-khaki-700 bg-indian-khaki-100 font-semibold"
+                : "bg-indian-khaki-100 font-semibold text-indian-khaki-700"
             }`}
             onClick={() => handleSwitch(false)}
           >
@@ -43,7 +43,7 @@ function SwitchBtn({ onSwitch = () => {} }) {
           <button
             className={`text-nowrap rounded-full p-1 px-2 text-sm md:px-3 md:text-base ${
               findTeachersView
-                ? "text-indian-khaki-700 bg-indian-khaki-100 font-semibold"
+                ? "bg-indian-khaki-100 font-semibold text-indian-khaki-700"
                 : "text-white"
             }`}
             onClick={() => handleSwitch(true)}

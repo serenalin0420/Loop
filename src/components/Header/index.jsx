@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState, useContext } from "react";
-import logo from "./logo.svg";
+import logo from "./loop-logo.png";
 import {
   BookBookmark,
   Bell,

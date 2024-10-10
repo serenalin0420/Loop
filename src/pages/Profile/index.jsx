@@ -4,7 +4,7 @@ import { UserContext } from "../../context/userContext";
 import ApplicationFromOthers from "./ApplicationFromOthers";
 import UserApplication from "./UserApplication";
 import SavedPosts from "./SavedPosts";
-import coin from "../../assets/coin.svg";
+import { Coin } from "../../assets/images";
 import dbApi from "../../utils/api";
 import { useQuery } from "@tanstack/react-query";
 import { UploadSimple, NotePencil } from "@phosphor-icons/react";
@@ -121,7 +121,7 @@ function Profile() {
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <img src={coin} className="my-2 size-16 animate-swing" />
+          <Coin className="my-2 size-16 animate-swing" />
           <p>請再稍等一下...</p>
         </div>
       </div>
@@ -306,7 +306,7 @@ function Profile() {
               代幣數量
             </h3>
             <div className="flex items-center gap-2 px-6 py-4">
-              <img src={coin} alt="coin" className="size-14 object-cover" />
+              <Coin alt="coin" className="size-14 object-cover" />
               <p className="text-xl font-bold text-yellow-800">{coins}枚</p>
             </div>
           </div>

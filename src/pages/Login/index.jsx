@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import dbApi from "@/utils/api";
-import logo from "../../components/Header/logo.svg";
+import logo from "../../components/Header/loop-logo.png";
 import { Link } from "react-router-dom";
 
 export default function Login() {

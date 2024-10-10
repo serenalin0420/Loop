@@ -2,7 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import dbApi from "@/utils/api";
-import coin from "@/assets/coin.svg";
+import { Coin } from "../../assets/images";
 
 function SinglePortfolio() {
   const location = useLocation();
@@ -79,7 +79,7 @@ function SinglePortfolio() {
     return (
       <div className="col-span-3 mt-6 flex h-5/6 items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <img src={coin} className="my-2 size-16 animate-swing" />
+          <Coin className="my-2 size-16 animate-swing" />
           <p>請再稍等一下...</p>
         </div>
       </div>
@@ -87,7 +87,7 @@ function SinglePortfolio() {
   }
 
   return (
-    <div className="flex-grow py-20">
+    <div className="h-screen py-20 sm:h-full">
       <div className="mx-4 mb-4 flex max-w-screen-lg cursor-pointer items-center sm:mx-6 md:mx-12 lg:mx-28 xl:mx-auto">
         <div className="flex items-center gap-6">
           <div
