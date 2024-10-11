@@ -20,9 +20,14 @@ export default {
           "0%, 100%": { transform: "rotate(-36deg)" },
           "50%": { transform: "rotate(16deg)" },
         },
+        horizontalSpin: {
+          "0%": { transform: "rotateX(0deg)" },
+          "100%": { transform: "rotateY(360deg)" },
+        },
       },
       animation: {
         swing: "swing 1s ease-in-out infinite",
+        horizontalSpin: "horizontalSpin 4s linear infinite",
       },
 
       colors: {
