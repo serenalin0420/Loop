@@ -4,12 +4,14 @@ import { Link } from "react-router-dom";
 import { useState, useContext, useEffect, useCallback } from "react";
 import { UserContext } from "../../context/UserContext";
 import dbApi from "../../utils/api";
+import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 
 const Introduction = ({ post, author }) => {
   const user = useContext(UserContext);
   const [bookmarkWeight, setBookmarkWeight] = useState("regular");
   const [chatWeight, setChatWeight] = useState("regular");
   const [savedPost, setSavedPost] = useState([]);
+  const [modalState, setModalState] = useState({ show: false, message: "" });
 
   const videoUrl = post.video_url;
   const getYouTubeVideoId = (url) => {
@@ -46,6 +48,12 @@ const Introduction = ({ post, author }) => {
 
   const handleHeartClick = useCallback(
     async (postId) => {
+      if (!user) {
+        setModalState({
+          show: true,
+          message: "收藏貼文需要先登入喔！",
+        });
+      }
       try {
         const postSummary = {
           post_id: postId,
@@ -71,7 +79,14 @@ const Introduction = ({ post, author }) => {
   );
 
   const handleSendMessageClick = (postAuthourId) => {
-    window.open(`/chat/${postAuthourId}`, "_blank");
+    if (!user) {
+      setModalState({
+        show: true,
+        message: "要聯絡對方需要先登入喔！",
+      });
+    } else {
+      window.open(`/chat/${postAuthourId}`, "_blank");
+    }
   };
 
   return (
@@ -123,8 +138,12 @@ const Introduction = ({ post, author }) => {
             className="size-7 cursor-pointer md:size-8"
             color="#FF8964"
             weight={
-              savedPost.some((savedPost) => savedPost.post_id === post.post_id)
-                ? "fill"
+              user
+                ? savedPost.some(
+                    (savedPost) => savedPost.post_id === post.post_id,
+                  )
+                  ? "fill"
+                  : "bold"
                 : "bold"
             }
             onClick={(e) => {
@@ -219,6 +238,12 @@ const Introduction = ({ post, author }) => {
             </Link>
           )}
         </div>
+      )}
+      {modalState.show && (
+        <IsLoggedIn
+          onClose={() => setModalState({ show: false, message: "" })}
+          message={modalState.message}
+        />
       )}
     </div>
   );

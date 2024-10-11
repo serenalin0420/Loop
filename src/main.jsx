@@ -49,9 +49,14 @@ createRoot(document.getElementById("root")).render(
                     </PrivateRoute>
                   }
                 />
-
-                <Route path="chat/:chatId" element={<Chat />} />
-
+                <Route
+                  path="chat/:chatId"
+                  element={
+                    <PrivateRoute>
+                      <Chat />
+                    </PrivateRoute>
+                  }
+                />
                 <Route
                   path="learning-portfolio/:userId"
                   element={<LearningPortfolio />}

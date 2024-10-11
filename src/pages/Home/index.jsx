@@ -25,7 +25,7 @@ function Home() {
     timePreferences: [],
     locations: [],
   });
-  const [showModal, setShowModal] = useState(false);
+  const [modalState, setModalState] = useState({ show: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
 
   // 可愛的虎爪
@@ -43,7 +43,10 @@ function Home() {
 
   const handleCreatePostClick = (view) => {
     if (!user) {
-      setShowModal(true);
+      setModalState({
+        show: true,
+        message: "發布內容要先登入，才能查看誰對你的內容有興趣喔！",
+      });
     } else {
       navigate(`/create-post?view=${view}`);
     }
@@ -138,6 +141,12 @@ function Home() {
 
   const handleHeartClick = useCallback(
     async (postId) => {
+      if (!user) {
+        setModalState({
+          show: true,
+          message: "收藏貼文需要先登入喔！",
+        });
+      }
       try {
         const post = posts.find((p) => p.id === postId);
         if (!post) {
@@ -205,7 +214,14 @@ function Home() {
   };
 
   const handleSendMessageClick = (postAuthourId) => {
-    window.open(`/chat/${postAuthourId}`, "_blank");
+    if (!user) {
+      setModalState({
+        show: true,
+        message: "要聯絡對方需要先登入喔！",
+      });
+    } else {
+      window.open(`/chat/${postAuthourId}`, "_blank");
+    }
   };
 
   const findStudentsPosts = sortedPosts.filter(
@@ -431,10 +447,13 @@ function Home() {
                             className="size-6"
                             color="#FF8964"
                             weight={
-                              savedPosts.some(
-                                (savedPost) => savedPost.post_id === post.id,
-                              )
-                                ? "fill"
+                              user
+                                ? savedPosts.some(
+                                    (savedPost) =>
+                                      savedPost.post_id === post.id,
+                                  )
+                                  ? "fill"
+                                  : "bold"
                                 : "bold"
                             }
                             onClick={(e) => {
@@ -487,10 +506,10 @@ function Home() {
           </div>
         )}
       </div>
-      {showModal && (
+      {modalState.show && (
         <IsLoggedIn
-          onClose={() => setShowModal(false)}
-          message="發布內容要先登入，才能查看誰對你的內容有興趣喔！"
+          onClose={() => setModalState({ show: false, message: "" })}
+          message={modalState.message}
         />
       )}
     </div>
