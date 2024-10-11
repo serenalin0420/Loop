@@ -357,16 +357,18 @@ function Home() {
                       <p className="text-2xl font-bold text-yellow-800">
                         {post.coin_cost}
                       </p>
-                      <button
-                        className="ml-4 mr-2 rounded-full bg-sun-400 p-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 md:px-4"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleSendMessageClick(post.author_uid);
-                        }}
-                      >
-                        <p className="hidden md:flex">傳送訊息</p>
-                        <ChatCircleDots className="flex size-6 md:hidden" />
-                      </button>
+                      {user?.uid !== post.author_uid && (
+                        <button
+                          className="ml-4 mr-2 rounded-full bg-sun-400 p-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 md:px-4"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleSendMessageClick(post.author_uid);
+                          }}
+                        >
+                          <p className="hidden md:flex">傳送訊息</p>
+                          <ChatCircleDots className="flex size-6 md:hidden" />
+                        </button>
+                      )}
                     </div>
                   </Link>
                 ))
@@ -488,16 +490,18 @@ function Home() {
                       <p className="text-2xl font-bold text-yellow-800">
                         {post.coin_cost}
                       </p>
-                      <button
-                        className="ml-4 mr-2 rounded-full bg-sun-400 p-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 md:px-4"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleSendMessageClick(post.author_uid);
-                        }}
-                      >
-                        <p className="hidden md:flex">傳送訊息</p>
-                        <ChatCircleDots className="flex size-6 md:hidden" />
-                      </button>
+                      {user?.uid !== post.author_uid && (
+                        <button
+                          className="ml-4 mr-2 rounded-full bg-sun-400 p-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 md:px-4"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleSendMessageClick(post.author_uid);
+                          }}
+                        >
+                          <p className="hidden md:flex">傳送訊息</p>
+                          <ChatCircleDots className="flex size-6 md:hidden" />
+                        </button>
+                      )}
                     </div>
                   </Link>
                 ))

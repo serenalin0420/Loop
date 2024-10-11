@@ -32,8 +32,6 @@ const CourseSelection = ({
   const { findTeachersView } = useContext(ViewContext);
   const user = useContext(UserContext);
 
-  // console.log("findTeachersView", findTeachersView);
-
   const order = ["體驗", "1", "3", "5", "10"];
   const sortedCourseNum = post.course_num
     ? post.course_num.sort((a, b) => {
@@ -146,6 +144,11 @@ const CourseSelection = ({
       setErrorMessage(
         `您需要選擇 ${selectedCourse === "體驗" ? 1 : selectedCourse} 個時段`,
       );
+      setShowErrorModal(true);
+      return;
+    }
+    if (user.uid === post.author_uid) {
+      setErrorMessage("您不能預約自己的課程");
       setShowErrorModal(true);
       return;
     }

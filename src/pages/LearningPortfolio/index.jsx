@@ -113,7 +113,9 @@ function LearningPortfolio() {
               {noPortfolio || portfolio.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-12 py-4">
-                    還沒開始你的學習嗎?
+                    {user === undefined || user?.uid === otherUserId || !user
+                      ? "對方還沒有學習歷程的紀錄，趕快來和他交換技能吧 ! "
+                      : "還沒開始你的學習嗎?"}
                   </td>
                 </tr>
               ) : (

@@ -117,21 +117,23 @@ const Introduction = ({ post, author }) => {
             <p className="hidden text-sm md:inline">學習歷程</p>
           </span>
         </Link>
-        <button
-          className="rounded-full bg-sun-400 px-3 py-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 sm:px-4 md:mr-2"
-          onClick={(e) => {
-            e.preventDefault();
-            handleSendMessageClick(author.uid);
-          }}
-        >
-          <ChatCircleDots
-            className="size-5 sm:hidden"
-            weight={chatWeight}
-            onMouseEnter={() => setChatWeight("fill")}
-            onMouseLeave={() => setChatWeight("regular")}
-          />
-          <p className="hidden sm:inline">傳送訊息</p>
-        </button>
+        {user?.uid !== author.uid && (
+          <button
+            className="rounded-full bg-sun-400 px-3 py-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 sm:px-4 md:mr-2"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSendMessageClick(author.uid);
+            }}
+          >
+            <ChatCircleDots
+              className="size-5 sm:hidden"
+              weight={chatWeight}
+              onMouseEnter={() => setChatWeight("fill")}
+              onMouseLeave={() => setChatWeight("regular")}
+            />
+            <p className="hidden sm:inline">傳送訊息</p>
+          </button>
+        )}
 
         <div className="flex size-8 items-center justify-center md:size-10">
           <Heart
