@@ -30,7 +30,14 @@ const TimeTable = ({
   }));
 
   const handleApplyTimeRange = () => {
-    handleTimeRangeSelect(startTime, endTime);
+    // 清除已選擇的時間段
+    const updatedSelectedTimes = { ...state.selectedTimes };
+    daysOfWeek.forEach((day) => {
+      const dateString = formatDate(day, "yyyy-MM-dd");
+      updatedSelectedTimes[dateString] = {};
+    });
+
+    handleTimeRangeSelect(startTime, endTime, updatedSelectedTimes);
   };
 
   return (

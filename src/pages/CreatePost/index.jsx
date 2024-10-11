@@ -32,7 +32,11 @@ const sortCategoriesFn = (categories) => {
 function CreatePost() {
   const user = useContext(UserContext);
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState({
+    show: false,
+    message: "",
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -59,6 +63,7 @@ function CreatePost() {
     control,
     setValue,
     reset,
+    setError,
     formState: { errors },
   } = useForm();
 
@@ -248,8 +253,11 @@ function CreatePost() {
     });
   };
 
-  const handleTimeRangeSelect = (startTime, endTime) => {
-    const updatedSelectedTimes = { ...state.selectedTimes };
+  const handleTimeRangeSelect = (
+    startTime,
+    endTime,
+    updatedSelectedTimes = { ...state.selectedTimes },
+  ) => {
     const now = new Date();
     const currentHour = now.getHours();
     const maxDate = new Date();
@@ -281,9 +289,8 @@ function CreatePost() {
   };
 
   const mutation = useMutation({
-    mutationFn: (postData) => dbApi.savePostToDatabase(postData), // 確保這裡的函數定義正確
+    mutationFn: (postData) => dbApi.savePostToDatabase(postData),
     onSuccess: () => {
-      console.log("Post saved successfully!");
       reset({
         title: "",
         type: "",
@@ -313,11 +320,32 @@ function CreatePost() {
 
   const onSubmit = (data, event) => {
     event.preventDefault();
-    setIsModalVisible(true);
+
+    const hasSelectedDateTime = Object.values(state.selectedTimes).some(
+      (times) => Object.values(times).some((selected) => selected),
+    );
+
+    if (!hasSelectedDateTime) {
+      setError("timeTable", {
+        type: "manual",
+        message: "請選擇日期和時間",
+      });
+
+      return;
+    }
+
+    setIsModalVisible({
+      show: true,
+      message: "提交成功！即將返回首頁~",
+    });
+
     setTimeout(() => {
-      setIsModalVisible(false);
+      setIsModalVisible({
+        show: false,
+        message: "",
+      });
       navigate(`/`);
-    }, 3000);
+    }, 2000);
     const postData = {
       title: data.title,
       type: view === "student" ? "發起學習" : "發布教學",
@@ -370,9 +398,16 @@ function CreatePost() {
                 </span>
               </label>
               <input
-                {...register("title", { required: true })}
+                {...register("title", {
+                  required: true,
+                  setValueAs: (value) => value.trim(),
+                })}
                 className={`w-3/5 rounded-sm px-3 py-2 text-sm text-textcolor md:w-2/5 md:min-w-96 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.title ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-300"}`}
-                placeholder={errors.title ? "必填" : "請簡短描述你的貼文內容"}
+                placeholder={
+                  errors.title
+                    ? "必填，不能僅輸入空格"
+                    : "請簡短描述你的貼文內容"
+                }
               />
             </div>
 
@@ -529,7 +564,10 @@ function CreatePost() {
                 </span>
               </label>
               <textarea
-                {...register("description", { required: true })}
+                {...register("description", {
+                  required: true,
+                  setValueAs: (value) => value.trim(),
+                })}
                 className={`min-h-28 w-full rounded-sm px-3 py-2 text-sm text-textcolor md:w-4/5 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.description ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-300"}`}
                 placeholder={
                   errors.description
@@ -591,12 +629,22 @@ function CreatePost() {
                       />
                     )}
                   />
+                  {errors.coursesNum && (
+                    <span className="mt-1 text-xs text-red-400">
+                      請至少選擇三個次課程，最多四次
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
             <div className="mb-4 flex flex-col gap-1 md:flex-row">
               <label className="mb-2 mr-2 text-sm md:mb-0 md:mr-3 md:text-base">
                 學習時間
+                {errors.timeTable && (
+                  <p className="mt-1 text-sm text-red-400">
+                    {errors.timeTable.message}
+                  </p>
+                )}
               </label>
               <TimeTable
                 state={state}
@@ -615,7 +663,6 @@ function CreatePost() {
                 <label className="mr-2 text-nowrap text-sm md:mr-3 md:text-base">
                   介紹影片
                 </label>
-                {/*  className={`w-3/5 rounded-sm px-3 py-2 text-sm text-textcolor md:w-2/5 md:min-w-96 md:text-base */}
                 <input
                   {...register("introVideo")}
                   className="w-4/5 rounded-sm bg-neon-carrot-50 px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 focus:outline-neon-carrot-300 sm:w-3/5 md:w-2/5 md:min-w-96 md:text-base"
@@ -645,10 +692,10 @@ function CreatePost() {
             </div>
           </div>
         </form>
-        {isModalVisible && (
+        {isModalVisible.show && (
           <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
             <div className="rounded-lg bg-white p-6">
-              <p>提交成功！即將返回首頁~</p>
+              <p>{isModalVisible.message}</p>
             </div>
           </div>
         )}
