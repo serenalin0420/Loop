@@ -4,10 +4,56 @@ import { UserContext } from "../../context/userContext";
 import ApplicationFromOthers from "./ApplicationFromOthers";
 import UserApplication from "./UserApplication";
 import SavedPosts from "./SavedPosts";
+import { sortCategories } from "../CreatePost/options";
 import { Coin } from "../../assets/images";
 import dbApi from "../../utils/api";
 import { useQuery } from "@tanstack/react-query";
 import { UploadSimple, NotePencil } from "@phosphor-icons/react";
+import Select from "react-select";
+
+const sortCategoriesFn = (categories) => {
+  const categoryOrder = sortCategories.reduce((acc, category, index) => {
+    acc[category] = index;
+    return acc;
+  }, {});
+
+  return categories.sort((a, b) => {
+    return categoryOrder[a.name] - categoryOrder[b.name];
+  });
+};
+const customStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    fontSize: "16px", // 控制框的文字大小
+    padding: " 2px 0",
+    borderRadius: "0.375rem",
+    borderColor: state.isFocused && "#8cd0ed",
+    boxShadow: state.isFocused && "#8cd0ed",
+    "&:hover": {
+      borderColor: state.isFocused && "#8cd0ed",
+    },
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    fontSize: "16px", // 選項的文字大小
+    backgroundColor: state.isSelected
+      ? "#c2e4f5"
+      : state.isFocused && "#e4f1fa",
+
+    color: state.isSelected ? "#262626" : "#525252",
+    ":active": {
+      backgroundColor: "#c2e4f5",
+    },
+  }),
+};
+
+const mapCategoriesToOptions = (categories) => {
+  const sortedCategories = sortCategoriesFn(categories);
+  return sortedCategories.map((category) => ({
+    label: category.name,
+    value: category.name,
+  }));
+};
 
 function Profile() {
   const { userId: paramUserId } = useParams();
@@ -21,6 +67,11 @@ function Profile() {
   const [coins, setCoins] = useState(user?.coins || 0);
   const textareaRef = useRef();
   const [userId, setUserId] = useState(paramUserId || user?.uid);
+  const [errorMessages, setErrorMessages] = useState({
+    userName: "",
+    bio: "",
+    profilePicture: "",
+  });
 
   const {
     data: categories,
@@ -66,7 +117,19 @@ function Profile() {
   }, [bio, isEditing]);
 
   const handleEditClick = async () => {
+    if (
+      errorMessages.userName ||
+      errorMessages.bio ||
+      errorMessages.profilePicture
+    ) {
+      return;
+    }
+
     if (isEditing) {
+      const filteredSkills = skills.filter(
+        (skill) => skill.skills.trim() !== "",
+      );
+      setSkills(filteredSkills);
       await dbApi.updateProfile(user.uid, {
         name: userName,
         bio,
@@ -78,11 +141,30 @@ function Profile() {
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
+    const maxSize = 2 * 1024 * 1024;
+    if (!file) {
+      setErrorMessages((prev) => ({
+        ...prev,
+        profilePicture: "請選擇一個文件",
+      }));
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setErrorMessages((prev) => ({
+        ...prev,
+        profilePicture: "文件大小不能超過 2 MB",
+      }));
+
+      return;
+    } else {
+      setErrorMessages((prev) => ({ ...prev, profilePicture: "" }));
+    }
+
     if (file) {
       try {
         const downloadURL = await dbApi.uploadProfilePicture(user.uid, file);
         setProfilePicture(downloadURL);
-
         await dbApi.updateUserProfilePicture(user.uid, downloadURL);
       } catch (error) {
         console.error("Error uploading profile picture: ", error);
@@ -91,17 +173,58 @@ function Profile() {
   };
 
   const handleNameChange = (e) => {
-    setUserName(e.target.value);
+    const value = e.target.value;
+    const maxLength = 15;
+
+    if (value.length > maxLength) {
+      setErrorMessages((prev) => ({
+        ...prev,
+        userName: `使用者名稱不能超過 ${maxLength} 個字元`,
+      }));
+    } else {
+      setErrorMessages((prev) => ({ ...prev, userName: "" }));
+    }
+
+    setUserName(value);
   };
 
   const handleBioChange = (e) => {
+    const value = e.target.value;
+    const maxLength = 200;
+
+    if (value.length > maxLength) {
+      setErrorMessages((prev) => ({
+        ...prev,
+        bio: `簡介不能超過 ${maxLength} 個字元`,
+      }));
+    } else {
+      setErrorMessages((prev) => ({ ...prev, bio: "" }));
+    }
+
     setBio(e.target.value);
   };
 
-  const handleSkillChange = (index, e) => {
-    const { name, value } = e.target;
+  const handleSkillChange = (index, selectedOptionOrEvent) => {
     const updatedSkills = [...skills];
-    updatedSkills[index][name] = value;
+
+    if (selectedOptionOrEvent.target) {
+      const newSkillValue = selectedOptionOrEvent.target.value;
+
+      if (newSkillValue.trim() === " ") {
+        updatedSkills.splice(index, 1);
+      } else {
+        updatedSkills[index] = {
+          ...updatedSkills[index],
+          skills: newSkillValue,
+        };
+      }
+    } else {
+      updatedSkills[index] = {
+        ...updatedSkills[index],
+        category_name: selectedOptionOrEvent.value,
+      };
+    }
+
     setSkills(updatedSkills);
   };
 
@@ -115,7 +238,6 @@ function Profile() {
   };
 
   const isCurrentUser = user && user.uid === userId;
-  // console.log(userId);
 
   if (isLoading)
     return (
@@ -143,7 +265,7 @@ function Profile() {
               alt="author"
             />
             {isEditing && (
-              <div className="absolute -right-8 bottom-12 flex items-center justify-center">
+              <div className="absolute -right-8 bottom-14 flex items-center justify-center sm:bottom-12">
                 <input
                   type="file"
                   accept="image/*"
@@ -153,21 +275,34 @@ function Profile() {
                 />
                 <button
                   type="button"
-                  className="flex items-center justify-center rounded-full text-sm"
+                  className="relative flex cursor-pointer items-center justify-center rounded-full text-sm hover:text-indian-khaki-500 hover:underline"
                   onClick={() => document.getElementById("fileInput").click()}
                 >
                   <UploadSimple className="mx-1 size-6" />
                   上傳頭像
                 </button>
+                {errorMessages.profilePicture && (
+                  <p className="absolute -bottom-4 left-1 text-nowrap text-xs text-red-400 sm:bottom-1 sm:left-24">
+                    {errorMessages.profilePicture}
+                  </p>
+                )}
               </div>
             )}
             {isEditing ? (
-              <input
-                type="text"
-                value={userName}
-                onChange={handleNameChange}
-                className="mt-2 w-4/5 rounded-md bg-cerulean-100 px-3 py-2"
-              />
+              <div className="relative flex justify-center">
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={handleNameChange}
+                  maxLength={20}
+                  className="mt-2 w-5/6 rounded-md bg-cerulean-100 px-3 py-2"
+                />
+                {errorMessages.userName && (
+                  <p className="absolute -bottom-5 text-xs text-red-400">
+                    {errorMessages.userName}
+                  </p>
+                )}
+              </div>
             ) : (
               <p className="mt-2 text-center text-lg font-semibold">
                 {userName}
@@ -216,13 +351,21 @@ function Profile() {
                   簡介
                 </h3>
                 {isEditing ? (
-                  <textarea
-                    ref={textareaRef}
-                    name="bio"
-                    value={bio}
-                    onChange={handleBioChange}
-                    className="mx-6 mb-6 mt-4 rounded-md bg-cerulean-100 px-3 py-2"
-                  />
+                  <div className="relative flex">
+                    <textarea
+                      ref={textareaRef}
+                      name="bio"
+                      value={bio}
+                      onChange={handleBioChange}
+                      maxLength={210}
+                      className="mx-6 mb-6 mt-4 w-full rounded-md bg-cerulean-100 px-3 py-2"
+                    />
+                    {errorMessages.bio && (
+                      <p className="absolute bottom-1 left-8 text-xs text-red-400">
+                        {errorMessages.bio}
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <p className="mx-6 mb-6 mt-4 rounded-md">{bio}</p>
                 )}
@@ -235,25 +378,25 @@ function Profile() {
                   技能
                 </h3>
                 {isEditing ? (
-                  <div className="mt-4 flex flex-col items-center">
+                  <div className="mt-4 flex flex-col items-center gap-y-2">
                     {skills.map((skill, index) => (
                       <div
                         key={index}
-                        className="mb-3 flex w-full items-center gap-3 px-6"
+                        className="flex w-full items-center gap-3 px-6"
                       >
-                        <select
+                        <Select
                           name="category_name"
-                          value={skill.category_name}
-                          onChange={(e) => handleSkillChange(index, e)}
-                          className="rounded-md bg-cerulean-100 p-2"
-                          key={index}
-                        >
-                          {categories.map((category) => (
-                            <option key={category.id} value={category.name}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
+                          placeholder="類別"
+                          value={mapCategoriesToOptions(categories).find(
+                            (option) => option.value === skill.category_name,
+                          )}
+                          onChange={(selectedOption) =>
+                            handleSkillChange(index, selectedOption)
+                          }
+                          options={mapCategoriesToOptions(categories)}
+                          className="w-7/12 rounded-md"
+                          styles={customStyles}
+                        />
                         <input
                           name="skills"
                           value={skill.skills}
