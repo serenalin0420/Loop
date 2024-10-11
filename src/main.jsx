@@ -8,9 +8,10 @@ import Login from "./pages/Login";
 import Post from "./pages/Post";
 import CreatePost from "./pages/CreatePost";
 import Profile from "./pages/Profile";
-import LearningPortfolio from "./pages/LearningPortfolio/index.jsx";
+import LearningPortfolio from "./pages/LearningPortfolio";
 import SinglePortfolio from "./pages/LearningPortfolio/SinglePortfolio.jsx";
 import Chat from "./pages/Chat";
+import NotFound from "./pages/NotFound";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/userContext.jsx";
 import { ViewProvider } from "./context/viewContext.jsx";
@@ -55,11 +56,12 @@ createRoot(document.getElementById("root")).render(
                   path="learning-portfolio/:userId"
                   element={<LearningPortfolio />}
                 />
-
                 <Route
                   path="learning-portfolio/:userId/:bookingId"
                   element={<SinglePortfolio />}
                 />
+
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </BrowserRouter>
