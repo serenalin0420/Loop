@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { UserContext } from "../../context/userContext";
+import { UserContext, ProfilePictureContext } from "../../context/userContext";
 import ApplicationFromOthers from "./ApplicationFromOthers";
 import UserApplication from "./UserApplication";
 import SavedPosts from "./SavedPosts";
@@ -58,11 +58,14 @@ const mapCategoriesToOptions = (categories) => {
 function Profile() {
   const { userId: paramUserId } = useParams();
   const user = useContext(UserContext);
+  const { profilePicture, setProfilePicture } = useContext(
+    ProfilePictureContext,
+  );
   const [userName, setUserName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState([{ category_name: "", skills: "" }]);
-  const [profilePicture, setProfilePicture] = useState("");
+
   const [bgImage, setBgImage] = useState("");
   const [coins, setCoins] = useState(user?.coins || 0);
   const textareaRef = useRef();
@@ -106,7 +109,7 @@ function Profile() {
     };
 
     fetchProfile();
-  }, [user, userId]);
+  }, [user, userId, setProfilePicture]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -127,13 +130,14 @@ function Profile() {
 
     if (isEditing) {
       const filteredSkills = skills.filter(
-        (skill) => skill.skills.trim() !== "",
+        (skill) =>
+          skill.skills.trim() !== "" && skill.category_name.trim() !== "",
       );
       setSkills(filteredSkills);
       await dbApi.updateProfile(user.uid, {
         name: userName,
         bio,
-        skills,
+        skills: filteredSkills,
       });
     }
     setIsEditing(!isEditing);

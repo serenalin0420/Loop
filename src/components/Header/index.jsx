@@ -8,7 +8,7 @@ import {
   ChatCircleDots,
   House,
 } from "@phosphor-icons/react";
-import { UserContext } from "../../context/userContext";
+import { UserContext, ProfilePictureContext } from "../../context/userContext";
 import PropTypes from "prop-types";
 import { useLocation } from "react-router-dom";
 import dbApi from "../../utils/api";
@@ -18,6 +18,7 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
   const auth = getAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const user = useContext(UserContext);
+  const { profilePicture } = useContext(ProfilePictureContext);
   const [calendarWeight, setCalendarWeight] = useState("regular");
   const [bellWeight, setBellWeight] = useState("regular");
   const [chatWeight, setChatWeight] = useState("regular");
@@ -139,7 +140,7 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
               </button>
               <Link to="/profile" className="mx-2">
                 <img
-                  src={user?.profile_picture}
+                  src={profilePicture}
                   className="mr-[72px] size-10 rounded-full bg-red-100 object-cover object-center"
                   alt="author"
                 />
@@ -206,7 +207,7 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
           </button>
           <Link to="/profile" className="mx-2">
             <img
-              src={user?.profile_picture}
+              src={profilePicture}
               className="size-10 rounded-full bg-red-100 object-cover object-center"
               alt="author"
             />
