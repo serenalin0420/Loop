@@ -1,19 +1,16 @@
-import { useEffect, useState, useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import dbApi from "../../utils/api";
 import Introduction from "./Introduction";
 import TimeTable from "../../components/TimeTable";
-import { initialState, actionTypes, reducer } from "../../context/postReducer";
+import { initialState, actionTypes, reducer } from "../../utils/postReducer";
 import CourseSelection from "./CourseSelection";
 import { Coin, Infinte } from "../../assets/images";
 import { CaretLeft, CheckFat } from "@phosphor-icons/react";
 
 function Post() {
   const { postId } = useParams();
-  const [post, setPost] = useState();
-  const [author, setAuthor] = useState();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [postCategory, setPostCategory] = useState();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,18 +25,21 @@ function Post() {
     const fetchPost = async () => {
       try {
         const postData = await dbApi.getSinglePost(postId);
-        setPost(postData);
+        dispatch({ type: actionTypes.SET_POST, payload: postData });
 
         if (postData.category_id) {
           const categoryName = await dbApi.getPostCategory(
             postData.category_id,
           );
-          setPostCategory(categoryName);
+          dispatch({
+            type: actionTypes.SET_POST_CATEGORY,
+            payload: categoryName,
+          });
         }
 
         if (postData.author_uid) {
           const authorData = await dbApi.getProfile(postData.author_uid);
-          setAuthor(authorData);
+          dispatch({ type: actionTypes.SET_AUTHOR, payload: authorData });
         }
         // 設置初始選中的日期為最早可選日期
         const availableDates = Object.keys(postData.datetime).map(
@@ -126,7 +126,7 @@ function Post() {
     const startDay = startOfMonth.getDay();
     const daysInMonth = endOfMonth.getDate();
 
-    const availableDates = Object.keys(post.datetime).map(
+    const availableDates = Object.keys(state.post.datetime).map(
       (dateStr) => new Date(dateStr),
     );
     const earliestAvailableDate = availableDates.reduce((earliest, current) => {
@@ -181,7 +181,7 @@ function Post() {
 
   const renderTimeSlots = (day) => {
     const dateKey = formatDate(day, "yyyy-MM-dd");
-    const timeSlots = post.datetime[dateKey] || {};
+    const timeSlots = state.post.datetime[dateKey] || {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -217,7 +217,7 @@ function Post() {
     );
   };
 
-  if (!post || !author)
+  if (!state.post || !state.author)
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
@@ -239,13 +239,13 @@ function Post() {
             返回
           </div>
           <h2 className="text-lg font-semibold sm:text-xl">
-            {postCategory?.name}
+            {state.postCategory?.name}
           </h2>
         </div>
-        <Introduction post={post} author={author} />
+        <Introduction post={state.post} author={state.author} />
         <CourseSelection
-          post={post}
-          author={author}
+          post={state.post}
+          author={state.author}
           formatDate={formatDate}
           renderTimeSlots={(day) => renderTimeSlots(day, true)}
         />
@@ -266,7 +266,7 @@ function Post() {
           </p>
           <div className="mx-4 my-4 flex flex-col justify-center gap-4 md:flex-row">
             <TimeTable
-              post={post}
+              post={state.post}
               state={state}
               handleMonthChange={handleMonthChange}
               handleWeekChange={handleWeekChange}
