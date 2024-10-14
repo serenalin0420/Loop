@@ -191,7 +191,7 @@ const dbApi = {
     }
   },
 
-  async createBooking(bookingData) {
+  async createBooking(bookingData, notifyBooking) {
     try {
       const docRef = await addDoc(collection(db, "bookings"), {});
       const bookingId = docRef.id;
@@ -203,6 +203,22 @@ const dbApi = {
       };
 
       await setDoc(docRef, bookingDataWithId);
+
+      const { from, postAuthorUid } = notifyBooking;
+      const notifyBookingData = {
+        ...notifyBooking,
+        from: from,
+        message: "預約了你的課程！ 趕快到個人頁面上查看～",
+        booking_id: bookingId,
+        created_time: serverTimestamp(),
+        read: false,
+        type: "booking_apply",
+      };
+      await setDoc(
+        doc(db, "users", postAuthorUid, "notifications", bookingId),
+        notifyBookingData,
+      );
+
       console.log("Data successfully written with ID: ", bookingId);
     } catch (error) {
       console.error("Error writing document: ", error);
@@ -239,7 +255,6 @@ const dbApi = {
       if (bookings.length > 0) {
         return bookings;
       } else {
-        console.log("No matching bookings found!");
         return null;
       }
     } catch (error) {
@@ -453,7 +468,7 @@ const dbApi = {
       );
       await addDoc(applicantNotificationRef, {
         type: "booking_confirm",
-        message: "恭喜媒合成功~！ 已確認了你的申請",
+        message: "恭喜媒合成功～！ 已確認了你的申請",
         booking_id: selectedBooking.booking_id,
         from: fromUserId,
         fromName: fromUserName,
@@ -512,6 +527,7 @@ const dbApi = {
       notificationsRef,
       or(
         where("type", "==", "booking_confirm"),
+        and(where("type", "==", "booking_apply")),
         and(where("type", "==", "course_endtime"), where("read", "==", true)),
       ),
     );

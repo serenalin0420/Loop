@@ -53,13 +53,16 @@ const Notification = ({ userId, notifications }) => {
         acc.bookingConfirm.push(notification);
       } else if (notification.type === "course_endtime") {
         acc.courseEndtime.push(notification);
+      } else if (notification.type === "booking_apply") {
+        acc.bookingApply.push(notification);
       }
       return acc;
     },
-    { bookingConfirm: [], courseEndtime: [] },
+    { bookingApply: [], bookingConfirm: [], courseEndtime: [] },
   );
 
   const allNotifications = [
+    ...sortedNotifications.bookingApply,
     ...sortedNotifications.courseEndtime,
     ...sortedNotifications.bookingConfirm,
   ];
@@ -105,26 +108,48 @@ const Notification = ({ userId, notifications }) => {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="fixed right-10 top-0 z-30 mt-16 min-w-60 rounded-lg bg-indian-khaki-50 px-3 py-1 shadow-xl">
+    <div className="fixed bottom-16 right-2 z-30 mx-4 w-4/6 rounded-lg bg-indian-khaki-50 px-3 py-1 shadow-xl sm:bottom-auto sm:right-10 sm:top-0 sm:mt-16 sm:w-auto sm:min-w-60">
       {finalNotifications.length === 0 ? (
-        <p className="px-12 text-textcolor">沒有通知</p>
+        <p className="px-12 py-2 text-center text-textcolor">沒有通知</p>
       ) : (
         finalNotifications.map((notification, index) => (
           <div key={index} className="flex py-3">
-            {notification.type === "booking_confirm" && (
+            {notification.type === "booking_apply" && (
               <CalendarCheck className="size-8 text-indian-khaki-800" />
+            )}
+            {notification.type === "booking_confirm" && (
+              <CalendarCheck
+                className="size-8 text-indian-khaki-800"
+                weight="duotone"
+              />
             )}
             {notification.type === "course_endtime" && (
               <Pencil className="size-8 text-indian-khaki-800" />
             )}
             <div className="ml-2 w-full">
-              <p className="text-xs text-stone-700">
-                {notification.message.split(" ")[0]}
-              </p>
-              <p className="text-xs text-textcolor">
-                {notification.fromName} {notification.message.split(" ")[1]}
-              </p>
-              {notification.type === "booking_confirm" && (
+              {(notification.type === "booking_confirm" ||
+                notification.type === "course_endtime") && (
+                <>
+                  <p className="text-xs text-stone-700">
+                    {notification.message.split(" ")[0]}
+                  </p>
+                  <p className="text-xs text-textcolor">
+                    {notification.fromName} {notification.message.split(" ")[1]}
+                  </p>
+                </>
+              )}
+              {notification.type === "booking_apply" && (
+                <>
+                  <p className="text-xs text-stone-700">
+                    {`有人${notification.message.split(" ")[0]}`}
+                  </p>
+                  <p className="text-xs text-textcolor">
+                    {notification.message.split(" ")[1]}
+                  </p>
+                </>
+              )}
+              {(notification.type === "booking_confirm" ||
+                notification.type === "booking_apply") && (
                 <span className="text-xs text-stone-700">
                   {`${new Date(
                     notification.created_time.seconds * 1000,

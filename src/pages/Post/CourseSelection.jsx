@@ -9,6 +9,7 @@ import { UserContext } from "../../context/userContext";
 import { X } from "@phosphor-icons/react";
 import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 import { WarningCircle } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
 
 const CourseSelection = ({
   post,
@@ -31,6 +32,7 @@ const CourseSelection = ({
 
   const { findTeachersView } = useContext(ViewContext);
   const user = useContext(UserContext);
+  const navigate = useNavigate();
 
   const order = ["體驗", "1", "3", "5", "10"];
   const sortedCourseNum = post.course_num
@@ -161,6 +163,10 @@ const CourseSelection = ({
       status: "pending",
       coins_total: selectedCoinCost,
     };
+    const notifyBooking = {
+      from: user.uid,
+      postAuthorUid: post.author_uid,
+    };
 
     try {
       const updatedTimes = Object.keys(modalState.selectedTimes).reduce(
@@ -190,7 +196,7 @@ const CourseSelection = ({
         },
       });
 
-      await dbApi.createBooking(bookingData);
+      await dbApi.createBooking(bookingData, notifyBooking);
 
       modalDispatch({
         type: actionTypes.SET_SELECTED_TIMES,
@@ -201,6 +207,7 @@ const CourseSelection = ({
       setShowConfirmModal(true);
       setTimeout(() => {
         setShowConfirmModal(false);
+        navigate(`/`);
       }, 2000);
     } catch (error) {
       console.error("Error updating post:", error);
@@ -271,7 +278,6 @@ const CourseSelection = ({
               }}
             >
               <Coin
-                // src={coin}
                 alt="coin"
                 className="size-7 object-cover sm:size-10 md:size-12 lg:size-14"
               />
@@ -308,11 +314,7 @@ const CourseSelection = ({
               )}
               <div className="mt-auto flex items-center text-nowrap lg:text-lg">
                 獲得：
-                <Coin
-                  // src={coin}
-                  alt="coin"
-                  className="mr-2 size-8 object-cover"
-                />
+                <Coin alt="coin" className="mr-2 size-8 object-cover" />
                 <p className="lg:text-lg">x {selectedCoinCost}</p>
               </div>
               <button
@@ -327,7 +329,6 @@ const CourseSelection = ({
               <div className="flex flex-col rounded-b-lg shadow-md">
                 <div className="flex h-10 w-full items-center rounded-t-lg bg-indian-khaki-400 px-6 sm:h-12">
                   <Infinte
-                    // src={infinite}
                     alt="infinite-logo"
                     className="mr-2 mt-2 w-12 object-cover sm:w-14"
                   />
@@ -388,6 +389,7 @@ const CourseSelection = ({
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
           <div className="rounded-lg bg-white p-4 shadow-md">
             <p>您的預約 / 申請已成功送出！</p>
+            <p className="text-center">即將返回首頁~</p>
           </div>
         </div>
       )}
