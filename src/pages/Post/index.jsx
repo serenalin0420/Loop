@@ -150,6 +150,7 @@ function Post() {
         (availableDate) => availableDate.toDateString() === date.toDateString(),
       );
       const isDisabled = date < today || !isAvailable;
+
       calendarDays.push(
         <div
           key={day}
@@ -181,6 +182,10 @@ function Post() {
   const renderTimeSlots = (day) => {
     const dateKey = formatDate(day, "yyyy-MM-dd");
     const timeSlots = post.datetime[dateKey] || {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isPastDate = day < today;
 
     return (
       <div className="flex flex-col items-center">
@@ -191,7 +196,13 @@ function Post() {
             return (
               <div
                 key={time}
-                className={`mt-1 flex w-full flex-col px-3 py-1 text-center ${isAvailable ? "font-semibold text-yellow-800" : "text-zinc-400"}`}
+                className={`mt-1 flex w-full flex-col px-3 py-1 text-center ${
+                  isPastDate
+                    ? "cursor-not-allowed text-gray-400"
+                    : isAvailable
+                      ? "cursor-pointer font-semibold text-yellow-800"
+                      : "cursor-not-allowed text-zinc-400"
+                }`}
               >
                 {time}
               </div>
@@ -235,11 +246,7 @@ function Post() {
         <CourseSelection
           post={post}
           author={author}
-          handleMonthChange={handleMonthChange}
-          handleWeekChange={handleWeekChange}
           formatDate={formatDate}
-          renderCalendar={renderCalendar}
-          daysOfWeek={daysOfWeek}
           renderTimeSlots={(day) => renderTimeSlots(day, true)}
         />
         <div className="mt-8 flex flex-col rounded-b-lg shadow-md">

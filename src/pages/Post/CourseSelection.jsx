@@ -11,15 +11,7 @@ import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 import { WarningCircle } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
-const CourseSelection = ({
-  post,
-  author,
-  handleMonthChange,
-  handleWeekChange,
-  formatDate,
-  renderCalendar,
-  daysOfWeek,
-}) => {
+const CourseSelection = ({ post, author, formatDate }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalState, modalDispatch] = useReducer(reducer, initialState);
   const [selectedCourse, setSelectedCourse] = useState();
@@ -56,6 +48,65 @@ const CourseSelection = ({
       default:
         return `${num} 堂 / 未知時間`;
     }
+  };
+
+  const renderCalendar = () => {
+    const startOfMonth = new Date(
+      modalState.currentMonth.getFullYear(),
+      modalState.currentMonth.getMonth(),
+      1,
+    );
+    const endOfMonth = new Date(
+      modalState.currentMonth.getFullYear(),
+      modalState.currentMonth.getMonth() + 1,
+      0,
+    );
+    const startDay = startOfMonth.getDay();
+    const daysInMonth = endOfMonth.getDate();
+
+    const availableDates = Object.keys(post.datetime).map(
+      (dateStr) => new Date(dateStr),
+    );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const calendarDays = [];
+    for (let i = 0; i < startDay; i++) {
+      calendarDays.push(<div key={`empty-${i}`} className="p-2"></div>);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(
+        modalState.currentMonth.getFullYear(),
+        modalState.currentMonth.getMonth(),
+        day,
+      );
+      const isAvailable = availableDates.some(
+        (availableDate) => availableDate.toDateString() === date.toDateString(),
+      );
+      const isDisabled = date < today || !isAvailable;
+      calendarDays.push(
+        <div
+          key={day}
+          className={`cursor-pointer px-2 py-2 text-center ${date.toDateString() === modalState.selectedDate.toDateString() ? "rounded-full border border-yellow-950" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
+          onClick={() => {
+            if (!isDisabled) {
+              modalDispatch({
+                type: actionTypes.SET_SELECTED_DATE,
+                payload: date,
+              });
+              modalDispatch({
+                type: actionTypes.SET_START_OF_WEEK,
+                payload: new Date(date.setDate(date.getDate())),
+              });
+            }
+          }}
+        >
+          {day}
+        </div>,
+      );
+    }
+
+    return calendarDays;
   };
 
   const handleTimeSlotClick = (date, time) => {
@@ -100,6 +151,10 @@ const CourseSelection = ({
   const renderTimeSlots = (day) => {
     const dateKey = formatDate(day, "yyyy-MM-dd");
     const timeSlots = post.datetime[dateKey] || {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isPastDate = day < today;
 
     return (
       <div className="flex flex-col items-center">
@@ -110,12 +165,16 @@ const CourseSelection = ({
             return (
               <div
                 key={time}
-                className={`mt-1 flex w-full cursor-pointer flex-col px-3 py-1 text-center ${
-                  isAvailable
-                    ? "font-semibold text-yellow-800"
-                    : "text-zinc-400"
+                className={`mt-1 flex w-full flex-col px-3 py-1 text-center ${
+                  isPastDate
+                    ? "cursor-not-allowed text-gray-400"
+                    : isAvailable
+                      ? "cursor-pointer font-semibold text-yellow-800"
+                      : "cursor-not-allowed text-zinc-400"
                 } ${isSelected ? "bg-cerulean-200" : ""}`}
-                onClick={() => isAvailable && handleTimeSlotClick(day, time)}
+                onClick={() =>
+                  !isPastDate && isAvailable && handleTimeSlotClick(day, time)
+                }
               >
                 {time}
               </div>
@@ -251,6 +310,36 @@ const CourseSelection = ({
     };
   }, [showModal]);
 
+  const handleModalMonthChange = (e, direction) => {
+    e.preventDefault();
+    modalDispatch({
+      type: actionTypes.SET_CURRENT_MONTH,
+      payload: new Date(
+        modalState.currentMonth.setMonth(
+          modalState.currentMonth.getMonth() + direction,
+        ),
+      ),
+    });
+  };
+
+  const handleModalWeekChange = (e, direction) => {
+    e.preventDefault();
+    modalDispatch({
+      type: actionTypes.SET_START_OF_WEEK,
+      payload: new Date(
+        modalState.startOfWeek.setDate(
+          modalState.startOfWeek.getDate() + direction * 7,
+        ),
+      ),
+    });
+  };
+
+  const modalDaysOfWeek = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(modalState.startOfWeek);
+    date.setDate(date.getDate() + i);
+    return date;
+  });
+
   return (
     <div className="mt-2 flex flex-col rounded-b-lg shadow-md xs:mt-8">
       <div className="flex h-11 items-center rounded-t-lg bg-indian-khaki-400 px-6 text-lg text-white">
@@ -339,11 +428,11 @@ const CourseSelection = ({
                     post={post}
                     state={modalState}
                     dispatch={modalDispatch}
-                    handleMonthChange={handleMonthChange}
-                    handleWeekChange={handleWeekChange}
+                    handleMonthChange={handleModalMonthChange}
+                    handleWeekChange={handleModalWeekChange}
                     formatDate={formatDate}
                     renderCalendar={renderCalendar}
-                    daysOfWeek={daysOfWeek}
+                    daysOfWeek={modalDaysOfWeek}
                     renderTimeSlots={renderTimeSlots}
                     message="請選擇您方便的時間"
                   />
