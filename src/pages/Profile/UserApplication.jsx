@@ -69,6 +69,11 @@ const UserApplication = ({ userId }) => {
   const handleConfirmReject = async () => {
     if (selectedBooking) {
       await dbApi.updateBookingStatus(selectedBooking.id, "cancel");
+      await dbApi.cancelBookingTimes(
+        selectedBooking.post_id,
+        selectedBooking.selected_times,
+      );
+      console.log(selectedBooking);
       setBookings((prevBookings) =>
         prevBookings.filter((booking) => booking.id !== selectedBooking.id),
       );

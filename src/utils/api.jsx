@@ -103,7 +103,6 @@ const dbApi = {
       );
 
       await setDoc(docRef, filteredPostData);
-      // console.log("Data successfully written with ID: ", postId);
     } catch (error) {
       console.error("Error writing document: ", error);
     }
@@ -130,7 +129,6 @@ const dbApi = {
     try {
       const userDoc = doc(db, "users", userId);
       await updateDoc(userDoc, updatedData);
-      console.log("Document successfully updated!");
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -185,9 +183,55 @@ const dbApi = {
     try {
       const postRef = doc(db, "posts", postId);
       await setDoc(postRef, updatedData, { merge: true });
-      console.log("Document successfully updated!");
     } catch (error) {
       console.error("Error updating document: ", error);
+    }
+  },
+  async cancelBookingTimes(postId, selectedTimes) {
+    try {
+      // 假設預約文檔的 datetime 包含日期與對應時段
+      const postRef = doc(db, "posts", postId);
+      const postSnapshot = await getDoc(postRef);
+      if (postSnapshot.exists()) {
+        const postData = postSnapshot.data();
+
+        const timeRangeRegex = /(\d+):\d{2}/;
+
+        const updatedTimes = Object.keys(postData.datetime).reduce(
+          (acc, date) => {
+            const timesForDate = postData.datetime[date];
+
+            const updatedTimesForDate = Object.keys(timesForDate).reduce(
+              (timeAcc, time) => {
+                selectedTimes.forEach((selectedTime) => {
+                  const match = selectedTime.match(timeRangeRegex);
+                  if (match) {
+                    const selectedHour = match[1];
+
+                    if (time === selectedHour) {
+                      timeAcc[time] = true;
+                    } else {
+                      timeAcc[time] = timesForDate[time];
+                    }
+                  }
+                });
+                return timeAcc;
+              },
+              {},
+            );
+            acc[date] = updatedTimesForDate;
+            return acc;
+          },
+          {},
+        );
+
+        await setDoc(postRef, { datetime: updatedTimes }, { merge: true });
+        // console.log("Booking times successfully updated to true!");
+      } else {
+        console.error("No such booking found!");
+      }
+    } catch (error) {
+      console.error("Error updating booking times: ", error);
     }
   },
 
@@ -338,33 +382,33 @@ const dbApi = {
     try {
       const bookingRef = doc(db, "bookings", bookingId);
       await updateDoc(bookingRef, { status });
-      console.log("Booking status successfully updated!");
+      // console.log("Booking status successfully updated!");
     } catch (error) {
       console.error("Error updating booking status: ", error);
       throw error;
     }
   },
   // 刪除所有 status 為 cancel 的預約
-  async deleteCancelledBookings() {
-    try {
-      const bookingsRef = db.collection("bookings");
-      const snapshot = await bookingsRef.where("status", "==", "cancel").get();
+  // async deleteCancelledBookings() {
+  //   try {
+  //     const bookingsRef = db.collection("bookings");
+  //     const snapshot = await bookingsRef.where("status", "==", "cancel").get();
 
-      if (snapshot.empty) {
-        console.log("No matching documents.");
-        return;
-      }
-      const batch = db.batch();
-      snapshot.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
+  //     if (snapshot.empty) {
+  //       console.log("No matching documents.");
+  //       return;
+  //     }
+  //     const batch = db.batch();
+  //     snapshot.forEach((doc) => {
+  //       batch.delete(doc.ref);
+  //     });
 
-      await batch.commit();
-      console.log("Cancelled bookings deleted successfully.");
-    } catch (error) {
-      console.error("Error deleting cancelled bookings: ", error);
-    }
-  },
+  //     await batch.commit();
+  //     console.log("Cancelled bookings deleted successfully.");
+  //   } catch (error) {
+  //     console.error("Error deleting cancelled bookings: ", error);
+  //   }
+  // },
 
   // 更新雙方的代幣數量
   async updateUsersCoins(selectedBooking) {
@@ -402,7 +446,7 @@ const dbApi = {
         transaction.update(providerRef, { coins: newProviderCoins });
       });
 
-      console.log("Booking status and user coins successfully updated!");
+      // console.log("Booking status and user coins successfully updated!");
     } catch (error) {
       console.error("Error updating booking status and user coins: ", error);
       throw error;
@@ -513,7 +557,7 @@ const dbApi = {
 
       await Promise.all(notificationPromises);
 
-      console.log("Notifications successfully added!");
+      // console.log("Notifications successfully added!");
     } catch (error) {
       console.error("Error adding notifications: ", error);
       throw error;
@@ -611,7 +655,7 @@ const dbApi = {
       });
 
       await batch.commit();
-      console.log("Notifications marked as read in the database.");
+      // console.log("Notifications marked as read in the database.");
     } catch (error) {
       console.error("Error marking notifications as read: ", error);
     }
@@ -786,7 +830,6 @@ const dbApi = {
           ],
         });
       }
-      console.log("Chat successfully created or updated!");
     } catch (error) {
       console.error("Error creating or updating chat: ", error);
       throw error;

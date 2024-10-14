@@ -76,6 +76,10 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
 
   const handleConfirmReject = async () => {
     if (selectedBooking) {
+      await dbApi.cancelBookingTimes(
+        selectedBooking.post_id,
+        selectedBooking.selected_times,
+      );
       await dbApi.updateBookingStatus(selectedBooking.id, "cancel");
       setBookings((prevBookings) =>
         prevBookings.filter((booking) => booking.id !== selectedBooking.id),
