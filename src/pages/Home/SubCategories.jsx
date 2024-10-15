@@ -1,18 +1,18 @@
-import PropTypes from "prop-types";
 import {
-  Translate,
-  FileJs,
   Camera,
-  PaintBrush,
-  Racquet,
   CookingPot,
   CurrencyCircleDollar,
-  MusicNotes,
-  GameController,
-  StarOfDavid,
   DotsThree,
+  FileJs,
+  GameController,
   Infinity,
+  MusicNotes,
+  PaintBrush,
+  Racquet,
+  StarOfDavid,
+  Translate,
 } from "@phosphor-icons/react";
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const categoriesWithIcons = [

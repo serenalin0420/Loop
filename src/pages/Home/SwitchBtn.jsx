@@ -1,8 +1,8 @@
+import PropTypes from "prop-types";
+import { useContext } from "react";
 import tamtam1 from "../../assets/tamtam1.png";
 import tamtam2 from "../../assets/tamtam2.png";
-import { useContext } from "react";
 import { ViewContext } from "../../context/viewContext";
-import PropTypes from "prop-types";
 
 function SwitchBtn({ onSwitch = () => {} }) {
   const { findTeachersView, setFindTeachersView } = useContext(ViewContext);

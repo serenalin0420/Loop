@@ -1,15 +1,53 @@
-import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import dbApi from "../../utils/api";
-import { locations, timePreferences } from "../CreatePost/options";
-import { useForm, Controller } from "react-hook-form";
-import Select from "react-select";
 import { CaretLineDown, CaretLineUp } from "@phosphor-icons/react";
+import PropTypes from "prop-types";
+import { useContext, useEffect, useState } from "react";
+import Select from "react-select";
+import { ViewContext } from "../../context/viewContext";
+import { locations, timePreferences } from "../CreatePost/options";
 
-function Filter({ selectedCategory, onFilterChange }) {
-  const [categories, setCategories] = useState([]);
+const customStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    fontSize: "16px", // 控制框的文字大小
+    padding: " 2px 0",
+    borderRadius: "0.375rem",
+    borderColor: state.isFocused && "#bfaa87",
+    boxShadow: state.isFocused && "#bfaa87",
+    "&:hover": {
+      borderColor: state.isFocused && "#bfaa87",
+    },
+  }),
+  multiValue: (provided) => {
+    const isMobile = window.innerWidth < 768;
+    return {
+      ...provided,
+      fontSize: isMobile ? "14px" : "16px", // 多選值的文字大小
+      backgroundColor: "#c2e4f5",
+      borderRadius: "0.375rem",
+      marginRight: isMobile ? "8px" : "12px",
+    };
+  },
+  multiValueLabel: (provided) => {
+    const isMobile = window.innerWidth < 768;
+    return {
+      ...provided,
+      fontSize: isMobile ? "14px" : "16px", // 多選值標籤的文字大小
+      paddingLeft: "8px",
+      paddingRight: "0",
+    };
+  },
+  multiValueRemove: (provided) => ({
+    ...provided,
+    fontSize: "14px", // 多選值刪除按鈕的文字大小
+    padding: "0 6px",
+    borderRadius: "0.375rem",
+    ":hover": { backgroundColor: "#8cd0ed" },
+  }),
+};
+
+function Filter({ categories, selectedCategory, onFilterChange }) {
+  const { findTeachersView } = useContext(ViewContext);
   const [subcategories, setSubcategories] = useState([]);
-  const { control } = useForm();
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [selectedTimePreferences, setSelectedTimePreferences] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
@@ -18,18 +56,6 @@ function Filter({ selectedCategory, onFilterChange }) {
   const toggleDropdown = () => {
     setIsDropdownVisible(!isDropdownVisible);
   };
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const fetchedCategories = await dbApi.getCategories();
-        setCategories(fetchedCategories);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     if (selectedCategory) {
@@ -57,6 +83,17 @@ function Filter({ selectedCategory, onFilterChange }) {
     onFilterChange,
   ]);
 
+  useEffect(() => {
+    onFilterChange({
+      subcategories: [],
+      timePreferences: [],
+      locations: [],
+    });
+    setSelectedSubcategories([]);
+    setSelectedTimePreferences([]);
+    setSelectedLocations([]);
+  }, [onFilterChange, findTeachersView]);
+
   const handleSubcategoryChange = (subcategory) => {
     setSelectedSubcategories((prev) =>
       prev.includes(subcategory)
@@ -71,46 +108,6 @@ function Filter({ selectedCategory, onFilterChange }) {
         ? prev.filter((item) => item !== timePreference)
         : [...prev, timePreference],
     );
-  };
-  const customStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      fontSize: "16px", // 控制框的文字大小
-      padding: " 2px 0",
-      borderRadius: "0.375rem",
-      borderColor: state.isFocused && "#bfaa87",
-      boxShadow: state.isFocused && "#bfaa87",
-      "&:hover": {
-        borderColor: state.isFocused && "#bfaa87",
-      },
-    }),
-    option: (provided) => ({
-      ...provided,
-      fontSize: "16px", // 選項的文字大小
-    }),
-    multiValue: (provided) => {
-      const isMobile = window.innerWidth < 768;
-      return {
-        ...provided,
-        fontSize: "16px", // 多選值的文字大小
-        backgroundColor: "#c2e4f5",
-        borderRadius: "0.375rem",
-        marginRight: isMobile ? "8px" : "12px",
-      };
-    },
-    multiValueLabel: (provided) => ({
-      ...provided,
-      fontSize: "16px", // 多選值標籤的文字大小
-      paddingLeft: "10px",
-      paddingRight: "0",
-    }),
-    multiValueRemove: (provided) => ({
-      ...provided,
-      fontSize: "16px", // 多選值刪除按鈕的文字大小
-      padding: "0 8px",
-      borderRadius: "0.375rem",
-      ":hover": { backgroundColor: "#8cd0ed" },
-    }),
   };
 
   return (
@@ -154,7 +151,6 @@ function Filter({ selectedCategory, onFilterChange }) {
                       : "bg-cerulean-100"
                   }`}
                   onClick={() => {
-                    console.log("Clicked subcategory:", subcategory);
                     handleSubcategoryChange(subcategory);
                   }}
                 >
@@ -177,7 +173,7 @@ function Filter({ selectedCategory, onFilterChange }) {
               }))}
               isMulti
               placeholder="請選擇子類別"
-              className="rounded-md"
+              className="max-w-72 rounded-md"
               styles={customStyles}
               onChange={(selectedOptions) => {
                 setSelectedSubcategories(
@@ -223,25 +219,17 @@ function Filter({ selectedCategory, onFilterChange }) {
           >
             時間
           </h3>
-          <Controller
-            name="timePreferences"
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                placeholder="請選擇偏好的時間"
-                options={timePreferences}
-                isMulti
-                className="rounded-md"
-                styles={customStyles}
-                onChange={(selectedOptions) => {
-                  field.onChange(selectedOptions);
-                  setSelectedTimePreferences(
-                    selectedOptions.map((option) => option.label),
-                  );
-                }}
-              />
-            )}
+          <Select
+            placeholder="請選擇偏好的時間"
+            options={timePreferences}
+            isMulti
+            className="min-w-52 max-w-72 rounded-md"
+            styles={customStyles}
+            onChange={(selectedOptions) => {
+              setSelectedTimePreferences(
+                selectedOptions.map((option) => option.label),
+              );
+            }}
           />
         </div>
       </div>
@@ -252,25 +240,17 @@ function Filter({ selectedCategory, onFilterChange }) {
           地點
         </h3>
         <div className="hidden w-full md:flex md:flex-wrap md:gap-y-2">
-          <Controller
-            name="location"
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                placeholder="線上, 台北市..."
-                options={locations}
-                isMulti
-                className="min-w-52 rounded-md"
-                styles={customStyles}
-                onChange={(selectedOptions) => {
-                  field.onChange(selectedOptions);
-                  setSelectedLocations(
-                    selectedOptions.map((option) => option.label),
-                  );
-                }}
-              />
-            )}
+          <Select
+            placeholder="線上, 台北市..."
+            options={locations}
+            isMulti
+            className="min-w-52 rounded-md"
+            styles={customStyles}
+            onChange={(selectedOptions) => {
+              setSelectedLocations(
+                selectedOptions.map((option) => option.label),
+              );
+            }}
           />
         </div>
 
@@ -286,25 +266,17 @@ function Filter({ selectedCategory, onFilterChange }) {
           >
             地點
           </h3>
-          <Controller
-            name="location"
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                placeholder="線上, 台北市..."
-                options={locations}
-                isMulti
-                className="min-w-52 rounded-md"
-                styles={customStyles}
-                onChange={(selectedOptions) => {
-                  field.onChange(selectedOptions);
-                  setSelectedLocations(
-                    selectedOptions.map((option) => option.label),
-                  );
-                }}
-              />
-            )}
+          <Select
+            placeholder="線上, 台北市..."
+            options={locations}
+            isMulti
+            className="min-w-52 rounded-md"
+            styles={customStyles}
+            onChange={(selectedOptions) => {
+              setSelectedLocations(
+                selectedOptions.map((option) => option.label),
+              );
+            }}
           />
         </div>
       </div>
@@ -313,6 +285,7 @@ function Filter({ selectedCategory, onFilterChange }) {
 }
 
 Filter.propTypes = {
+  categories: PropTypes.arrayOf(PropTypes.object),
   selectedCategory: PropTypes.string,
   onFilterChange: PropTypes.func.isRequired,
 };
