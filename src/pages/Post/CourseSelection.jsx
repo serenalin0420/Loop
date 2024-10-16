@@ -288,7 +288,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
         type: postActionTypes.SET_SELECTED_TIMES,
         payload: {},
       });
-      modalDispatch({ type: postActionTypes.SET_SHOW_MODAL, payload: false });
+      uiDispatch({ type: uiActionTypes.SET_SHOW_MODAL, payload: false });
 
       uiDispatch({
         type: uiActionTypes.SHOW_MODAL,
@@ -327,7 +327,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
   };
 
   useEffect(() => {
-    if (modalState.showModal) {
+    if (uiState.showModal) {
       document.body.classList.add("overflow-hidden");
     } else {
       document.body.classList.remove("overflow-hidden");
@@ -354,7 +354,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
     return () => {
       document.body.classList.remove("overflow-hidden");
     };
-  }, [modalState.showModal]);
+  }, [uiState.showModal]);
 
   const handleModalMonthChange = (e, direction) => {
     e.preventDefault();
@@ -407,8 +407,8 @@ const CourseSelection = ({ post, author, formatDate }) => {
               key={index}
               className={`flex cursor-pointer ${widthClass} items-center justify-center gap-2 rounded-md border-2 p-2 sm:flex-wrap sm:p-3 lg:p-4`}
               onClick={() => {
-                modalDispatch({
-                  type: postActionTypes.SET_SHOW_MODAL,
+                uiDispatch({
+                  type: uiActionTypes.SET_SHOW_MODAL,
                   payload: true,
                 });
                 modalDispatch({
@@ -436,7 +436,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
           );
         })}
       </div>
-      {modalState.showModal && (
+      {uiState.showModal && (
         <div className="fixed inset-0 z-10 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50 px-8 py-32 md:px-16">
           <div className="relative top-20 flex max-h-[calc(100vh-32px)] flex-col overflow-y-auto rounded-lg bg-white px-6 pb-6 pt-4 shadow-md lg:px-8">
             <div className="flex items-center">
@@ -464,8 +464,8 @@ const CourseSelection = ({ post, author, formatDate }) => {
               <button
                 className="ml-auto self-start p-2"
                 onClick={() =>
-                  modalDispatch({
-                    type: postActionTypes.SET_SHOW_MODAL,
+                  uiDispatch({
+                    type: uiActionTypes.SET_SHOW_MODAL,
                     payload: false,
                   })
                 }

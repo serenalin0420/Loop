@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
-import dbApi from "../../utils/api";
+import { SmileyMelting, X } from "@phosphor-icons/react";
 import PropTypes from "prop-types";
+import { useEffect, useReducer, useState } from "react";
 import { Coin, Infinte } from "../../assets/images";
-import { X } from "@phosphor-icons/react";
-import { SmileyMelting } from "@phosphor-icons/react";
+import dbApi from "../../utils/api";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
 
 const ApplicationFromOthers = ({ userId, setCoins }) => {
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
   const [bookings, setBookings] = useState([]);
-  const [showModal, setShowModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [postTitle, setPostTitle] = useState("");
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] =
     useState(false);
 
@@ -61,17 +63,17 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
       applicant_profile_picture: booking.applicant_profile_picture,
     });
     setPostTitle(postTitle);
-    setShowModal(true);
+    uiDispatch({ type: uiActionTypes.SET_SHOW_MODAL, payload: true });
   };
 
   const handleCloseModal = () => {
-    setShowModal(false);
+    uiDispatch({ type: uiActionTypes.SET_SHOW_MODAL, payload: false });
     setSelectedBooking(null);
     setPostTitle("");
   };
 
   const handleRejectClick = () => {
-    setShowConfirmModal(true);
+    uiDispatch({ type: uiActionTypes.SET_CONFIRM_MODAL, payload: true });
   };
 
   const handleConfirmReject = async () => {
@@ -84,8 +86,8 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
       setBookings((prevBookings) =>
         prevBookings.filter((booking) => booking.id !== selectedBooking.id),
       );
-      setShowConfirmModal(false);
-      setShowModal(false);
+      uiDispatch({ type: uiActionTypes.SET_CONFIRM_MODAL, payload: false });
+      uiDispatch({ type: uiActionTypes.SET_SHOW_MODAL, payload: false });
     }
   };
 
@@ -110,19 +112,27 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
         const updatedUserProfile = await dbApi.getProfile(userId);
         setCoins(updatedUserProfile.coins);
 
-        setShowModal(false);
+        uiDispatch({ type: uiActionTypes.SET_SHOW_MODAL, payload: false });
+        uiDispatch({
+          type: uiActionTypes.SHOW_MODAL,
+          modalType: "autoCloseModal",
+          payload: {
+            message: "恭喜找到技能交換的夥伴！期待你們的學習~",
+          },
+        });
+
         setTimeout(() => {
-          setShowSuccessModal(true);
-          setTimeout(() => {
-            setShowSuccessModal(false);
-          }, 2000);
-        }, 0);
+          uiDispatch({
+            type: uiActionTypes.HIDE_MODAL,
+            modalType: "autoCloseModal",
+          });
+        }, 2000);
       } catch (error) {
         if (
           error.message === "Insufficient coins to complete the transaction!"
         ) {
           setShowInsufficientCoinsModal(true);
-          setShowModal(false);
+          uiDispatch({ type: uiActionTypes.SET_SHOW_MODAL, payload: false });
         } else {
           console.error("Error accepting booking:", error);
         }
@@ -182,7 +192,7 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
           )}
         </div>
       </div>
-      {showModal && selectedBooking && (
+      {uiState.showModal && selectedBooking && (
         <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
           <div className="relative mx-4 rounded-xl bg-white px-6 py-6 shadow-lg sm:mx-auto md:px-8">
             <button
@@ -254,7 +264,7 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
           </div>
         </div>
       )}
-      {showConfirmModal && (
+      {uiState.showConfirmModal && (
         <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
           <div className="mx-4 rounded-xl bg-white px-6 py-6 text-center shadow-lg sm:px-12 md:mx-auto md:px-16">
             <p className="text-lg leading-8">
@@ -264,7 +274,12 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
             <div className="flex justify-center">
               <button
                 className="mr-4 mt-4 rounded-md bg-neon-carrot-400 px-6 py-2 text-white shadow"
-                onClick={() => setShowConfirmModal(false)}
+                onClick={() =>
+                  uiDispatch({
+                    type: uiActionTypes.SET_CONFIRM_MODAL,
+                    payload: false,
+                  })
+                }
               >
                 否
               </button>
@@ -278,14 +293,10 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
           </div>
         </div>
       )}
-      {showSuccessModal && (
+      {uiState.autoCloseModal.show && (
         <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-xl bg-white px-12 py-8 text-center shadow-lg">
-            <p className="text-lg leading-8">
-              恭喜找到技能交換的夥伴!
-              <br />
-              期待你們的學習旅程~
-            </p>
+          <div className="mx-4 flex flex-wrap rounded-xl bg-white p-6 text-center shadow-lg">
+            <p>{uiState.autoCloseModal.message}</p>
           </div>
         </div>
       )}

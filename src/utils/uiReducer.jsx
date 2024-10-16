@@ -12,6 +12,8 @@ export const uiInitialState = {
     show: false,
     message: "",
   },
+  showModal: false,
+  showConfirmModal: false,
 };
 
 export const uiActionTypes = {
@@ -19,6 +21,8 @@ export const uiActionTypes = {
   SET_ISLOADING: "SET_ISLOADING",
   SHOW_MODAL: "SHOW_MODAL",
   HIDE_MODAL: "HIDE_MODAL",
+  SET_SHOW_MODAL: "SET_SHOW_MODAL",
+  SET_CONFIRM_MODAL: "SET_CONFIRM_MODAL",
 };
 
 export function uiReducer(state, action) {
@@ -46,6 +50,10 @@ export function uiReducer(state, action) {
           message: "",
         },
       };
+    case uiActionTypes.SET_SHOW_MODAL:
+      return { ...state, showModal: action.payload };
+    case uiActionTypes.SET_CONFIRM_MODAL:
+      return { ...state, showConfirmModal: action.payload };
     default:
       return state;
   }
