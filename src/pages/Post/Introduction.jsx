@@ -1,29 +1,38 @@
+import { BookBookmark, ChatCircleDots, Heart } from "@phosphor-icons/react";
 import PropTypes from "prop-types";
-import { Heart, BookBookmark, ChatCircleDots } from "@phosphor-icons/react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
-import { useState, useContext, useEffect, useCallback } from "react";
+import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 import { UserContext } from "../../context/UserContext";
 import dbApi from "../../utils/api";
-import IsLoggedIn from "../../components/Modal/IsLoggedIn";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
+
+const getYouTubeVideoId = (url) => {
+  if (url !== undefined) {
+    const regExp =
+      /(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regExp);
+    return match && match[1] ? match[1] : null;
+  }
+  return null;
+};
 
 const Introduction = ({ post, author }) => {
   const user = useContext(UserContext);
-  const [bookmarkWeight, setBookmarkWeight] = useState("regular");
-  const [chatWeight, setChatWeight] = useState("regular");
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
   const [savedPost, setSavedPost] = useState([]);
-  const [modalState, setModalState] = useState({ show: false, message: "" });
 
   const videoUrl = post.video_url;
-  const getYouTubeVideoId = (url) => {
-    if (url !== undefined) {
-      const regExp =
-        /(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-      const match = url.match(regExp);
-      return match && match[1] ? match[1] : null;
-    }
-    return null;
-  };
-
   const videoId = getYouTubeVideoId(videoUrl);
   const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : "";
 
@@ -33,8 +42,6 @@ const Introduction = ({ post, author }) => {
         if (user) {
           const userProfile = await dbApi.getProfile(user.uid);
           setSavedPost(userProfile.saved_posts);
-        } else {
-          console.log("No saved posts found for this user.");
         }
       } catch (error) {
         console.error("Error fetching saved posts:", error);
@@ -49,10 +56,15 @@ const Introduction = ({ post, author }) => {
   const handleHeartClick = useCallback(
     async (postId) => {
       if (!user) {
-        setModalState({
-          show: true,
-          message: "收藏貼文需要先登入喔！",
+        uiDispatch({
+          type: uiActionTypes.SHOW_MODAL,
+          modalType: "loginModal",
+          payload: {
+            message: "收藏貼文需要先登入喔！",
+          },
         });
+
+        return;
       }
       try {
         const postSummary = {
@@ -80,9 +92,12 @@ const Introduction = ({ post, author }) => {
 
   const handleSendMessageClick = (postAuthourId) => {
     if (!user) {
-      setModalState({
-        show: true,
-        message: "要聯絡對方需要先登入喔！",
+      uiDispatch({
+        type: uiActionTypes.SHOW_MODAL,
+        modalType: "loginModal",
+        payload: {
+          message: "要聯絡對方需要先登入喔！",
+        },
       });
     } else {
       window.open(`/chat/${postAuthourId}`, "_blank");
@@ -110,9 +125,21 @@ const Introduction = ({ post, author }) => {
           <span className="flex items-center gap-1 rounded-full bg-sun-100 px-3 py-2 text-sun-900 hover:bg-sun-200 active:bg-sun-200">
             <BookBookmark
               className="size-5"
-              weight={bookmarkWeight}
-              onMouseEnter={() => setBookmarkWeight("fill")}
-              onMouseLeave={() => setBookmarkWeight("regular")}
+              weight={uiState.bookmarkWeight}
+              onMouseEnter={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "bookmarkWeight",
+                  payload: "fill",
+                })
+              }
+              onMouseLeave={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "bookmarkWeight",
+                  payload: "regular",
+                })
+              }
             />
             <p className="hidden text-sm md:inline">學習歷程</p>
           </span>
@@ -127,9 +154,21 @@ const Introduction = ({ post, author }) => {
           >
             <ChatCircleDots
               className="size-5 sm:hidden"
-              weight={chatWeight}
-              onMouseEnter={() => setChatWeight("fill")}
-              onMouseLeave={() => setChatWeight("regular")}
+              weight={uiState.chatWeight}
+              onMouseEnter={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "chatWeight",
+                  payload: "fill",
+                })
+              }
+              onMouseLeave={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "chatWeight",
+                  payload: "regular",
+                })
+              }
             />
             <p className="hidden sm:inline">傳送訊息</p>
           </button>
@@ -241,10 +280,10 @@ const Introduction = ({ post, author }) => {
           )}
         </div>
       )}
-      {modalState.show && (
+      {uiState.loginModal.show && (
         <IsLoggedIn
-          onClose={() => setModalState({ show: false, message: "" })}
-          message={modalState.message}
+          onClose={() => uiDispatch({ type: uiActionTypes.HIDE_LOGIN_MODAL })}
+          message={uiState.loginModal.message}
         />
       )}
     </div>

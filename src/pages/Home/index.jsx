@@ -1,11 +1,22 @@
 import { SmileyWink } from "@phosphor-icons/react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { Coin } from "../../assets/images";
 import IsLoggedIn from "../../components/Modal/IsLoggedIn";
 import { UserContext } from "../../context/userContext";
 import { ViewContext } from "../../context/viewContext";
 import dbApi from "../../utils/api";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
 import Filter from "./Filter";
 import PostCard from "./PostCard";
 import SubCategories from "./SubCategories";
@@ -26,8 +37,7 @@ function Home() {
     timePreferences: [],
     locations: [],
   });
-  const [modalState, setModalState] = useState({ show: false, message: "" });
-  const [isLoading, setIsLoading] = useState(true);
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
 
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 12;
@@ -35,7 +45,7 @@ function Home() {
   // 可愛的虎爪
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoading(false);
+      uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: false });
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -47,7 +57,7 @@ function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: true });
       try {
         const [fetchedPosts, fetchedCategories, userProfile] =
           await Promise.all([
@@ -77,7 +87,7 @@ function Home() {
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setIsLoading(false);
+        uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: false });
       }
     };
     fetchData();
@@ -119,9 +129,12 @@ function Home() {
 
   const handleCreatePostClick = (view) => {
     if (!user) {
-      setModalState({
-        show: true,
-        message: "發布內容要先登入，才能查看誰對你的內容有興趣喔！",
+      uiDispatch({
+        type: uiActionTypes.SHOW_MODAL,
+        modalType: "loginModal",
+        payload: {
+          message: "發布內容要先登入，才能查看誰對你的內容有興趣喔！",
+        },
       });
     } else {
       navigate(`/create-post?view=${view}`);
@@ -131,10 +144,14 @@ function Home() {
   const handleHeartClick = useCallback(
     async (postId) => {
       if (!user) {
-        setModalState({
-          show: true,
-          message: "收藏貼文需要先登入喔！",
+        uiDispatch({
+          type: uiActionTypes.SHOW_MODAL,
+          modalType: "loginModal",
+          payload: {
+            message: "收藏貼文需要先登入喔！",
+          },
         });
+        return;
       }
       try {
         const post = posts.find((p) => p.id === postId);
@@ -168,9 +185,12 @@ function Home() {
   const handleSendMessageClick = useCallback(
     (postAuthorId) => {
       if (!user) {
-        setModalState({
-          show: true,
-          message: "要聯絡對方需要先登入喔！",
+        uiDispatch({
+          type: uiActionTypes.SHOW_MODAL,
+          modalType: "loginModal",
+          payload: {
+            message: "要聯絡對方需要先登入喔！",
+          },
         });
       } else {
         window.open(`/chat/${postAuthorId}`, "_blank");
@@ -194,7 +214,6 @@ function Home() {
   };
 
   const filterByCategory = (category) => {
-    // 根據類別進行過濾
     const filteredPosts =
       category === "全部"
         ? posts
@@ -295,7 +314,7 @@ function Home() {
                 : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
             }`}
           >
-            {isLoading ? (
+            {uiState.isLoading ? (
               <div className="col-span-3 mt-6 flex h-[60vh] items-center justify-center">
                 <div className="flex flex-col items-center justify-center text-indian-khaki-800">
                   <Coin className="my-2 size-16 animate-swing" />
@@ -344,10 +363,15 @@ function Home() {
           </div>
         )}
       </div>
-      {modalState.show && (
+      {uiState.loginModal.show && (
         <IsLoggedIn
-          onClose={() => setModalState({ show: false, message: "" })}
-          message={modalState.message}
+          onClose={() =>
+            uiDispatch({
+              type: uiActionTypes.HIDE_MODAL,
+              modalType: "loginModal",
+            })
+          }
+          message={uiState.loginModal.message}
         />
       )}
     </div>

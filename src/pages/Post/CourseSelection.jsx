@@ -1,15 +1,23 @@
-import PropTypes from "prop-types";
-import { Coin, Infinte } from "../../assets/images";
-import { useReducer, useContext, useEffect } from "react";
-import TimeTable from "../../components/TimeTable";
-import { initialState, reducer, actionTypes } from "../../utils/postReducer";
 import dbApi from "@/utils/api";
-import { ViewContext } from "../../context/viewContext";
-import { UserContext } from "../../context/userContext";
-import { X } from "@phosphor-icons/react";
-import IsLoggedIn from "../../components/Modal/IsLoggedIn";
-import { WarningCircle } from "@phosphor-icons/react";
+import { WarningCircle, X } from "@phosphor-icons/react";
+import PropTypes from "prop-types";
+import { useContext, useEffect, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
+import { Coin, Infinte } from "../../assets/images";
+import IsLoggedIn from "../../components/Modal/IsLoggedIn";
+import TimeTable from "../../components/TimeTable";
+import { UserContext } from "../../context/userContext";
+import { ViewContext } from "../../context/viewContext";
+import {
+  postActionTypes,
+  postInitialState,
+  postReducer,
+} from "../../utils/postReducer";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
 
 const order = ["體驗", "1", "3", "5", "10"];
 const getDisplayText = (num) => {
@@ -30,7 +38,8 @@ const getDisplayText = (num) => {
 };
 
 const CourseSelection = ({ post, author, formatDate }) => {
-  const [modalState, modalDispatch] = useReducer(reducer, initialState);
+  const [modalState, modalDispatch] = useReducer(postReducer, postInitialState);
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
   const { findTeachersView } = useContext(ViewContext);
   const user = useContext(UserContext);
   const navigate = useNavigate();
@@ -82,11 +91,11 @@ const CourseSelection = ({ post, author, formatDate }) => {
           onClick={() => {
             if (!isDisabled) {
               modalDispatch({
-                type: actionTypes.SET_SELECTED_DATE,
+                type: postActionTypes.SET_SELECTED_DATE,
                 payload: date,
               });
               modalDispatch({
-                type: actionTypes.SET_START_OF_WEEK,
+                type: postActionTypes.SET_START_OF_WEEK,
                 payload: new Date(date.setDate(date.getDate())),
               });
             }
@@ -101,8 +110,14 @@ const CourseSelection = ({ post, author, formatDate }) => {
   };
 
   const handleErrorMessage = (message) => {
-    modalDispatch({ type: actionTypes.SET_ERROR_MESSAGE, payload: message });
-    modalDispatch({ type: actionTypes.SET_SHOW_ERROR_MODAL, payload: true });
+    modalDispatch({
+      type: postActionTypes.SET_ERROR_MESSAGE,
+      payload: message,
+    });
+    modalDispatch({
+      type: postActionTypes.SET_SHOW_ERROR_MODAL,
+      payload: true,
+    });
   };
 
   const handleTimeSlotClick = (date, time) => {
@@ -129,21 +144,24 @@ const CourseSelection = ({ post, author, formatDate }) => {
 
       setTimeout(() => {
         modalDispatch({
-          type: actionTypes.SET_SHOW_ERROR_MODAL,
+          type: postActionTypes.SET_SHOW_ERROR_MODAL,
           payload: false,
         });
-        modalDispatch({ type: actionTypes.SET_ERROR_MESSAGE, payload: "" });
+        modalDispatch({ type: postActionTypes.SET_ERROR_MESSAGE, payload: "" });
       }, 3000);
       newSelectedTimes = modalState.chosenTimes; // revert to previous state
     } else {
-      modalDispatch({ type: actionTypes.SET_ERROR_MESSAGE, payload: "" });
-      modalDispatch({ type: actionTypes.SET_SHOW_ERROR_MODAL, payload: false });
+      modalDispatch({ type: postActionTypes.SET_ERROR_MESSAGE, payload: "" });
       modalDispatch({
-        type: actionTypes.SET_CHOSEN_TIMES,
+        type: postActionTypes.SET_SHOW_ERROR_MODAL,
+        payload: false,
+      });
+      modalDispatch({
+        type: postActionTypes.SET_CHOSEN_TIMES,
         payload: newSelectedTimes,
       });
       modalDispatch({
-        type: actionTypes.SET_SELECTED_TIMES,
+        type: postActionTypes.SET_SELECTED_TIMES,
         payload: {
           ...modalState.selectedTimes,
           [dateString]: updatedTimesForDate,
@@ -198,7 +216,13 @@ const CourseSelection = ({ post, author, formatDate }) => {
       return;
     }
     if (!user) {
-      modalDispatch({ type: actionTypes.SET_SHOW_LOGIN_MODAL, payload: true });
+      uiDispatch({
+        type: uiActionTypes.SHOW_MODAL,
+        modalType: "loginModal",
+        payload: {
+          message: "預約時段要先登入，才能知道你是誰喔~趕快登入吧！",
+        },
+      });
       return;
     }
     if (
@@ -261,18 +285,23 @@ const CourseSelection = ({ post, author, formatDate }) => {
       await dbApi.createBooking(bookingData, notifyBooking);
 
       modalDispatch({
-        type: actionTypes.SET_SELECTED_TIMES,
+        type: postActionTypes.SET_SELECTED_TIMES,
         payload: {},
       });
-      modalDispatch({ type: actionTypes.SET_SHOW_MODAL, payload: false });
-      modalDispatch({
-        type: actionTypes.SET_SHOW_CONFIRM_MODAL,
-        payload: true,
+      modalDispatch({ type: postActionTypes.SET_SHOW_MODAL, payload: false });
+
+      uiDispatch({
+        type: uiActionTypes.SHOW_MODAL,
+        modalType: "autoCloseModal",
+        payload: {
+          message: "您的預約 / 申請已成功送出！即將返回首頁~",
+        },
       });
+
       setTimeout(() => {
-        modalDispatch({
-          type: actionTypes.SET_SHOW_CONFIRM_MODAL,
-          payload: false,
+        uiDispatch({
+          type: uiActionTypes.HIDE_MODAL,
+          modalType: "autoCloseModal",
         });
         navigate(`/`);
       }, 2000);
@@ -302,17 +331,23 @@ const CourseSelection = ({ post, author, formatDate }) => {
       document.body.classList.add("overflow-hidden");
     } else {
       document.body.classList.remove("overflow-hidden");
-      // reset state
-      modalDispatch({ type: actionTypes.SET_SELECTED_COURSE, payload: null });
+
       modalDispatch({
-        type: actionTypes.SET_SELECTED_COIN_COST,
+        type: postActionTypes.SET_SELECTED_COURSE,
         payload: null,
       });
-      modalDispatch({ type: actionTypes.SET_CHOSEN_TIMES, payload: [] });
-      modalDispatch({ type: actionTypes.SET_ERROR_MESSAGE, payload: "" });
-      modalDispatch({ type: actionTypes.SET_SHOW_ERROR_MODAL, payload: false });
       modalDispatch({
-        type: actionTypes.SET_SELECTED_TIMES,
+        type: postActionTypes.SET_SELECTED_COIN_COST,
+        payload: null,
+      });
+      modalDispatch({ type: postActionTypes.SET_CHOSEN_TIMES, payload: [] });
+      modalDispatch({ type: postActionTypes.SET_ERROR_MESSAGE, payload: "" });
+      modalDispatch({
+        type: postActionTypes.SET_SHOW_ERROR_MODAL,
+        payload: false,
+      });
+      modalDispatch({
+        type: postActionTypes.SET_SELECTED_TIMES,
         payload: {},
       });
     }
@@ -324,7 +359,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
   const handleModalMonthChange = (e, direction) => {
     e.preventDefault();
     modalDispatch({
-      type: actionTypes.SET_CURRENT_MONTH,
+      type: postActionTypes.SET_CURRENT_MONTH,
       payload: new Date(
         modalState.currentMonth.setMonth(
           modalState.currentMonth.getMonth() + direction,
@@ -336,7 +371,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
   const handleModalWeekChange = (e, direction) => {
     e.preventDefault();
     modalDispatch({
-      type: actionTypes.SET_START_OF_WEEK,
+      type: postActionTypes.SET_START_OF_WEEK,
       payload: new Date(
         modalState.startOfWeek.setDate(
           modalState.startOfWeek.getDate() + direction * 7,
@@ -373,15 +408,15 @@ const CourseSelection = ({ post, author, formatDate }) => {
               className={`flex cursor-pointer ${widthClass} items-center justify-center gap-2 rounded-md border-2 p-2 sm:flex-wrap sm:p-3 lg:p-4`}
               onClick={() => {
                 modalDispatch({
-                  type: actionTypes.SET_SHOW_MODAL,
+                  type: postActionTypes.SET_SHOW_MODAL,
                   payload: true,
                 });
                 modalDispatch({
-                  type: actionTypes.SET_SELECTED_COURSE,
+                  type: postActionTypes.SET_SELECTED_COURSE,
                   payload: num,
                 });
                 modalDispatch({
-                  type: actionTypes.SET_SELECTED_COIN_COST,
+                  type: postActionTypes.SET_SELECTED_COIN_COST,
                   payload: coinCost,
                 });
               }}
@@ -430,7 +465,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
                 className="ml-auto self-start p-2"
                 onClick={() =>
                   modalDispatch({
-                    type: actionTypes.SET_SHOW_MODAL,
+                    type: postActionTypes.SET_SHOW_MODAL,
                     payload: false,
                   })
                 }
@@ -493,22 +528,21 @@ const CourseSelection = ({ post, author, formatDate }) => {
           </div>
         </div>
       )}
-      {modalState.showLoginModal && (
+      {uiState.loginModal.show && (
         <IsLoggedIn
           onClose={() =>
-            modalDispatch({
-              type: actionTypes.SET_SHOW_LOGIN_MODAL,
-              payload: false,
+            uiDispatch({
+              type: uiActionTypes.HIDE_MODAL,
+              modalType: "loginModal",
             })
           }
-          message="預約時段要先登入，才能知道你是誰喔~趕快登入吧！"
+          message={uiState.loginModal.message}
         />
       )}
-      {modalState.showConfirmModal && (
-        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-lg bg-white p-4 shadow-md">
-            <p>您的預約 / 申請已成功送出！</p>
-            <p className="text-center">即將返回首頁~</p>
+      {uiState.autoCloseModal.show && (
+        <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="rounded-lg bg-white p-6">
+            <p>{uiState.autoCloseModal.message}</p>
           </div>
         </div>
       )}
