@@ -1,23 +1,22 @@
-// 定義抓資料的function
-import { db, storage } from "../utils/firebaseConfig";
 import {
+  addDoc,
+  and,
+  collection,
   doc,
   getDoc,
   getDocs,
-  query,
-  where,
-  collection,
-  or,
-  addDoc,
-  setDoc,
-  serverTimestamp,
-  updateDoc,
-  runTransaction,
   onSnapshot,
-  and,
+  or,
+  query,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
   writeBatch,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { db, storage } from "../utils/firebaseConfig";
 
 const dbApi = {
   async updateUserDocument(user, isRegistering, username) {
@@ -88,8 +87,6 @@ const dbApi = {
     try {
       const docRef = await addDoc(collection(db, "posts"), {});
       const postId = docRef.id;
-
-      // 將生成的 docID 添加到 postData 中，並使用 serverTimestamp
       const postDataWithId = {
         ...postData,
         post_id: postId,
@@ -189,7 +186,6 @@ const dbApi = {
   },
   async cancelBookingTimes(postId, selectedTimes) {
     try {
-      // 假設預約文檔的 datetime 包含日期與對應時段
       const postRef = doc(db, "posts", postId);
       const postSnapshot = await getDoc(postRef);
       if (postSnapshot.exists()) {
@@ -226,7 +222,6 @@ const dbApi = {
         );
 
         await setDoc(postRef, { datetime: updatedTimes }, { merge: true });
-        // console.log("Booking times successfully updated to true!");
       } else {
         console.error("No such booking found!");
       }
@@ -270,7 +265,6 @@ const dbApi = {
   },
   async getBookingsForUser(userId) {
     try {
-      // 查詢 bookings 集合中符合條件的文件
       const bookingsQuery = query(
         collection(db, "bookings"),
         or(
@@ -281,13 +275,11 @@ const dbApi = {
       const bookingsSnapshot = await getDocs(bookingsQuery);
       const bookings = [];
 
-      // 遍歷 bookings 集合中的文件
       for (const bookingDoc of bookingsSnapshot.docs) {
         const bookingData = bookingDoc.data();
         const postRef = doc(db, "posts", bookingData.post_id);
         const postSnapshot = await getDoc(postRef);
 
-        // 檢查 post 的 author_uid 是否等於 userId
         if (
           postSnapshot.exists() &&
           postSnapshot.data().author_uid === userId
@@ -324,7 +316,6 @@ const dbApi = {
         const postRef = doc(db, "posts", bookingData.post_id);
         const postSnapshot = await getDoc(postRef);
 
-        // 檢查 post 的 author_uid 是否等於 userId
         if (
           postSnapshot.exists() &&
           postSnapshot.data().author_uid !== userId
@@ -382,40 +373,15 @@ const dbApi = {
     try {
       const bookingRef = doc(db, "bookings", bookingId);
       await updateDoc(bookingRef, { status });
-      // console.log("Booking status successfully updated!");
     } catch (error) {
       console.error("Error updating booking status: ", error);
       throw error;
     }
   },
-  // 刪除所有 status 為 cancel 的預約
-  // async deleteCancelledBookings() {
-  //   try {
-  //     const bookingsRef = db.collection("bookings");
-  //     const snapshot = await bookingsRef.where("status", "==", "cancel").get();
-
-  //     if (snapshot.empty) {
-  //       console.log("No matching documents.");
-  //       return;
-  //     }
-  //     const batch = db.batch();
-  //     snapshot.forEach((doc) => {
-  //       batch.delete(doc.ref);
-  //     });
-
-  //     await batch.commit();
-  //     console.log("Cancelled bookings deleted successfully.");
-  //   } catch (error) {
-  //     console.error("Error deleting cancelled bookings: ", error);
-  //   }
-  // },
-
-  // 更新雙方的代幣數量
   async updateUsersCoins(selectedBooking) {
     try {
       const coinsTotal = selectedBooking.coins_total;
 
-      // 更新 demander 的 coins
       const demanderRef = doc(db, "users", selectedBooking.demander_uid);
       await runTransaction(db, async (transaction) => {
         const demanderDoc = await transaction.get(demanderRef);
@@ -426,7 +392,6 @@ const dbApi = {
         const currentDemanderCoins = demanderDoc.data().coins;
         const newDemanderCoins = currentDemanderCoins - coinsTotal;
 
-        // 確認 demander 的 coins 不會是負數
         if (newDemanderCoins < 0) {
           throw new Error("Insufficient coins to complete the transaction!");
         }
@@ -434,7 +399,6 @@ const dbApi = {
         transaction.update(demanderRef, { coins: newDemanderCoins });
       });
 
-      // 更新 provider 的 coins
       const providerRef = doc(db, "users", selectedBooking.provider_uid);
       await runTransaction(db, async (transaction) => {
         const providerDoc = await transaction.get(providerRef);
@@ -445,8 +409,6 @@ const dbApi = {
         const newProviderCoins = providerDoc.data().coins + coinsTotal;
         transaction.update(providerRef, { coins: newProviderCoins });
       });
-
-      // console.log("Booking status and user coins successfully updated!");
     } catch (error) {
       console.error("Error updating booking status and user coins: ", error);
       throw error;
@@ -494,7 +456,6 @@ const dbApi = {
       const { applicant_uid, demander_uid, provider_uid, selected_times } =
         selectedBooking;
 
-      // 找到不是 applicant_uid 的使用者 ID
       const fromUserId =
         applicant_uid === demander_uid ? provider_uid : demander_uid;
 
@@ -503,7 +464,6 @@ const dbApi = {
         ? fromUserDoc.data().name
         : "Unknown";
 
-      // 新增 applicant_uid 的通知
       const applicantNotificationRef = collection(
         db,
         "users",
@@ -520,7 +480,6 @@ const dbApi = {
         read: false,
       });
 
-      // 新增 demander_uid 和 provider_uid 的通知
       const notificationPromises = selected_times.map((time, index) => {
         const notificationData = {
           type: "course_endtime",
@@ -556,15 +515,11 @@ const dbApi = {
       });
 
       await Promise.all(notificationPromises);
-
-      // console.log("Notifications successfully added!");
     } catch (error) {
       console.error("Error adding notifications: ", error);
       throw error;
     }
   },
-
-  // booking_confirm監聽使用者的通知
   listenToNotifications: (userId, callback) => {
     const notificationsRef = collection(db, "users", userId, "notifications");
     const q = query(
@@ -655,7 +610,6 @@ const dbApi = {
       });
 
       await batch.commit();
-      // console.log("Notifications marked as read in the database.");
     } catch (error) {
       console.error("Error marking notifications as read: ", error);
     }
@@ -684,7 +638,6 @@ const dbApi = {
         );
 
         if (courseIndex !== -1) {
-          // 更新現有的 feedback 條目
           if (userId === portfolioData.notification.demander_uid) {
             feedbackArray[courseIndex].demander_feedback =
               portfolioData.feedback;
@@ -699,7 +652,6 @@ const dbApi = {
             feedbackArray[courseIndex].provider_rating = portfolioData.rating;
           }
         } else {
-          // 添加新的 feedback 條目
           const newFeedback = {
             course: portfolioData.notification.sequence_number,
             ...(userId === portfolioData.notification.demander_uid
@@ -720,7 +672,6 @@ const dbApi = {
         }
         await updateDoc(learningPortfolioRef, { feedback: feedbackArray });
       } else {
-        // 如果文件不存在，創建一個新的文件
         await setDoc(learningPortfolioRef, {
           post_title: portfolioData.notification.post_title,
           booking_id: portfolioData.notification.booking_id,
@@ -780,7 +731,6 @@ const dbApi = {
     }
   },
 
-  // chats
   async createOrUpdateChat(userId, otherUserId, messageData) {
     try {
       const userChatRef = doc(db, "users", userId, "chats", otherUserId);
