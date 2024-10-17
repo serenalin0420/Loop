@@ -1,9 +1,8 @@
+import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import Notification from "./components/Notification";
-import { useState, useContext, useEffect, useRef } from "react";
 import { UserContext } from "../src/context/userContext";
+import Header from "./components/Header";
+import Notification from "./components/Notification";
 import dbApi from "./utils/api";
 
 function App() {
@@ -114,7 +113,6 @@ function App() {
         <Notification userId={user.uid} notifications={notifications} />
       )}
       <Outlet />
-      {!isLoginPage && <Footer />}
     </>
   );
 }
