@@ -58,7 +58,6 @@ const dbApi = {
       if (postSnapshot.exists()) {
         return postSnapshot.data();
       } else {
-        console.log("No such post!");
         return null;
       }
     } catch (error) {
@@ -75,7 +74,6 @@ const dbApi = {
       if (categorySnapshot.exists()) {
         return categorySnapshot.data();
       } else {
-        console.log("No such category!");
         return null;
       }
     } catch (error) {
@@ -113,7 +111,6 @@ const dbApi = {
       if (userSnapshot.exists()) {
         return userSnapshot.data();
       } else {
-        console.log("Cannot find this user!");
         return null;
       }
     } catch (error) {
@@ -153,7 +150,6 @@ const dbApi = {
       if (learningPortfolios.length > 0) {
         return learningPortfolios;
       } else {
-        console.log("No matching portfolios found!");
         return null;
       }
     } catch (error) {
@@ -257,8 +253,6 @@ const dbApi = {
         doc(db, "users", postAuthorUid, "notifications", bookingId),
         notifyBookingData,
       );
-
-      console.log("Data successfully written with ID: ", bookingId);
     } catch (error) {
       console.error("Error writing document: ", error);
     }
@@ -327,7 +321,6 @@ const dbApi = {
       if (bookings.length > 0) {
         return bookings;
       } else {
-        console.log("No matching bookings found!");
         return null;
       }
     } catch (error) {
@@ -344,7 +337,6 @@ const dbApi = {
       if (bookingSnapshot.exists()) {
         return bookingSnapshot.data();
       } else {
-        console.log("No such booking!");
         return null;
       }
     } catch (error) {
@@ -361,7 +353,6 @@ const dbApi = {
       if (postSnapshot.exists()) {
         return postSnapshot.data().title || [];
       } else {
-        console.log("No such post!");
         return [];
       }
     } catch (error) {
@@ -444,7 +435,6 @@ const dbApi = {
     try {
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, { saved_posts: savedPosts });
-      console.log("User saved posts successfully updated!");
     } catch (error) {
       console.error("Error updating user saved posts: ", error);
       throw error;
@@ -554,18 +544,15 @@ const dbApi = {
     const now = new Date();
     const newNotifications = [];
 
-    const batch = writeBatch(db); // 使用批處理來更新多個文檔
-
+    const batch = writeBatch(db);
     snapshot.forEach((doc) => {
       const notification = doc.data();
-      const timeString = notification.time; // "9/28 (六) 16:00 - 16:50"
-      const endTimeString = timeString.split(" - ")[1]; // "16:50"
+      const timeString = notification.time;
+      const endTimeString = timeString.split(" - ")[1];
 
-      // 獲取當前日期
       const [datePart] = timeString.split(" ");
       const [month, day] = datePart.split("/").map(Number);
 
-      // 構建結束時間的 Date 對象
       const [endHour, endMinute] = endTimeString.split(":").map(Number);
       const endTime = new Date(
         now.getFullYear(),
@@ -575,7 +562,7 @@ const dbApi = {
         endMinute,
       );
 
-      const timeDiff = (now - endTime) / 60000; // 差異時間以分鐘計算
+      const timeDiff = (now - endTime) / 60000;
 
       if (timeDiff >= 0 && timeDiff <= 2) {
         newNotifications.push({
@@ -583,7 +570,6 @@ const dbApi = {
           ...notification,
         });
 
-        // 將通知的 read 欄位設置為 true
         const notificationRef = doc.ref;
         batch.update(notificationRef, { read: true });
       }

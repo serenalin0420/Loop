@@ -78,7 +78,6 @@ function App() {
     setShowNotifications((prev) => !prev);
 
     if (!showNotifications) {
-      // 當通知面板打開時，將所有通知標記為已讀
       setNotifications((prevNotifications) => {
         const updatedNotifications = prevNotifications.map((notification) => ({
           ...notification,

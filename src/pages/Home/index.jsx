@@ -42,7 +42,6 @@ function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 12;
 
-  // 可愛的虎爪
   useEffect(() => {
     const timer = setTimeout(() => {
       uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: false });
