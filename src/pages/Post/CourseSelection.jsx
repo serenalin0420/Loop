@@ -50,65 +50,6 @@ const CourseSelection = ({ post, author, formatDate }) => {
       })
     : [];
 
-  const renderCalendar = () => {
-    const startOfMonth = new Date(
-      modalState.currentMonth.getFullYear(),
-      modalState.currentMonth.getMonth(),
-      1,
-    );
-    const endOfMonth = new Date(
-      modalState.currentMonth.getFullYear(),
-      modalState.currentMonth.getMonth() + 1,
-      0,
-    );
-    const startDay = startOfMonth.getDay();
-    const daysInMonth = endOfMonth.getDate();
-
-    const availableDates = Object.keys(post.datetime).map(
-      (dateStr) => new Date(dateStr),
-    );
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const calendarDays = [];
-    for (let i = 0; i < startDay; i++) {
-      calendarDays.push(<div key={`empty-${i}`} className="p-2"></div>);
-    }
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(
-        modalState.currentMonth.getFullYear(),
-        modalState.currentMonth.getMonth(),
-        day,
-      );
-      const isAvailable = availableDates.some(
-        (availableDate) => availableDate.toDateString() === date.toDateString(),
-      );
-      const isDisabled = date < today || !isAvailable;
-      calendarDays.push(
-        <div
-          key={day}
-          className={`cursor-pointer px-2 py-2 text-center ${date.toDateString() === modalState.selectedDate.toDateString() ? "rounded-full border border-yellow-950" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
-          onClick={() => {
-            if (!isDisabled) {
-              modalDispatch({
-                type: postActionTypes.SET_SELECTED_DATE,
-                payload: date,
-              });
-              modalDispatch({
-                type: postActionTypes.SET_START_OF_WEEK,
-                payload: new Date(date.setDate(date.getDate())),
-              });
-            }
-          }}
-        >
-          {day}
-        </div>,
-      );
-    }
-
-    return calendarDays;
-  };
-
   const handleErrorMessage = (message) => {
     modalDispatch({
       type: postActionTypes.SET_ERROR_MESSAGE,
@@ -149,7 +90,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
         });
         modalDispatch({ type: postActionTypes.SET_ERROR_MESSAGE, payload: "" });
       }, 3000);
-      newSelectedTimes = modalState.chosenTimes; // revert to previous state
+      newSelectedTimes = modalState.chosenTimes;
     } else {
       modalDispatch({ type: postActionTypes.SET_ERROR_MESSAGE, payload: "" });
       modalDispatch({
@@ -380,12 +321,6 @@ const CourseSelection = ({ post, author, formatDate }) => {
     });
   };
 
-  const modalDaysOfWeek = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(modalState.startOfWeek);
-    date.setDate(date.getDate() + i);
-    return date;
-  });
-
   return (
     <div className="mt-2 flex flex-col rounded-b-lg shadow-md xs:mt-8">
       <div className="flex h-11 items-center rounded-t-lg bg-indian-khaki-400 px-6 text-lg text-white">
@@ -457,7 +392,7 @@ const CourseSelection = ({ post, author, formatDate }) => {
                 </div>
               )}
               <div className="mt-auto flex items-center text-nowrap lg:text-lg">
-                獲得：
+                {findTeachersView ? "支付：" : "獲得："}
                 <Coin alt="coin" className="mr-2 size-8 object-cover" />
                 <p className="lg:text-lg">x {modalState.selectedCoinCost}</p>
               </div>
@@ -491,8 +426,6 @@ const CourseSelection = ({ post, author, formatDate }) => {
                     handleMonthChange={handleModalMonthChange}
                     handleWeekChange={handleModalWeekChange}
                     formatDate={formatDate}
-                    renderCalendar={renderCalendar}
-                    daysOfWeek={modalDaysOfWeek}
                     renderTimeSlots={renderTimeSlots}
                     message="請選擇您方便的時間"
                   />

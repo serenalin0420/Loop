@@ -1,16 +1,43 @@
-import { useEffect, useReducer } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import dbApi from "../../utils/api";
-import Introduction from "./Introduction";
-import TimeTable from "../../components/TimeTable";
-import { initialState, actionTypes, reducer } from "../../utils/postReducer";
-import CourseSelection from "./CourseSelection";
-import { Coin, Infinte } from "../../assets/images";
 import { CaretLeft, CheckFat } from "@phosphor-icons/react";
+import { useEffect, useReducer } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Coin, Infinte } from "../../assets/images";
+import TimeTable from "../../components/TimeTable";
+import dbApi from "../../utils/api";
+import {
+  postActionTypes,
+  postInitialState,
+  postReducer,
+} from "../../utils/postReducer";
+import CourseSelection from "./CourseSelection";
+import Introduction from "./Introduction";
+
+const formatDate = (date, formatStr) => {
+  if (formatStr === "yyyy-MM-dd") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } else if (formatStr === "MM-dd") {
+    return date.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+    });
+  } else if (formatStr === "EEE") {
+    return date.toLocaleDateString("zh-CN", { weekday: "narrow" });
+  } else if (formatStr === "dd") {
+    return date.getDate();
+  } else if (formatStr === "MMM yyyy") {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  }
+};
 
 function Post() {
   const { postId } = useParams();
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [postState, postDispatch] = useReducer(postReducer, postInitialState);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,42 +52,25 @@ function Post() {
     const fetchPost = async () => {
       try {
         const postData = await dbApi.getSinglePost(postId);
-        dispatch({ type: actionTypes.SET_POST, payload: postData });
+        postDispatch({ type: postActionTypes.SET_POST, payload: postData });
 
         if (postData.category_id) {
           const categoryName = await dbApi.getPostCategory(
             postData.category_id,
           );
-          dispatch({
-            type: actionTypes.SET_POST_CATEGORY,
+          postDispatch({
+            type: postActionTypes.SET_POST_CATEGORY,
             payload: categoryName,
           });
         }
 
         if (postData.author_uid) {
           const authorData = await dbApi.getProfile(postData.author_uid);
-          dispatch({ type: actionTypes.SET_AUTHOR, payload: authorData });
+          postDispatch({
+            type: postActionTypes.SET_AUTHOR,
+            payload: authorData,
+          });
         }
-        // 設置初始選中的日期為最早可選日期
-        const availableDates = Object.keys(postData.datetime).map(
-          (dateStr) => new Date(dateStr),
-        );
-        const earliestAvailableDate = availableDates.reduce(
-          (earliest, current) => {
-            return current < earliest ? current : earliest;
-          },
-          new Date(8640000000000000),
-        ); // 使用一個非常大的日期作為初始值
-
-        earliestAvailableDate.setHours(0, 0, 0, 0);
-        dispatch({
-          type: actionTypes.SET_SELECTED_DATE,
-          payload: earliestAvailableDate,
-        });
-        dispatch({
-          type: actionTypes.SET_START_OF_WEEK,
-          payload: new Date(earliestAvailableDate),
-        });
       } catch (error) {
         console.error("Error fetching post:", error);
       }
@@ -71,117 +81,30 @@ function Post() {
 
   const handleMonthChange = (e, direction) => {
     e.preventDefault();
-    dispatch({
-      type: actionTypes.SET_CURRENT_MONTH,
+    postDispatch({
+      type: postActionTypes.SET_CURRENT_MONTH,
       payload: new Date(
-        state.currentMonth.setMonth(state.currentMonth.getMonth() + direction),
+        postState.currentMonth.setMonth(
+          postState.currentMonth.getMonth() + direction,
+        ),
       ),
     });
   };
   const handleWeekChange = (e, direction) => {
     e.preventDefault();
-    dispatch({
-      type: actionTypes.SET_START_OF_WEEK,
+    postDispatch({
+      type: postActionTypes.SET_START_OF_WEEK,
       payload: new Date(
-        state.startOfWeek.setDate(state.startOfWeek.getDate() + direction * 7),
+        postState.startOfWeek.setDate(
+          postState.startOfWeek.getDate() + direction * 7,
+        ),
       ),
     });
   };
 
-  const formatDate = (date, formatStr) => {
-    if (formatStr === "yyyy-MM-dd") {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    } else if (formatStr === "MM-dd") {
-      return date.toLocaleDateString("en-US", {
-        month: "2-digit",
-        day: "2-digit",
-      });
-    } else if (formatStr === "EEE") {
-      // narrow: "M""五", short: "Mon""週五", long: "Monday"
-      return date.toLocaleDateString("zh-CN", { weekday: "narrow" });
-    } else if (formatStr === "dd") {
-      return date.getDate();
-    } else if (formatStr === "MMM yyyy") {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      });
-    }
-  };
-
-  const renderCalendar = () => {
-    const startOfMonth = new Date(
-      state.currentMonth.getFullYear(),
-      state.currentMonth.getMonth(),
-      1,
-    );
-    const endOfMonth = new Date(
-      state.currentMonth.getFullYear(),
-      state.currentMonth.getMonth() + 1,
-      0,
-    );
-    const startDay = startOfMonth.getDay();
-    const daysInMonth = endOfMonth.getDate();
-
-    const availableDates = Object.keys(state.post.datetime).map(
-      (dateStr) => new Date(dateStr),
-    );
-    const earliestAvailableDate = availableDates.reduce((earliest, current) => {
-      return current < earliest ? current : earliest;
-    }, new Date(8640000000000000)); // 使用一個非常大的日期作為初始值
-
-    earliestAvailableDate.setHours(0, 0, 0, 0);
-    const today = earliestAvailableDate;
-
-    const calendarDays = [];
-    for (let i = 0; i < startDay; i++) {
-      calendarDays.push(<div key={`empty-${i}`} className="p-2"></div>);
-    }
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(
-        state.currentMonth.getFullYear(),
-        state.currentMonth.getMonth(),
-        day,
-      );
-      const isAvailable = availableDates.some(
-        (availableDate) => availableDate.toDateString() === date.toDateString(),
-      );
-      const isDisabled = date < today || !isAvailable;
-
-      calendarDays.push(
-        <div
-          key={day}
-          className={`cursor-pointer px-2 py-2 text-center ${date.toDateString() === state.selectedDate.toDateString() ? "rounded-full border border-yellow-950" : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
-          onClick={() => {
-            if (!isDisabled) {
-              dispatch({ type: actionTypes.SET_SELECTED_DATE, payload: date });
-              dispatch({
-                type: actionTypes.SET_START_OF_WEEK,
-                payload: new Date(date.setDate(date.getDate())),
-              });
-            }
-          }}
-        >
-          {day}
-        </div>,
-      );
-    }
-
-    return calendarDays;
-  };
-
-  const daysOfWeek = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(state.startOfWeek);
-    date.setDate(date.getDate() + i);
-    return date;
-  });
-
   const renderTimeSlots = (day) => {
     const dateKey = formatDate(day, "yyyy-MM-dd");
-    const timeSlots = state.post.datetime[dateKey] || {};
+    const timeSlots = postState.post.datetime[dateKey] || {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -200,7 +123,7 @@ function Post() {
                   isPastDate
                     ? "cursor-not-allowed text-gray-400"
                     : isAvailable
-                      ? "cursor-pointer font-semibold text-yellow-800"
+                      ? "font-semibold text-yellow-800"
                       : "cursor-not-allowed text-zinc-400"
                 }`}
               >
@@ -209,7 +132,7 @@ function Post() {
             );
           })
         ) : (
-          <div className="mt-1 flex w-full cursor-pointer flex-col px-3 py-1 text-center text-zinc-400">
+          <div className="mt-1 flex w-full flex-col px-3 py-1 text-center text-zinc-400">
             無
           </div>
         )}
@@ -217,7 +140,7 @@ function Post() {
     );
   };
 
-  if (!state.post || !state.author)
+  if (!postState.post || !postState.author)
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
@@ -239,13 +162,13 @@ function Post() {
             返回
           </div>
           <h2 className="text-lg font-semibold sm:text-xl">
-            {state.postCategory?.name}
+            {postState.postCategory?.name}
           </h2>
         </div>
-        <Introduction post={state.post} author={state.author} />
+        <Introduction post={postState.post} author={postState.author} />
         <CourseSelection
-          post={state.post}
-          author={state.author}
+          post={postState.post}
+          author={postState.author}
           formatDate={formatDate}
           renderTimeSlots={(day) => renderTimeSlots(day, true)}
         />
@@ -266,14 +189,13 @@ function Post() {
           </p>
           <div className="mx-4 my-4 flex flex-col justify-center gap-4 md:flex-row">
             <TimeTable
-              post={state.post}
-              state={state}
+              post={postState.post}
+              state={postState}
+              dispatch={postDispatch}
               handleMonthChange={handleMonthChange}
               handleWeekChange={handleWeekChange}
               formatDate={formatDate}
-              renderCalendar={renderCalendar}
-              daysOfWeek={daysOfWeek}
-              renderTimeSlots={(day) => renderTimeSlots(day, false)} // 不可選擇
+              renderTimeSlots={(day) => renderTimeSlots(day, false)}
               message="僅供瀏覽可預約的時段，最多可見未來三個月時間"
             />
           </div>
