@@ -1,32 +1,38 @@
-import { Link, useNavigate } from "react-router-dom";
-import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
-import { useEffect, useState, useContext } from "react";
-import logo from "./loop-logo.png";
 import {
-  BookBookmark,
   Bell,
+  BookBookmark,
   ChatCircleDots,
   House,
 } from "@phosphor-icons/react";
-import { UserContext, ProfilePictureContext } from "../../context/userContext";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import PropTypes from "prop-types";
-import { useLocation } from "react-router-dom";
+import { useContext, useEffect, useReducer, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ProfilePictureContext, UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
+import logo from "./loop-logo.png";
 
 function Header({ onNotificationClick, hasUnreadNotifications }) {
   const navigate = useNavigate();
   const auth = getAuth();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const user = useContext(UserContext);
   const { profilePicture } = useContext(ProfilePictureContext);
-  const [calendarWeight, setCalendarWeight] = useState("regular");
-  const [bellWeight, setBellWeight] = useState("regular");
-  const [chatWeight, setChatWeight] = useState("regular");
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [topChatId, setTopChatId] = useState();
   const location = useLocation();
 
   useEffect(() => {
-    setBellWeight("regular");
+    uiDispatch({
+      type: uiActionTypes.SET_ICON_WEIGHT,
+      icon: "bellWeight",
+      payload: "regular",
+    });
   }, [location]);
 
   useEffect(() => {
@@ -84,7 +90,13 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
   };
 
   const handleNotificationClick = () => {
-    setBellWeight((prevWeight) => (prevWeight === "fill" ? "regular" : "fill"));
+    const newWeight = uiState.bellWeight === "fill" ? "regular" : "fill";
+
+    uiDispatch({
+      type: uiActionTypes.SET_ICON_WEIGHT,
+      icon: "bellWeight",
+      payload: newWeight,
+    });
     onNotificationClick();
   };
 
@@ -101,12 +113,25 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
                 <Link
                   to={`/learning-portfolio/${user.uid}`}
                   className="mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
+                  title="學習歷程"
                 >
                   <BookBookmark
                     className="size-7"
-                    weight={calendarWeight}
-                    onMouseEnter={() => setCalendarWeight("fill")}
-                    onMouseLeave={() => setCalendarWeight("regular")}
+                    weight={uiState.bookmarkWeight}
+                    onMouseEnter={() =>
+                      uiDispatch({
+                        type: uiActionTypes.SET_ICON_WEIGHT,
+                        icon: "bookmarkWeight",
+                        payload: "fill",
+                      })
+                    }
+                    onMouseLeave={() =>
+                      uiDispatch({
+                        type: uiActionTypes.SET_ICON_WEIGHT,
+                        icon: "bookmarkWeight",
+                        payload: "regular",
+                      })
+                    }
                   />
                   學習歷程
                 </Link>
@@ -114,24 +139,50 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
               <Link
                 to={topChatId ? `/chat/${topChatId}` : "/chat"}
                 className="mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
+                title="訊息"
               >
                 <ChatCircleDots
                   className="size-7"
-                  weight={chatWeight}
-                  onMouseEnter={() => setChatWeight("fill")}
-                  onMouseLeave={() => setChatWeight("regular")}
+                  weight={uiState.chatWeight}
+                  onMouseEnter={() =>
+                    uiDispatch({
+                      type: uiActionTypes.SET_ICON_WEIGHT,
+                      icon: "chatWeight",
+                      payload: "fill",
+                    })
+                  }
+                  onMouseLeave={() =>
+                    uiDispatch({
+                      type: uiActionTypes.SET_ICON_WEIGHT,
+                      icon: "chatWeight",
+                      payload: "regular",
+                    })
+                  }
                 />
                 訊息
               </Link>
               <button
                 className="relative mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
                 onClick={handleNotificationClick}
+                title="通知"
               >
                 <Bell
                   className="size-7"
-                  weight={bellWeight}
-                  onMouseEnter={() => setBellWeight("fill")}
-                  onMouseLeave={() => setBellWeight("regular")}
+                  weight={uiState.bellWeight}
+                  onMouseEnter={() =>
+                    uiDispatch({
+                      type: uiActionTypes.SET_ICON_WEIGHT,
+                      icon: "bellWeight",
+                      payload: "fill",
+                    })
+                  }
+                  onMouseLeave={() =>
+                    uiDispatch({
+                      type: uiActionTypes.SET_ICON_WEIGHT,
+                      icon: "bellWeight",
+                      payload: "regular",
+                    })
+                  }
                 />
                 {hasUnreadNotifications && (
                   <span className="absolute right-2 top-[6px] h-3 w-3 rounded-full bg-red-400"></span>
@@ -171,7 +222,24 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
             to="/"
             className="mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
           >
-            <House className="size-7" />
+            <House
+              className="size-7"
+              weight={uiState.houseWeight}
+              onMouseEnter={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "houseWeight",
+                  payload: "fill",
+                })
+              }
+              onMouseLeave={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "houseWeight",
+                  payload: "regular",
+                })
+              }
+            />
             首頁
           </Link>
           {user && (
@@ -181,9 +249,21 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
             >
               <BookBookmark
                 className="size-7"
-                weight={calendarWeight}
-                onMouseEnter={() => setCalendarWeight("fill")}
-                onMouseLeave={() => setCalendarWeight("regular")}
+                weight={uiState.bookmarkWeight}
+                onMouseEnter={() =>
+                  uiDispatch({
+                    type: uiActionTypes.SET_ICON_WEIGHT,
+                    icon: "bookmarkWeight",
+                    payload: "fill",
+                  })
+                }
+                onMouseLeave={() =>
+                  uiDispatch({
+                    type: uiActionTypes.SET_ICON_WEIGHT,
+                    icon: "bookmarkWeight",
+                    payload: "regular",
+                  })
+                }
               />
               學習歷程表
             </Link>
@@ -192,14 +272,48 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
             to={topChatId ? `/chat/${topChatId}` : "/chat"}
             className="mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
           >
-            <ChatCircleDots className="size-7" />
+            <ChatCircleDots
+              className="size-7"
+              weight={uiState.chatWeight}
+              onMouseEnter={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "chatWeight",
+                  payload: "fill",
+                })
+              }
+              onMouseLeave={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "chatWeight",
+                  payload: "regular",
+                })
+              }
+            />
             訊息
           </Link>
           <button
             className="relative mr-1 flex flex-col items-center gap-[2px] p-2 text-[10px] text-indian-khaki-800"
             onClick={handleNotificationClick}
           >
-            <Bell className="size-7" weight={bellWeight} />
+            <Bell
+              className="size-7"
+              weight={uiState.bellWeight}
+              onMouseEnter={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "bellWeight",
+                  payload: "fill",
+                })
+              }
+              onMouseLeave={() =>
+                uiDispatch({
+                  type: uiActionTypes.SET_ICON_WEIGHT,
+                  icon: "bellWeight",
+                  payload: "regular",
+                })
+              }
+            />
             {hasUnreadNotifications && (
               <span className="absolute right-2 top-[6px] h-3 w-3 rounded-full bg-red-400"></span>
             )}

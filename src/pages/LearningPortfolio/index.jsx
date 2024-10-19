@@ -1,15 +1,20 @@
-import dbApi from "../../utils/api";
-import { UserContext } from "../../context/userContext";
-import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
 import StarRating from "@/components/StarRating";
+import { useContext, useEffect, useReducer, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Coin } from "../../assets/images";
+import { UserContext } from "../../context/userContext";
+import dbApi from "../../utils/api";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
 
 function LearningPortfolio() {
   const user = useContext(UserContext);
   const { userId: otherUserId } = useParams();
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
   const [portfolio, setPortfolio] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [noPortfolio, setNoPortfolio] = useState(false);
 
   useEffect(() => {
@@ -23,9 +28,8 @@ function LearningPortfolio() {
         try {
           const userLearningPortfolio = await dbApi.getLearningPortfolio(uid);
           if (!userLearningPortfolio) {
-            console.error("userLearningPortfolio is null or undefined");
             setNoPortfolio(true);
-            setIsLoading(false);
+            uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: false });
             return;
           }
           const updatedPortfolio = await Promise.all(
@@ -69,7 +73,7 @@ function LearningPortfolio() {
           );
 
           setPortfolio(updatedPortfolio);
-          setIsLoading(false);
+          uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: false });
         } catch (error) {
           console.error("Error fetching learning portfolio:", error);
         }
@@ -78,7 +82,7 @@ function LearningPortfolio() {
     fetchLearningPortfolio();
   }, [user, otherUserId]);
 
-  if (isLoading) {
+  if (uiState.isLoading) {
     return (
       <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
         <div className="flex flex-col items-center justify-center text-indian-khaki-800">
@@ -114,8 +118,8 @@ function LearningPortfolio() {
                 <tr>
                   <td colSpan="6" className="px-12 py-4">
                     {user === undefined || user?.uid === otherUserId || !user
-                      ? "對方還沒有學習歷程的紀錄，趕快來和他交換技能吧 ! "
-                      : "還沒開始你的學習嗎?"}
+                      ? "還沒開始你的學習嗎?"
+                      : "對方還沒有學習歷程的紀錄，趕快來和他交換技能吧 ! "}
                   </td>
                 </tr>
               ) : (

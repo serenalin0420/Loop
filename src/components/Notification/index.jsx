@@ -1,14 +1,19 @@
-import { useEffect, useState } from "react";
-import dbApi from "../../utils/api";
-import PropTypes from "prop-types";
-import Modal from "./Modal";
 import { CalendarCheck, Pencil } from "@phosphor-icons/react";
+import PropTypes from "prop-types";
+import { useEffect, useReducer, useState } from "react";
+import dbApi from "../../utils/api";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
+import Modal from "./Modal";
 
 const Notification = ({ userId, notifications }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState();
   const [filledNotifications, setFilledNotifications] = useState(new Set());
-  const [loading, setLoading] = useState(true);
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
 
   const handleOpenModal = (notification) => {
     setSelectedNotification(notification);
@@ -40,13 +45,12 @@ const Notification = ({ userId, notifications }) => {
         }
       }
       setFilledNotifications(filled);
-      setLoading(false);
+      uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: false });
     };
 
     checkFilledNotifications();
   }, [notifications, userId]);
 
-  // 將通知分類並排序
   const sortedNotifications = notifications.slice().reduce(
     (acc, notification) => {
       if (notification.type === "booking_confirm") {
@@ -67,7 +71,6 @@ const Notification = ({ userId, notifications }) => {
     ...sortedNotifications.bookingConfirm,
   ];
 
-  // 根據時間和條件進行排序
   allNotifications.sort((a, b) => {
     const getTime = (notification) => {
       if (notification.type === "course_endtime") {
@@ -75,13 +78,15 @@ const Notification = ({ userId, notifications }) => {
         const [startTime] = timeRange.split(" - ");
         const dateTimeString = `${date} ${startTime}`;
         return new Date(dateTimeString).getTime();
-      } else if (notification.type === "booking_confirm") {
+      } else if (
+        notification.type === "booking_confirm" ||
+        notification.type === "booking_apply"
+      ) {
         return notification.created_time.seconds * 1000;
       }
       return 0;
     };
 
-    // 若 booking_id 相同，type=booking_confirm 的通知排在 type=course_endtime 的下面
     if (a.booking_id === b.booking_id) {
       if (a.type === "booking_confirm" && b.type === "course_endtime") {
         return 1;
@@ -89,15 +94,11 @@ const Notification = ({ userId, notifications }) => {
         return -1;
       }
     }
-
-    // 若 booking_id 不同，type=booking_confirm 用 created_time 轉換、type=course_endtime 的用 time 轉換，拿兩者比較
     const timeA = getTime(a);
     const timeB = getTime(b);
     if (timeA !== timeB) {
       return timeB - timeA;
     }
-
-    // 都是 type=course_endtime 的通知，根據 time 排序
     if (a.type === "course_endtime" && b.type === "course_endtime") {
       return timeB - timeA;
     }
@@ -105,7 +106,7 @@ const Notification = ({ userId, notifications }) => {
 
   const finalNotifications = allNotifications.slice(0, 5);
 
-  if (loading) return <div>Loading...</div>;
+  if (uiState.isLoading) return <div>Loading...</div>;
 
   return (
     <div className="fixed bottom-16 right-2 z-30 mx-4 w-4/6 rounded-lg bg-indian-khaki-50 px-3 py-1 shadow-xl sm:bottom-auto sm:right-10 sm:top-0 sm:mt-16 sm:w-auto sm:min-w-60">
