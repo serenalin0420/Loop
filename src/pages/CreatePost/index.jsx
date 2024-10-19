@@ -1,22 +1,31 @@
-import { useForm, Controller } from "react-hook-form";
+import { UserContext } from "@/context/userContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useContext, useEffect, useReducer } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import dbApi from "../../utils/api";
-import { useReducer, useEffect, useContext, useState } from "react";
-import { UserContext } from "@/context/userContext";
-import { initialState, actionTypes, reducer } from "../../context/postReducer";
-import {
-  locations,
-  coursesNum,
-  coinsOptions,
-  timePreferences,
-  sortCategories,
-} from "./options";
-import TimeTable from "../../components/TimeTable";
-import { useLocation, useNavigate } from "react-router-dom";
-import customStyles from "./selectorStyles";
 import { Coin } from "../../assets/images";
+import TimeTable from "../../components/TimeTable";
+import dbApi from "../../utils/api";
+import {
+  postActionTypes,
+  postInitialState,
+  postReducer,
+} from "../../utils/postReducer";
+import {
+  uiActionTypes,
+  uiInitialState,
+  uiReducer,
+} from "../../utils/uiReducer";
+import {
+  coinsOptions,
+  coursesNum,
+  locations,
+  sortCategories,
+  timePreferences,
+} from "./options";
+import customStyles from "./selectorStyles";
 
 const sortCategoriesFn = (categories) => {
   const categoryOrder = sortCategories.reduce((acc, category, index) => {
@@ -29,28 +38,89 @@ const sortCategoriesFn = (categories) => {
   });
 };
 
+const formatDate = (date, formatStr) => {
+  if (formatStr === "yyyy-MM-dd") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } else if (formatStr === "MM-dd") {
+    return date.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+    });
+  } else if (formatStr === "EEE") {
+    return date.toLocaleDateString("zh-CN", { weekday: "narrow" });
+  } else if (formatStr === "dd") {
+    return date.getDate();
+  } else if (formatStr === "MMM yyyy") {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  }
+};
+
+const getIntroductionPlaceholder = (view) => {
+  return view === "student"
+    ? "為什麼想學這個技能? \n多描述你的動機和規劃，讓別人主動來找你交流吧!"
+    : "介紹一下你擁有的能力吧! \n多描述你的經驗和技能，讓別人主動來找你交流吧!";
+};
+
+const getMonthRange = (currentMonth) => {
+  const startOfMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
+    1,
+  );
+  const endOfMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    0,
+  );
+  return { startOfMonth, endOfMonth };
+};
+
+const handleCategoryChange = (
+  categories,
+  selectedOption,
+  setValue,
+  postDispatch,
+) => {
+  const selectedCategory = categories.find(
+    (cat) => cat.id === selectedOption.value,
+  );
+  postDispatch({
+    type: postActionTypes.SET_SELECTED_CATEGORY,
+    payload: selectedOption,
+  });
+  postDispatch({
+    type: postActionTypes.SET_SUBCATEGORIES,
+    payload: selectedCategory ? selectedCategory.subcategories : [],
+  });
+  postDispatch({
+    type: postActionTypes.SET_SKILLS,
+    payload: selectedCategory ? selectedCategory.skills : [],
+  });
+  setValue("subcategories", null);
+  setValue("skills", []);
+};
+
 function CreatePost() {
   const user = useContext(UserContext);
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const [isModalVisible, setIsModalVisible] = useState({
-    show: false,
-    message: "",
-  });
-
+  const [postState, postDispatch] = useReducer(postReducer, postInitialState);
+  const [uiState, uiDispatch] = useReducer(uiReducer, uiInitialState);
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const view = queryParams.get("view");
-  const introductionPlaceholder =
-    view === "student"
-      ? "為什麼想學這個技能? \n多描述你的動機和規劃，讓別人主動來找你交流吧!"
-      : "介紹一下你擁有的能力吧! \n多描述你的經驗和技能，讓別人主動來找你交流吧!";
+  const introductionPlaceholder = getIntroductionPlaceholder(view);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user && user.uid) {
         const profile = await dbApi.getProfile(user.uid);
-        dispatch({ type: "SET_USER_PROFILE", payload: profile });
+        postDispatch({ type: "SET_USER_PROFILE", payload: profile });
       }
     };
 
@@ -68,11 +138,11 @@ function CreatePost() {
   } = useForm();
 
   useEffect(() => {
-    dispatch({
-      type: actionTypes.SET_START_OF_WEEK,
-      payload: state.selectedDate,
+    postDispatch({
+      type: postActionTypes.SET_START_OF_WEEK,
+      payload: postState.selectedDate,
     });
-  }, [state.selectedDate]);
+  }, [postState.selectedDate]);
 
   const {
     data: categories,
@@ -83,88 +153,37 @@ function CreatePost() {
     queryFn: dbApi.getCategories,
   });
 
-  const handleCategoryChange = (selectedOption) => {
-    const selectedCategory = categories.find(
-      (cat) => cat.id === selectedOption.value,
-    );
-    dispatch({
-      type: actionTypes.SET_SELECTED_CATEGORY,
-      payload: selectedOption,
-    });
-    dispatch({
-      type: actionTypes.SET_SUBCATEGORIES,
-      payload: selectedCategory ? selectedCategory.subcategories : [],
-    });
-    dispatch({
-      type: actionTypes.SET_SKILLS,
-      payload: selectedCategory ? selectedCategory.skills : [],
-    });
-    setValue("subcategories", null);
-    setValue("skills", []);
-  };
-
-  // 切換到下一月或前一月
   const handleMonthChange = (e, direction) => {
     e.preventDefault();
-    dispatch({
-      type: actionTypes.SET_CURRENT_MONTH,
+    postDispatch({
+      type: postActionTypes.SET_CURRENT_MONTH,
       payload: new Date(
-        state.currentMonth.setMonth(state.currentMonth.getMonth() + direction),
+        postState.currentMonth.setMonth(
+          postState.currentMonth.getMonth() + direction,
+        ),
       ),
     });
   };
 
-  // 切換到下一周或前一周
   const handleWeekChange = (e, direction) => {
     e.preventDefault();
-    dispatch({
-      type: actionTypes.SET_START_OF_WEEK,
+    postDispatch({
+      type: postActionTypes.SET_START_OF_WEEK,
       payload: new Date(
-        state.startOfWeek.setDate(state.startOfWeek.getDate() + direction * 7),
+        postState.startOfWeek.setDate(
+          postState.startOfWeek.getDate() + direction * 7,
+        ),
       ),
     });
   };
   const daysOfWeek = Array.from({ length: 7 }, (_, index) => {
-    const newDate = new Date(state.startOfWeek);
+    const newDate = new Date(postState.startOfWeek);
     newDate.setDate(newDate.getDate() + index);
     return newDate;
   });
 
-  const formatDate = (date, formatStr) => {
-    if (formatStr === "yyyy-MM-dd") {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    } else if (formatStr === "MM-dd") {
-      return date.toLocaleDateString("en-US", {
-        month: "2-digit",
-        day: "2-digit",
-      });
-    } else if (formatStr === "EEE") {
-      // narrow: "M""五", short: "Mon""週五", long: "Monday"
-      return date.toLocaleDateString("zh-CN", { weekday: "narrow" });
-    } else if (formatStr === "dd") {
-      return date.getDate();
-    } else if (formatStr === "MMM yyyy") {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      });
-    }
-  };
-
   const renderCalendar = () => {
-    const startOfMonth = new Date(
-      state.currentMonth.getFullYear(),
-      state.currentMonth.getMonth(),
-      1,
-    );
-    const endOfMonth = new Date(
-      state.currentMonth.getFullYear(),
-      state.currentMonth.getMonth() + 1,
-      0,
-    );
+    const { startOfMonth, endOfMonth } = getMonthRange(postState.currentMonth);
     const startDay = startOfMonth.getDay();
     const daysInMonth = endOfMonth.getDate();
     const maxDate = new Date();
@@ -178,18 +197,21 @@ function CreatePost() {
     }
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(
-        state.currentMonth.getFullYear(),
-        state.currentMonth.getMonth(),
+        postState.currentMonth.getFullYear(),
+        postState.currentMonth.getMonth(),
         day,
       );
       const isDisabled = date > maxDate || date < today;
       calendarDays.push(
         <div
           key={day}
-          className={`mx-2 cursor-pointer p-1 text-center sm:p-2 md:mx-1 md:px-0 lg:mx-0 lg:px-3 lg:py-2 ${date.toDateString() === state.selectedDate.toDateString() ? `rounded-full border-2 ${view === "student" ? "border-neon-carrot-500" : "border-cerulean-500"}` : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
+          className={`mx-2 cursor-pointer p-1 text-center sm:p-2 md:mx-1 md:px-0 lg:mx-0 lg:px-3 lg:py-2 ${date.toDateString() === postState.selectedDate.toDateString() ? `rounded-full border-2 ${view === "student" ? "border-neon-carrot-500" : "border-cerulean-500"}` : ""} ${isDisabled ? "cursor-not-allowed opacity-30" : ""}`}
           onClick={() =>
             !isDisabled &&
-            dispatch({ type: actionTypes.SET_SELECTED_DATE, payload: date })
+            postDispatch({
+              type: postActionTypes.SET_SELECTED_DATE,
+              payload: date,
+            })
           }
         >
           {day}
@@ -202,26 +224,23 @@ function CreatePost() {
 
   const handleTimeSlotClick = (date, time) => {
     const dateString = formatDate(date, "yyyy-MM-dd");
-    const selectedTimesForDate = state.selectedTimes[dateString] || {};
+    const selectedTimesForDate = postState.selectedTimes[dateString] || {};
 
-    // 檢查該時間段是否已經被選取
     const isSelected = selectedTimesForDate[time];
 
-    // 如果已經被選取，則移除該時間段；否則，添加該時間段
     const updatedTimesForDate = {
       ...selectedTimesForDate,
       [time]: isSelected ? undefined : true,
     };
 
-    // 移除值為 undefined 的鍵
     if (isSelected) {
       delete updatedTimesForDate[time];
     }
 
-    dispatch({
-      type: actionTypes.SET_SELECTED_TIMES,
+    postDispatch({
+      type: postActionTypes.SET_SELECTED_TIMES,
       payload: {
-        ...state.selectedTimes,
+        ...postState.selectedTimes,
         [dateString]: updatedTimesForDate,
       },
     });
@@ -240,7 +259,7 @@ function CreatePost() {
       const isDisabled =
         isBeforeToday || (isToday && time <= currentHour) || day > maxDate;
       const isSelected =
-        state.selectedTimes[formatDate(day, "yyyy-MM-dd")]?.[time]; // 檢查是否被選取
+        postState.selectedTimes[formatDate(day, "yyyy-MM-dd")]?.[time];
       return (
         <div
           key={time}
@@ -256,7 +275,7 @@ function CreatePost() {
   const handleTimeRangeSelect = (
     startTime,
     endTime,
-    updatedSelectedTimes = { ...state.selectedTimes },
+    updatedSelectedTimes = { ...postState.selectedTimes },
   ) => {
     const now = new Date();
     const currentHour = now.getHours();
@@ -282,8 +301,8 @@ function CreatePost() {
       updatedSelectedTimes[dateString] = selectedTimesForDate;
     });
 
-    dispatch({
-      type: actionTypes.SET_SELECTED_TIMES,
+    postDispatch({
+      type: postActionTypes.SET_SELECTED_TIMES,
       payload: updatedSelectedTimes,
     });
   };
@@ -304,13 +323,12 @@ function CreatePost() {
         coursesNum: [],
         introVideo: "",
         referenceMaterial: "",
-      }); // 重置表單
-      dispatch({ type: "SET_SELECTED_TIMES", payload: {} }); // 重置 selectedTimes
+      });
+      postDispatch({ type: "SET_SELECTED_TIMES", payload: {} });
 
-      // 重置日曆到今天的日期
       const today = new Date();
-      dispatch({ type: actionTypes.SET_SELECTED_DATE, payload: today });
-      dispatch({ type: actionTypes.SET_START_OF_WEEK, payload: today });
+      postDispatch({ type: postActionTypes.SET_SELECTED_DATE, payload: today });
+      postDispatch({ type: postActionTypes.SET_START_OF_WEEK, payload: today });
     },
 
     onError: (error) => {
@@ -321,7 +339,7 @@ function CreatePost() {
   const onSubmit = (data, event) => {
     event.preventDefault();
 
-    const hasSelectedDateTime = Object.values(state.selectedTimes).some(
+    const hasSelectedDateTime = Object.values(postState.selectedTimes).some(
       (times) => Object.values(times).some((selected) => selected),
     );
 
@@ -334,15 +352,18 @@ function CreatePost() {
       return;
     }
 
-    setIsModalVisible({
-      show: true,
-      message: "提交成功！即將返回首頁~",
+    uiDispatch({
+      type: uiActionTypes.SHOW_MODAL,
+      modalType: "autoCloseModal",
+      payload: {
+        message: "提交成功！即將返回首頁~",
+      },
     });
 
     setTimeout(() => {
-      setIsModalVisible({
-        show: false,
-        message: "",
+      uiDispatch({
+        type: uiActionTypes.HIDE_MODAL,
+        modalType: "autoCloseModal",
       });
       navigate(`/`);
     }, 2000);
@@ -358,7 +379,7 @@ function CreatePost() {
       time_preference: data.timePreferences?.map((pref) => pref.label),
       coin_cost: data.coins?.value,
       course_num: data.coursesNum?.map((num) => num.value),
-      datetime: state.selectedTimes,
+      datetime: postState.selectedTimes,
       video_url: data.introVideo,
       attachment_url: data.referenceMaterial,
     };
@@ -402,7 +423,7 @@ function CreatePost() {
                   required: true,
                   setValueAs: (value) => value.trim(),
                 })}
-                className={`w-3/5 rounded-sm px-3 py-2 text-sm text-textcolor md:w-2/5 md:min-w-96 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.title ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-300"}`}
+                className={`w-3/5 rounded-sm px-3 py-2 text-sm text-textcolor md:w-2/5 md:min-w-96 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.title ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-400"}`}
                 placeholder={
                   errors.title
                     ? "必填，不能僅輸入空格"
@@ -457,7 +478,7 @@ function CreatePost() {
                       <Select
                         {...field}
                         value={field.value || []}
-                        options={(state.subcategories || []).map((sub) => ({
+                        options={(postState.subcategories || []).map((sub) => ({
                           value: sub,
                           label: sub,
                         }))}
@@ -489,7 +510,7 @@ function CreatePost() {
                     render={({ field }) => (
                       <Select
                         {...field}
-                        options={state.skills?.map((skill) => ({
+                        options={postState.skills?.map((skill) => ({
                           value: skill,
                           label: skill,
                         }))}
@@ -564,11 +585,12 @@ function CreatePost() {
                 </span>
               </label>
               <textarea
+                maxLength={1000}
                 {...register("description", {
                   required: true,
                   setValueAs: (value) => value.trim(),
                 })}
-                className={`min-h-28 w-full rounded-sm px-3 py-2 text-sm text-textcolor md:w-4/5 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.description ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-300"}`}
+                className={`min-h-28 w-full rounded-sm px-3 py-2 text-sm text-textcolor md:w-4/5 md:text-base ${view !== "student" ? "bg-neon-carrot-50 focus:outline-neon-carrot-300" : "bg-cerulean-50 focus:outline-cerulean-300"} ${errors.description ? "border border-red-400 placeholder:text-red-300" : "placeholder:text-zinc-400"}`}
                 placeholder={
                   errors.description
                     ? `必填: ${introductionPlaceholder}`
@@ -647,12 +669,11 @@ function CreatePost() {
                 )}
               </label>
               <TimeTable
-                state={state}
+                state={postState}
                 handleMonthChange={handleMonthChange}
                 handleWeekChange={handleWeekChange}
                 formatDate={formatDate}
-                renderCalendar={renderCalendar}
-                daysOfWeek={daysOfWeek}
+                CreatePostRenderCalendar={renderCalendar}
                 renderTimeSlots={renderTimeSlots}
                 handleTimeRangeSelect={handleTimeRangeSelect}
                 message="請選擇從今天起，未來三個月內的可用時間"
@@ -665,7 +686,7 @@ function CreatePost() {
                 </label>
                 <input
                   {...register("introVideo")}
-                  className="w-4/5 rounded-sm bg-neon-carrot-50 px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 focus:outline-neon-carrot-300 sm:w-3/5 md:w-2/5 md:min-w-96 md:text-base"
+                  className="w-4/5 rounded-sm bg-neon-carrot-50 px-3 py-2 text-sm text-textcolor placeholder:text-zinc-400 focus:outline-neon-carrot-300 sm:w-3/5 md:w-2/5 md:min-w-96 md:text-base"
                   placeholder="請提供影片連結"
                 />
               </div>
@@ -677,8 +698,8 @@ function CreatePost() {
                 </label>
                 <input
                   {...register("referenceMaterial")}
-                  className="w-4/5 rounded-sm bg-neon-carrot-50 px-3 py-2 text-sm text-textcolor placeholder:text-zinc-300 focus:outline-neon-carrot-300 sm:w-3/5 md:w-2/5 md:min-w-96 md:text-base"
-                  placeholder="請提供雲端連結"
+                  className="w-4/5 rounded-sm bg-neon-carrot-50 px-3 py-2 text-sm text-textcolor placeholder:text-zinc-400 focus:outline-neon-carrot-300 sm:w-3/5 md:w-2/5 md:min-w-96 md:text-base"
+                  placeholder="請提供連結"
                 />
               </div>
             )}
@@ -692,10 +713,10 @@ function CreatePost() {
             </div>
           </div>
         </form>
-        {isModalVisible.show && (
+        {uiState.autoCloseModal.show && (
           <div className="fixed inset-0 mt-[60px] flex items-center justify-center bg-black bg-opacity-50">
             <div className="rounded-lg bg-white p-6">
-              <p>{isModalVisible.message}</p>
+              <p>{uiState.autoCloseModal.message}</p>
             </div>
           </div>
         )}
