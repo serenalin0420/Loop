@@ -42,6 +42,7 @@ function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 12;
 
+  // 可愛的虎爪
   useEffect(() => {
     const timer = setTimeout(() => {
       uiDispatch({ type: uiActionTypes.SET_ISLOADING, payload: false });
@@ -271,7 +272,7 @@ function Home() {
           selectedCategory={selectedCategory}
           onFilterChange={setFilterConditions}
         />
-        <div className="my-4 ml-4 mr-4 min-h-screen md:ml-6 lg:mr-8">
+        <div className="my-4 ml-4 mr-4 min-h-[calc(100vh_-_10rem)] md:ml-6 lg:mr-8">
           <div className="mb-2 flex justify-between px-1 md:mb-4 md:px-4">
             <div className="flex items-center font-semibold text-textcolor lg:text-lg">
               <p className="hidden xs:inline">排序依據</p>

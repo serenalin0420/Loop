@@ -8,7 +8,7 @@ import { locations, timePreferences } from "../CreatePost/options";
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
-    fontSize: "16px",
+    fontSize: "16px", // 控制框的文字大小
     padding: " 2px 0",
     borderRadius: "0.375rem",
     borderColor: state.isFocused && "#bfaa87",
@@ -21,7 +21,7 @@ const customStyles = {
     const isMobile = window.innerWidth < 768;
     return {
       ...provided,
-      fontSize: isMobile ? "14px" : "16px",
+      fontSize: isMobile ? "14px" : "16px", // 多選值的文字大小
       backgroundColor: "#c2e4f5",
       borderRadius: "0.375rem",
       marginRight: isMobile ? "8px" : "12px",
@@ -31,14 +31,14 @@ const customStyles = {
     const isMobile = window.innerWidth < 768;
     return {
       ...provided,
-      fontSize: isMobile ? "14px" : "16px",
+      fontSize: isMobile ? "14px" : "16px", // 多選值標籤的文字大小
       paddingLeft: "8px",
       paddingRight: "0",
     };
   },
   multiValueRemove: (provided) => ({
     ...provided,
-    fontSize: "14px",
+    fontSize: "14px", // 多選值刪除按鈕的文字大小
     padding: "0 6px",
     borderRadius: "0.375rem",
     ":hover": { backgroundColor: "#8cd0ed" },

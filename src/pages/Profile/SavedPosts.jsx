@@ -1,8 +1,8 @@
-import { CaretRight } from "@phosphor-icons/react";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import dbApi from "../../utils/api";
+import { Link } from "react-router-dom";
+import { CaretRight } from "@phosphor-icons/react";
 
 function SavedPosts({ userId }) {
   const [savedPosts, setSavedPosts] = useState([]);
@@ -13,6 +13,8 @@ function SavedPosts({ userId }) {
         if (userId) {
           const userProfile = await dbApi.getProfile(userId);
           setSavedPosts(userProfile.saved_posts);
+        } else {
+          console.log("No saved posts found for this user.");
         }
       } catch (error) {
         console.error("Error fetching saved posts:", error);
@@ -26,7 +28,7 @@ function SavedPosts({ userId }) {
 
   return (
     <div className="flex flex-col rounded-lg shadow-md">
-      <h3 className="max-w-max rounded-r-lg bg-indian-khaki-400 px-4 py-2 text-center tracking-wider text-white">
+      <h3 className="bg-indian-khaki-400 max-w-max rounded-r-lg px-4 py-2 text-center tracking-wider text-white">
         我的收藏
       </h3>
       <div className="flex flex-col gap-3 px-6 py-4">
@@ -39,7 +41,7 @@ function SavedPosts({ userId }) {
             >
               <p className="hidden sm:inline md:text-nowrap">{post.author}</p>
               <p className="font-semibold">{post.title}</p>
-              <span className="my-auto ml-2 flex items-center text-nowrap text-sm text-indian-khaki-800">
+              <span className="text-indian-khaki-800 my-auto ml-2 flex items-center text-nowrap text-sm">
                 <p className="hidden md:inline">查看</p>
                 <CaretRight className="hl-1 size-6" />
               </span>

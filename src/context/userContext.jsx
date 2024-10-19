@@ -1,8 +1,8 @@
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { createContext, useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import PropTypes from "prop-types";
-import { createContext, useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../utils/firebaseConfig";
+import PropTypes from "prop-types";
 
 export const UserContext = createContext();
 export const ProfilePictureContext = createContext();
@@ -24,11 +24,11 @@ export function UserProvider({ children }) {
           setProfilePicture(userData.profile_picture || "");
         } else {
           console.error("無法獲取使用者資訊");
-          setUser(null);
+          setUser(null); // 設置為 null 以防萬一
           setProfilePicture("");
         }
       } else {
-        setUser(null);
+        setUser(null); // 如果用戶登出或未登入，設置為 null
         setProfilePicture("");
       }
     });
