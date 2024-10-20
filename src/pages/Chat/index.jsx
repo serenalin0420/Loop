@@ -1,8 +1,8 @@
-import { useParams, useNavigate } from "react-router-dom";
-import dbApi from "@/utils/api";
-import { useContext, useEffect, useState, useRef } from "react";
 import { UserContext } from "@/context/userContext";
+import dbApi from "@/utils/api";
 import { debounce } from "lodash";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import tamtam1 from "../../assets/tamtam1.png";
 
 function Chat() {
@@ -16,13 +16,13 @@ function Chat() {
   const [isComposing, setIsComposing] = useState(false);
   const messagesEndRef = useRef();
 
-  // const scrollToBottom = () => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
+  const scrollToBottom = () => {
+    messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+  };
 
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -34,7 +34,7 @@ function Chat() {
         if (isNewMessage) {
           await dbApi.createOrUpdateChat(user.uid, chatId, {
             sender_uid: user.uid,
-            message: "",
+            message: [],
           });
           setIsNewMessage(false);
         }
@@ -48,25 +48,34 @@ function Chat() {
       setIsNewMessage(false);
     }
   }, [chatId, user, isNewMessage]);
-  console.log(chatList);
+
   useEffect(() => {
     const fetchChatList = async () => {
       try {
         const chatListData = await dbApi.getChatList(user.uid);
         const profile = await dbApi.getProfile(chatId);
-        setChatList((prevChatList) => [
-          ...prevChatList,
-          {
-            id: chatId,
-            with_user_id: chatId,
-            with_user_picture: profile.profile_picture,
-            with_user_name: profile.name,
-            last_message: "",
-            last_message_time: new Date(),
-          },
-        ]);
+        setChatList((prevChatList) => {
+          const isChatAlreadyAdded = prevChatList.some(
+            (chat) => chat.id === chatId,
+          );
 
-        // Fetch profile data for each chat
+          if (isChatAlreadyAdded) {
+            return prevChatList;
+          }
+
+          return [
+            ...prevChatList,
+            {
+              id: chatId,
+              with_user_id: chatId,
+              with_user_picture: profile.profile_picture,
+              with_user_name: profile.name,
+              last_message: "",
+              last_message_time: new Date(),
+            },
+          ];
+        });
+
         const chatListWithProfiles = await Promise.all(
           chatListData.map(async (chat) => {
             const profile = await dbApi.getProfile(chat.with_user_id);
@@ -111,7 +120,7 @@ function Chat() {
   }, [chatId, user]);
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() === "") return; // 避免發送空訊息
+    if (newMessage.trim() === "") return;
 
     const messageData = {
       sender_uid: user.uid,
@@ -197,7 +206,10 @@ function Chat() {
           </div>
 
           <div className="flex flex-1 flex-col">
-            <div className="h-full overflow-y-auto">
+            <div
+              className="h-full max-h-full overflow-y-auto"
+              ref={messagesEndRef}
+            >
               <div className="flex flex-1 flex-col justify-end sm:p-4">
                 {messages.map((message, index) => (
                   <div
@@ -220,7 +232,6 @@ function Chat() {
                     >
                       {message.message}
                     </p>
-                    <div ref={messagesEndRef} />
                   </div>
                 ))}
               </div>
