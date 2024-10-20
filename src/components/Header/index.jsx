@@ -214,8 +214,6 @@ function Header({ onNotificationClick, hasUnreadNotifications }) {
         )}
       </header>
 
-      {/* Header for mobile */}
-
       {isLoggedIn && (
         <div className="fixed bottom-0 left-0 z-20 flex h-[60px] w-full transform items-center justify-between bg-white px-4 shadow-[0_-1px_3px_rgba(0,0,0,0.1)] transition-all duration-500 xs:px-6 sm:hidden">
           <Link

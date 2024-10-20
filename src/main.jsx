@@ -1,21 +1,21 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import App from "./App.jsx";
-import "./index.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Post from "./pages/Post";
-import CreatePost from "./pages/CreatePost";
-import Profile from "./pages/Profile";
-import LearningPortfolio from "./pages/LearningPortfolio";
-import SinglePortfolio from "./pages/LearningPortfolio/SinglePortfolio.jsx";
-import Chat from "./pages/Chat";
-import NotFound from "./pages/NotFound";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import PrivateRoute from "./components/PrivateRoute";
 import { UserProvider } from "./context/userContext.jsx";
 import { ViewProvider } from "./context/viewContext.jsx";
-import PrivateRoute from "./components/PrivateRoute";
+import "./index.css";
+import Chat from "./pages/Chat";
+import CreatePost from "./pages/CreatePost";
+import Home from "./pages/Home";
+import LearningPortfolio from "./pages/LearningPortfolio";
+import SinglePortfolio from "./pages/LearningPortfolio/SinglePortfolio.jsx";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Post from "./pages/Post";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -38,9 +38,7 @@ createRoot(document.getElementById("root")).render(
                     </PrivateRoute>
                   }
                 />
-                {/* 當用戶瀏覽其他用戶的個人資料頁面 */}
                 <Route path="profile/:userId" element={<Profile />} />
-                {/* 當用戶瀏覽自己的個人資料頁面 */}
                 <Route
                   path="profile"
                   element={
