@@ -1,12 +1,17 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { NotePencil, UploadSimple } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useReducer, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import Select from "react-select";
 import { Coin } from "../../assets/images";
 import { ProfilePictureContext, UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
+import {
+  profileActionTypes,
+  profileInitialState,
+  profileReducer,
+} from "../../utils/profileReducer";
 import { sortCategories } from "../CreatePost/options";
 import ApplicationFromOthers from "./ApplicationFromOthers";
 import SavedPosts from "./SavedPosts";
@@ -62,20 +67,11 @@ function Profile() {
   const { profilePicture, setProfilePicture } = useContext(
     ProfilePictureContext,
   );
-  const [userName, setUserName] = useState("");
+  const [state, dispatch] = useReducer(profileReducer, profileInitialState);
   const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState("");
-  const [skills, setSkills] = useState([{ category_name: "", skills: "" }]);
-
-  const [bgImage, setBgImage] = useState("");
   const [coins, setCoins] = useState(user?.coins || 0);
   const textareaRef = useRef();
   const [userId, setUserId] = useState(paramUserId || user?.uid);
-  const [errorMessages, setErrorMessages] = useState({
-    userName: "",
-    bio: "",
-    profilePicture: "",
-  });
   const [otherPicture, setOtherPicture] = useState("");
 
   const {
@@ -102,10 +98,15 @@ function Profile() {
       const uid = userId || user?.uid;
       if (uid) {
         const userProfile = await dbApi.getProfile(uid);
-        setUserName(userProfile.name || "");
-        setBio(userProfile.bio || "");
-        setSkills(userProfile.skills || []);
-        setBgImage(userProfile.bg_image || "");
+        dispatch({
+          type: profileActionTypes.SET_PROFILE,
+          payload: {
+            userName: userProfile.name,
+            bio: userProfile.bio,
+            skills: userProfile.skills,
+            bgImage: userProfile.bg_image,
+          },
+        });
         if (uid === userId) {
           setOtherPicture(userProfile.profile_picture || "");
           setProfilePicture(profilePicture);
@@ -122,19 +123,22 @@ function Profile() {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
       textareaRef.current.style.overflow = "hidden";
     }
-  }, [bio, isEditing]);
+  }, [state.bio, isEditing]);
 
   const handleEditClick = async () => {
-    if (Object.values(errorMessages).some(Boolean)) return;
+    if (Object.values(state.errorMessages).some(Boolean)) return;
 
     if (isEditing) {
-      const filteredSkills = skills.filter(
+      const filteredSkills = state.skills.filter(
         (skill) => skill.skills.trim() && skill.category_name.trim(),
       );
-      setSkills(filteredSkills);
+      dispatch({
+        type: profileActionTypes.SET_SKILLS,
+        payload: filteredSkills,
+      });
       await dbApi.updateProfile(user.uid, {
-        name: userName,
-        bio,
+        name: state.userName,
+        bio: state.bio,
         skills: filteredSkills,
       });
     }
@@ -145,22 +149,28 @@ function Profile() {
     const file = e.target.files[0];
     const maxSize = 2 * 1024 * 1024;
     if (!file) {
-      setErrorMessages((prev) => ({
-        ...prev,
-        profilePicture: "請選擇一個文件",
-      }));
+      dispatch({
+        type: profileActionTypes.SET_ERROR_MESSAGE,
+        field: "profilePicture",
+        message: "請選擇一個文件",
+      });
       return;
     }
 
     if (file.size > maxSize) {
-      setErrorMessages((prev) => ({
-        ...prev,
-        profilePicture: "文件大小不能超過 2 MB",
-      }));
+      dispatch({
+        type: profileActionTypes.SET_ERROR_MESSAGE,
+        field: "profilePicture",
+        message: "文件大小不能超過 2 MB",
+      });
 
       return;
     } else {
-      setErrorMessages((prev) => ({ ...prev, profilePicture: "" }));
+      dispatch({
+        type: profileActionTypes.SET_ERROR_MESSAGE,
+        field: "profilePicture",
+        message: "",
+      });
     }
 
     if (file) {
@@ -174,39 +184,29 @@ function Profile() {
     }
   };
 
-  const handleNameChange = (e) => {
+  const handleInputChange = (field, maxLength) => (e) => {
     const value = e.target.value;
-    const maxLength = 15;
-
     if (value.length > maxLength) {
-      setErrorMessages((prev) => ({
-        ...prev,
-        userName: `使用者名稱不能超過 ${maxLength} 個字元`,
-      }));
+      dispatch({
+        type: profileActionTypes.SET_ERROR_MESSAGE,
+        field: field,
+        message: `${field} 不能超過 ${maxLength} 個字元`,
+      });
     } else {
-      setErrorMessages((prev) => ({ ...prev, userName: "" }));
+      dispatch({
+        type: profileActionTypes.SET_ERROR_MESSAGE,
+        field: field,
+        message: "",
+      });
+      dispatch({
+        type: profileActionTypes[`SET_${field.toUpperCase()}`],
+        payload: value,
+      });
     }
-    setUserName(value);
-  };
-
-  const handleBioChange = (e) => {
-    const value = e.target.value;
-    const maxLength = 200;
-
-    if (value.length > maxLength) {
-      setErrorMessages((prev) => ({
-        ...prev,
-        bio: `簡介不能超過 ${maxLength} 個字元`,
-      }));
-    } else {
-      setErrorMessages((prev) => ({ ...prev, bio: "" }));
-    }
-
-    setBio(e.target.value);
   };
 
   const handleSkillChange = (index, selectedOptionOrEvent) => {
-    const updatedSkills = [...skills];
+    const updatedSkills = [...state.skills];
 
     if (selectedOptionOrEvent.target) {
       const newSkillValue = selectedOptionOrEvent.target.value;
@@ -225,15 +225,18 @@ function Profile() {
         category_name: selectedOptionOrEvent.value,
       };
     }
-
-    setSkills(updatedSkills);
+    dispatch({ type: profileActionTypes.SET_SKILLS, payload: updatedSkills });
   };
 
-  const addSkill = () =>
-    setSkills([...skills, { category_name: "", skills: "" }]);
+  const addSkill = () => {
+    const updatedSkills = [...state.skills, { category_name: "", skills: "" }];
+    dispatch({ type: profileActionTypes.SET_SKILLS, payload: updatedSkills });
+  };
 
-  const removeSkill = (index) =>
-    setSkills(skills.filter((_, i) => i !== index));
+  const removeSkill = (index) => {
+    const updatedSkills = state.skills.filter((_, i) => i !== index);
+    dispatch({ type: profileActionTypes.SET_SKILLS, payload: updatedSkills });
+  };
 
   const isCurrentUser = user && user.uid === userId;
 
@@ -271,9 +274,9 @@ function Profile() {
                   <UploadSimple className="mx-1 size-6" />
                   上傳頭像
                 </button>
-                {errorMessages.profilePicture && (
+                {state.errorMessages.profilePicture && (
                   <p className="absolute -bottom-4 left-1 text-nowrap text-xs text-red-400 sm:bottom-1 sm:left-24">
-                    {errorMessages.profilePicture}
+                    {state.errorMessages.profilePicture}
                   </p>
                 )}
               </div>
@@ -282,20 +285,20 @@ function Profile() {
               <div className="relative flex justify-center">
                 <input
                   type="text"
-                  value={userName}
-                  onChange={handleNameChange}
-                  maxLength={20}
+                  value={state.userName}
+                  onChange={handleInputChange("userName", 15)}
+                  maxLength={15}
                   className="mt-2 w-5/6 rounded-md bg-cerulean-100 px-3 py-2"
                 />
-                {errorMessages.userName && (
+                {state.errorMessages.userName && (
                   <p className="absolute -bottom-5 text-xs text-red-400">
-                    {errorMessages.userName}
+                    {state.errorMessages.userName}
                   </p>
                 )}
               </div>
             ) : (
               <p className="mt-2 text-center text-lg font-semibold">
-                {userName}
+                {state.userName}
               </p>
             )}
           </div>
@@ -304,7 +307,7 @@ function Profile() {
         <div className="relative flex justify-center">
           <img
             className="h-32 w-full object-cover object-center xs:h-40 md:h-44"
-            src={bgImage}
+            src={state.bgImage}
           ></img>
           <div className="absolute -bottom-20 flex flex-col items-center">
             <img
@@ -312,7 +315,9 @@ function Profile() {
               className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md md:size-24"
               alt="author"
             />
-            <p className="mt-2 text-center text-lg font-semibold">{userName}</p>
+            <p className="mt-2 text-center text-lg font-semibold">
+              {state.userName}
+            </p>
           </div>
         </div>
       )}
@@ -345,19 +350,19 @@ function Profile() {
                     <textarea
                       ref={textareaRef}
                       name="bio"
-                      value={bio}
-                      onChange={handleBioChange}
-                      maxLength={210}
+                      value={state.bio}
+                      onChange={handleInputChange("bio", 200)}
+                      maxLength={200}
                       className="mx-6 mb-6 mt-4 w-full rounded-md bg-cerulean-100 px-3 py-2"
                     />
-                    {errorMessages.bio && (
+                    {state.errorMessages.bio && (
                       <p className="absolute bottom-1 left-8 text-xs text-red-400">
-                        {errorMessages.bio}
+                        {state.errorMessages.bio}
                       </p>
                     )}
                   </div>
                 ) : (
-                  <p className="mx-6 mb-6 mt-4 rounded-md">{bio}</p>
+                  <p className="mx-6 mb-6 mt-4 rounded-md">{state.bio}</p>
                 )}
               </div>
 
@@ -369,7 +374,7 @@ function Profile() {
                 </h3>
                 {isEditing ? (
                   <div className="mt-4 flex flex-col items-center gap-y-2">
-                    {skills.map((skill, index) => (
+                    {state.skills.map((skill, index) => (
                       <div
                         key={index}
                         className="flex w-full items-center gap-3 px-6"
@@ -410,7 +415,7 @@ function Profile() {
                   </div>
                 ) : (
                   <div className="mb-6">
-                    {skills.map((skill, index) => (
+                    {state.skills.map((skill, index) => (
                       <div
                         key={index}
                         className="mx-6 mt-4 flex flex-col gap-1 rounded-md md:flex-row md:items-center md:gap-3"
