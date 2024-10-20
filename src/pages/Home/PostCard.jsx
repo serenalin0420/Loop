@@ -76,7 +76,7 @@ function PostCard({
       <div className="mt-4 flex items-center">
         <p className="ml-2 text-sm">{formatDate(post.created_time)}</p>
         <Coin alt="coin" className="ml-auto mr-1 size-10 object-cover" />
-        <p className="text-2xl font-bold text-yellow-800">{post.coin_cost}</p>
+        <p className="text-xl font-bold text-yellow-800">{post.coin_cost}</p>
         {user?.uid !== post.author_uid && (
           <button
             className="ml-4 mr-2 rounded-full bg-sun-400 p-2 text-sm text-white hover:bg-sun-500 active:bg-sun-500 md:px-4"

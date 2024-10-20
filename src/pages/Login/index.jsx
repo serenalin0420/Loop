@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import dbApi from "@/utils/api";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
+  getAuth,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import dbApi from "@/utils/api";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../components/Header/loop-logo.png";
-import { Link } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -116,7 +115,7 @@ export default function Login() {
             className="flex cursor-pointer text-nowrap px-3 py-2 md:hidden"
             onClick={() => setIsRegistering(!isRegistering)}
           >
-            <p className="mr-4">
+            <p className="mr-4 cursor-pointer">
               {isRegistering ? "已有帳號嗎? " : "還沒有帳號嗎?"}
             </p>
             {isRegistering ? "登入" : "註冊 "}
