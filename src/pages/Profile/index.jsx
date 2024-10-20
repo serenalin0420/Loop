@@ -1,9 +1,8 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { NotePencil, UploadSimple } from "@phosphor-icons/react";
+import { NotePencil } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { useContext, useEffect, useReducer, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import Select from "react-select";
 import { Coin } from "../../assets/images";
 import { ProfilePictureContext, UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
@@ -12,54 +11,11 @@ import {
   profileInitialState,
   profileReducer,
 } from "../../utils/profileReducer";
-import { sortCategories } from "../CreatePost/options";
 import ApplicationFromOthers from "./ApplicationFromOthers";
+import ProfilePictureUpload from "./ProfilePictureUpload";
 import SavedPosts from "./SavedPosts";
+import SkillSection from "./SkillSection";
 import UserApplication from "./UserApplication";
-
-const sortCategoriesFn = (categories) => {
-  const categoryOrder = sortCategories.reduce((acc, category, index) => {
-    acc[category] = index;
-    return acc;
-  }, {});
-
-  return categories.sort((a, b) => {
-    return categoryOrder[a.name] - categoryOrder[b.name];
-  });
-};
-const customStyles = {
-  control: (provided, state) => ({
-    ...provided,
-    fontSize: "16px",
-    padding: " 2px 0",
-    borderRadius: "0.375rem",
-    borderColor: state.isFocused && "#8cd0ed",
-    boxShadow: state.isFocused && "#8cd0ed",
-    "&:hover": {
-      borderColor: state.isFocused && "#8cd0ed",
-    },
-  }),
-  option: (provided, state) => ({
-    ...provided,
-    fontSize: "16px",
-    backgroundColor: state.isSelected
-      ? "#c2e4f5"
-      : state.isFocused && "#e4f1fa",
-
-    color: state.isSelected ? "#262626" : "#525252",
-    ":active": {
-      backgroundColor: "#c2e4f5",
-    },
-  }),
-};
-
-const mapCategoriesToOptions = (categories) => {
-  const sortedCategories = sortCategoriesFn(categories);
-  return sortedCategories.map((category) => ({
-    label: category.name,
-    value: category.name,
-  }));
-};
 
 function Profile() {
   const { userId: paramUserId } = useParams();
@@ -185,7 +141,7 @@ function Profile() {
   };
 
   const handleInputChange = (field, maxLength) => (e) => {
-    const value = e.target.value;
+    const { value } = e.target;
     if (value.length > maxLength) {
       dispatch({
         type: profileActionTypes.SET_ERROR_MESSAGE,
@@ -258,28 +214,10 @@ function Profile() {
               alt="author"
             />
             {isEditing && (
-              <div className="absolute -right-8 bottom-14 flex items-center justify-center sm:bottom-12">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="fileInput"
-                />
-                <button
-                  type="button"
-                  className="relative flex cursor-pointer items-center justify-center rounded-full text-sm hover:text-indian-khaki-500 hover:underline"
-                  onClick={() => document.getElementById("fileInput").click()}
-                >
-                  <UploadSimple className="mx-1 size-6" />
-                  上傳頭像
-                </button>
-                {state.errorMessages.profilePicture && (
-                  <p className="absolute -bottom-4 left-1 text-nowrap text-xs text-red-400 sm:bottom-1 sm:left-24">
-                    {state.errorMessages.profilePicture}
-                  </p>
-                )}
-              </div>
+              <ProfilePictureUpload
+                onChange={handleFileChange}
+                errorMessage={state.errorMessages.profilePicture}
+              />
             )}
             {isEditing ? (
               <div className="relative flex justify-center">
@@ -287,7 +225,6 @@ function Profile() {
                   type="text"
                   value={state.userName}
                   onChange={handleInputChange("userName", 15)}
-                  maxLength={15}
                   className="mt-2 w-5/6 rounded-md bg-cerulean-100 px-3 py-2"
                 />
                 {state.errorMessages.userName && (
@@ -352,7 +289,6 @@ function Profile() {
                       name="bio"
                       value={state.bio}
                       onChange={handleInputChange("bio", 200)}
-                      maxLength={200}
                       className="mx-6 mb-6 mt-4 w-full rounded-md bg-cerulean-100 px-3 py-2"
                     />
                     {state.errorMessages.bio && (
@@ -365,69 +301,17 @@ function Profile() {
                   <p className="mx-6 mb-6 mt-4 rounded-md">{state.bio}</p>
                 )}
               </div>
-
               <div
                 className={`flex flex-col rounded-lg shadow-md ${isCurrentUser ? "sm:w-1/2" : "sm:mx-6 md:mx-12"}`}
               >
-                <h3 className="max-w-max rounded-r-lg bg-indian-khaki-400 px-4 py-2 text-center tracking-wider text-white">
-                  技能
-                </h3>
-                {isEditing ? (
-                  <div className="mt-4 flex flex-col items-center gap-y-2">
-                    {state.skills.map((skill, index) => (
-                      <div
-                        key={index}
-                        className="flex w-full items-center gap-3 px-6"
-                      >
-                        <Select
-                          name="category_name"
-                          placeholder="類別"
-                          value={mapCategoriesToOptions(categories).find(
-                            (option) => option.value === skill.category_name,
-                          )}
-                          onChange={(selectedOption) =>
-                            handleSkillChange(index, selectedOption)
-                          }
-                          options={mapCategoriesToOptions(categories)}
-                          className="w-7/12 rounded-md"
-                          styles={customStyles}
-                        />
-                        <input
-                          name="skills"
-                          value={skill.skills}
-                          onChange={(e) => handleSkillChange(index, e)}
-                          className="w-full rounded-md bg-cerulean-100 px-3 py-2"
-                        />
-                        <button
-                          onClick={() => removeSkill(index)}
-                          className="text-nowrap rounded bg-stone-200 px-2 py-2 text-sm text-stone-500"
-                        >
-                          刪除
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={addSkill}
-                      className="mb-4 mt-2 max-w-max rounded-full bg-indian-khaki-400 px-4 py-2 text-sm text-white shadow"
-                    >
-                      新增技能
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mb-6">
-                    {state.skills.map((skill, index) => (
-                      <div
-                        key={index}
-                        className="mx-6 mt-4 flex flex-col gap-1 rounded-md md:flex-row md:items-center md:gap-3"
-                      >
-                        <p className="max-w-max text-nowrap rounded-md bg-cerulean-100 px-3 py-1">
-                          {skill.category_name}
-                        </p>
-                        <p className="ml-4 md:ml-0">- {skill.skills}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <SkillSection
+                  skills={state.skills}
+                  categories={categories}
+                  isEditing={isEditing}
+                  handleSkillChange={handleSkillChange}
+                  removeSkill={removeSkill}
+                  addSkill={addSkill}
+                />
               </div>
             </div>
           </div>
