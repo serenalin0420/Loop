@@ -36,7 +36,12 @@ const UserApplication = ({ userId }) => {
           applicant_name: applicantsData[index].name,
           applicant_profile_picture: applicantsData[index].profile_picture,
         }));
-        setBookings(updatedBookingsData);
+
+        const sortedBookings = updatedBookingsData.sort(
+          (a, b) => b.created_time.seconds - a.created_time.seconds,
+        );
+
+        setBookings(sortedBookings);
       } catch (error) {
         console.error("Error fetching data:", error);
       }

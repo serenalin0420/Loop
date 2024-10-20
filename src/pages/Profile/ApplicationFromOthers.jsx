@@ -42,7 +42,11 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
           applicant_name: applicantsData[index].name,
           applicant_profile_picture: applicantsData[index].profile_picture,
         }));
-        setBookings(updatedBookingsData);
+
+        const sortedBookings = updatedBookingsData.sort(
+          (a, b) => b.created_time.seconds - a.created_time.seconds,
+        );
+        setBookings(sortedBookings);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -94,7 +98,6 @@ const ApplicationFromOthers = ({ userId, setCoins }) => {
   const handleAcceptClick = async () => {
     if (selectedBooking) {
       try {
-        // 確認代幣足夠
         await dbApi.updateUsersCoins(selectedBooking);
 
         await dbApi.updateBookingStatus(selectedBooking.id, "confirm");
