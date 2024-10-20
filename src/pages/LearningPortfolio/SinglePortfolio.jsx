@@ -1,8 +1,9 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import dbApi from "@/utils/api";
-import { Coin } from "../../assets/images";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+// import { Coin } from "../../assets/images";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 function SinglePortfolio() {
   const location = useLocation();
@@ -75,16 +76,7 @@ function SinglePortfolio() {
     setCurrentFeedbackIndex(index);
   };
 
-  if (!portfolio) {
-    return (
-      <div className="col-span-3 mt-6 flex h-5/6 items-center justify-center">
-        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <Coin className="my-2 size-16 animate-swing" />
-          <p>請再稍等一下...</p>
-        </div>
-      </div>
-    );
-  }
+  if (!portfolio) return <LoadingSpinner />;
 
   return (
     <div className="h-screen py-20 sm:h-full">
@@ -176,28 +168,29 @@ function SinglePortfolio() {
         </div>
       </div>
 
-      {/* desktop */}
       <div className="mx-6 hidden max-w-screen-lg flex-col sm:flex md:mx-12 lg:mx-28 xl:mx-auto">
         <h1 className="mb-4 text-center text-xl font-semibold">
           {portfolio.post_title}
         </h1>
-        <div className="mx-auto mb-2 flex items-center gap-2">
-          技能提供者:
-          <img
-            src={providerProfile?.profile_picture}
-            className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
-            alt="技能提供者"
-          />
-          <p className="text-base">{providerProfile?.name}</p>
-        </div>
-        <div className="mx-auto mb-4 flex items-center gap-2">
-          技能需求者:
-          <img
-            src={demanderProfile?.profile_picture}
-            className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
-            alt="技能需求者"
-          />
-          <p className="text-base">{demanderProfile?.name}</p>
+        <div className="mb-4 flex justify-center gap-6">
+          <div className="flex items-center gap-2">
+            技能提供者:
+            <img
+              src={providerProfile?.profile_picture}
+              className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
+              alt="技能提供者"
+            />
+            <p className="text-base">{providerProfile?.name}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            技能需求者:
+            <img
+              src={demanderProfile?.profile_picture}
+              className="size-12 rounded-full border-white bg-red-100 object-cover object-center shadow"
+              alt="技能需求者"
+            />
+            <p className="text-base">{demanderProfile?.name}</p>
+          </div>
         </div>
         {portfolio.feedback.map((item, index) => (
           <div
@@ -214,7 +207,7 @@ function SinglePortfolio() {
                   {providerProfile?.name}
                 </p>
                 <h4
-                  className={`w-full rounded-lg p-3 md:w-5/6 ${item.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
+                  className={`w-full rounded-lg p-3 leading-6 md:w-5/6 ${item.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
                 >
                   {item.provider_feedback ? (
                     item.provider_feedback
@@ -228,7 +221,7 @@ function SinglePortfolio() {
                   {demanderProfile?.name}
                 </p>
                 <h4
-                  className={`w-full rounded-lg p-3 md:w-5/6 ${item.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
+                  className={`w-full rounded-lg p-3 leading-6 md:w-5/6 ${item.course % 2 === 0 ? "bg-cerulean-50" : "bg-neon-carrot-50"}`}
                 >
                   {item.demander_feedback ? (
                     item.demander_feedback

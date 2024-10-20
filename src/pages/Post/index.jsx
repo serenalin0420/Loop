@@ -1,7 +1,8 @@
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { CaretLeft, CheckFat } from "@phosphor-icons/react";
 import { useEffect, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Coin, Infinte } from "../../assets/images";
+import { Infinte } from "../../assets/images";
 import TimeTable from "../../components/TimeTable";
 import dbApi from "../../utils/api";
 import {
@@ -140,15 +141,7 @@ function Post() {
     );
   };
 
-  if (!postState.post || !postState.author)
-    return (
-      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <Coin className="my-2 size-16 animate-swing" />
-          <p>請再稍等一下...</p>
-        </div>
-      </div>
-    );
+  if (!postState.post || !postState.author) return <LoadingSpinner />;
 
   return (
     <div className="my-20 flex justify-center gap-6">

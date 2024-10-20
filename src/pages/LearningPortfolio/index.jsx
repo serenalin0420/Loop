@@ -1,7 +1,7 @@
+import LoadingSpinner from "@/components/LoadingSpinner";
 import StarRating from "@/components/StarRating";
 import { useContext, useEffect, useReducer, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Coin } from "../../assets/images";
 import { UserContext } from "../../context/userContext";
 import dbApi from "../../utils/api";
 import {
@@ -82,16 +82,7 @@ function LearningPortfolio() {
     fetchLearningPortfolio();
   }, [user, otherUserId]);
 
-  if (uiState.isLoading) {
-    return (
-      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <Coin className="my-2 size-16 animate-swing" />
-          <p>請再稍等一下...</p>
-        </div>
-      </div>
-    );
-  }
+  if (uiState.isLoading) return <LoadingSpinner />;
 
   return (
     <div className="h-screen py-20 md:py-24">

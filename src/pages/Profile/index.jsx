@@ -1,15 +1,16 @@
-import { useState, useContext, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { UserContext, ProfilePictureContext } from "../../context/userContext";
-import ApplicationFromOthers from "./ApplicationFromOthers";
-import UserApplication from "./UserApplication";
-import SavedPosts from "./SavedPosts";
-import { sortCategories } from "../CreatePost/options";
-import { Coin } from "../../assets/images";
-import dbApi from "../../utils/api";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { NotePencil, UploadSimple } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
-import { UploadSimple, NotePencil } from "@phosphor-icons/react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import Select from "react-select";
+import { Coin } from "../../assets/images";
+import { ProfilePictureContext, UserContext } from "../../context/userContext";
+import dbApi from "../../utils/api";
+import { sortCategories } from "../CreatePost/options";
+import ApplicationFromOthers from "./ApplicationFromOthers";
+import SavedPosts from "./SavedPosts";
+import UserApplication from "./UserApplication";
 
 const sortCategoriesFn = (categories) => {
   const categoryOrder = sortCategories.reduce((acc, category, index) => {
@@ -24,7 +25,7 @@ const sortCategoriesFn = (categories) => {
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
-    fontSize: "16px", // 控制框的文字大小
+    fontSize: "16px",
     padding: " 2px 0",
     borderRadius: "0.375rem",
     borderColor: state.isFocused && "#8cd0ed",
@@ -35,7 +36,7 @@ const customStyles = {
   }),
   option: (provided, state) => ({
     ...provided,
-    fontSize: "16px", // 選項的文字大小
+    fontSize: "16px",
     backgroundColor: state.isSelected
       ? "#c2e4f5"
       : state.isFocused && "#e4f1fa",
@@ -75,6 +76,7 @@ function Profile() {
     bio: "",
     profilePicture: "",
   });
+  const [otherPicture, setOtherPicture] = useState("");
 
   const {
     data: categories,
@@ -103,13 +105,16 @@ function Profile() {
         setUserName(userProfile.name || "");
         setBio(userProfile.bio || "");
         setSkills(userProfile.skills || []);
-        setProfilePicture(userProfile.profile_picture || "");
         setBgImage(userProfile.bg_image || "");
+        if (uid === userId) {
+          setOtherPicture(userProfile.profile_picture || "");
+          setProfilePicture(profilePicture);
+        }
       }
     };
 
     fetchProfile();
-  }, [user, userId, setProfilePicture]);
+  }, [user, userId, setProfilePicture, profilePicture]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -120,18 +125,11 @@ function Profile() {
   }, [bio, isEditing]);
 
   const handleEditClick = async () => {
-    if (
-      errorMessages.userName ||
-      errorMessages.bio ||
-      errorMessages.profilePicture
-    ) {
-      return;
-    }
+    if (Object.values(errorMessages).some(Boolean)) return;
 
     if (isEditing) {
       const filteredSkills = skills.filter(
-        (skill) =>
-          skill.skills.trim() !== "" && skill.category_name.trim() !== "",
+        (skill) => skill.skills.trim() && skill.category_name.trim(),
       );
       setSkills(filteredSkills);
       await dbApi.updateProfile(user.uid, {
@@ -188,7 +186,6 @@ function Profile() {
     } else {
       setErrorMessages((prev) => ({ ...prev, userName: "" }));
     }
-
     setUserName(value);
   };
 
@@ -232,26 +229,15 @@ function Profile() {
     setSkills(updatedSkills);
   };
 
-  const addSkill = () => {
+  const addSkill = () =>
     setSkills([...skills, { category_name: "", skills: "" }]);
-  };
 
-  const removeSkill = (index) => {
-    const updatedSkills = skills.filter((_, i) => i !== index);
-    setSkills(updatedSkills);
-  };
+  const removeSkill = (index) =>
+    setSkills(skills.filter((_, i) => i !== index));
 
   const isCurrentUser = user && user.uid === userId;
 
-  if (isLoading)
-    return (
-      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <Coin className="my-2 size-16 animate-swing" />
-          <p>請再稍等一下...</p>
-        </div>
-      </div>
-    );
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Error loading categories</div>;
 
   return (
@@ -322,7 +308,7 @@ function Profile() {
           ></img>
           <div className="absolute -bottom-20 flex flex-col items-center">
             <img
-              src={profilePicture}
+              src={userId ? otherPicture : profilePicture}
               className="size-20 rounded-full border-2 border-white bg-red-100 object-cover object-center shadow-md md:size-24"
               alt="author"
             />

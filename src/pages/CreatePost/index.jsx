@@ -5,7 +5,6 @@ import { Controller, useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { Coin } from "../../assets/images";
 import TimeTable from "../../components/TimeTable";
 import dbApi from "../../utils/api";
 import {
@@ -144,11 +143,7 @@ function CreatePost() {
     });
   }, [postState.selectedDate]);
 
-  const {
-    data: categories,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: categories, error } = useQuery({
     queryKey: ["categories"],
     queryFn: dbApi.getCategories,
   });
@@ -386,15 +381,6 @@ function CreatePost() {
     mutation.mutate(postData);
   };
 
-  if (isLoading)
-    return (
-      <div className="col-span-3 mt-6 flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center justify-center text-indian-khaki-800">
-          <Coin className="my-2 size-16 animate-swing" />
-          <p>請再稍等一下...</p>
-        </div>
-      </div>
-    );
   if (error) return <div>Error loading categories</div>;
 
   return (
