@@ -12,7 +12,6 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [chatList, setChatList] = useState([]);
-  const [isNewMessage, setIsNewMessage] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
   const messagesEndRef = useRef();
 
@@ -29,27 +28,6 @@ function Chat() {
   }, []);
 
   useEffect(() => {
-    const initializeChat = async () => {
-      try {
-        if (isNewMessage) {
-          await dbApi.createOrUpdateChat(user.uid, chatId, {
-            sender_uid: user.uid,
-            message: [],
-          });
-          setIsNewMessage(false);
-        }
-      } catch (error) {
-        console.error("Error initializing chat:", error);
-      }
-    };
-
-    if (user && chatId && isNewMessage) {
-      initializeChat();
-      setIsNewMessage(false);
-    }
-  }, [chatId, user, isNewMessage]);
-
-  useEffect(() => {
     const fetchChatList = async () => {
       try {
         const chatListData = await dbApi.getChatList(user.uid);
@@ -59,21 +37,20 @@ function Chat() {
             (chat) => chat.id === chatId,
           );
 
-          if (isChatAlreadyAdded) {
-            return prevChatList;
+          if (!isChatAlreadyAdded && profile) {
+            return [
+              ...prevChatList,
+              {
+                id: chatId,
+                with_user_id: chatId,
+                with_user_picture: profile.profile_picture,
+                with_user_name: profile.name,
+                last_message: "",
+                last_message_time: new Date(),
+              },
+            ];
           }
-
-          return [
-            ...prevChatList,
-            {
-              id: chatId,
-              with_user_id: chatId,
-              with_user_picture: profile.profile_picture,
-              with_user_name: profile.name,
-              last_message: "",
-              last_message_time: new Date(),
-            },
-          ];
+          return prevChatList;
         });
 
         const chatListWithProfiles = await Promise.all(
@@ -86,8 +63,13 @@ function Chat() {
             };
           }),
         );
-
-        setChatList(chatListWithProfiles);
+        setChatList((prevChatList) => {
+          const updatedList = [...prevChatList, ...chatListWithProfiles];
+          return updatedList.filter(
+            (chat, index, self) =>
+              index === self.findIndex((t) => t.id === chat.id),
+          );
+        });
       } catch (error) {
         console.error("Error fetching chat list:", error);
       }
@@ -135,7 +117,7 @@ function Chat() {
     }
   };
 
-  const debouncedSendMessage = debounce(handleSendMessage, 180);
+  const debouncedSendMessage = debounce(handleSendMessage, 250);
 
   const handleCompositionStart = () => {
     setIsComposing(true);
