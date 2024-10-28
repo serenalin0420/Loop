@@ -80,31 +80,6 @@ const getMonthRange = (currentMonth) => {
   return { startOfMonth, endOfMonth };
 };
 
-const handleCategoryChange = (
-  categories,
-  selectedOption,
-  setValue,
-  postDispatch,
-) => {
-  const selectedCategory = categories.find(
-    (cat) => cat.id === selectedOption.value,
-  );
-  postDispatch({
-    type: postActionTypes.SET_SELECTED_CATEGORY,
-    payload: selectedOption,
-  });
-  postDispatch({
-    type: postActionTypes.SET_SUBCATEGORIES,
-    payload: selectedCategory ? selectedCategory.subcategories : [],
-  });
-  postDispatch({
-    type: postActionTypes.SET_SKILLS,
-    payload: selectedCategory ? selectedCategory.skills : [],
-  });
-  setValue("subcategories", null);
-  setValue("skills", []);
-};
-
 function CreatePost() {
   const user = useContext(UserContext);
   const [postState, postDispatch] = useReducer(postReducer, postInitialState);
@@ -147,6 +122,26 @@ function CreatePost() {
     queryKey: ["categories"],
     queryFn: dbApi.getCategories,
   });
+
+  const handleCategoryChange = (selectedOption) => {
+    const selectedCategory = categories.find(
+      (cat) => cat.id === selectedOption.value,
+    );
+    postDispatch({
+      type: postActionTypes.SET_SELECTED_CATEGORY,
+      payload: selectedOption,
+    });
+    postDispatch({
+      type: postActionTypes.SET_SUBCATEGORIES,
+      payload: selectedCategory ? selectedCategory.subcategories : [],
+    });
+    postDispatch({
+      type: postActionTypes.SET_SKILLS,
+      payload: selectedCategory ? selectedCategory.skills : [],
+    });
+    setValue("subcategories", null);
+    setValue("skills", []);
+  };
 
   const handleMonthChange = (e, direction) => {
     e.preventDefault();
